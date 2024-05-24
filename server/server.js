@@ -1,92 +1,130 @@
-const express = require('express'); // Is used to create an Express app
-const http = require('http'); // Is used to create an HTTP server
-const socketIo = require('socket.io'); // Is used to create a WebSocket server
-const jwt = require('jsonwebtoken'); // Is used to sign and verify tokens
-const bcrypt = require('bcrypt'); // Is used to hash passwords
-const bodyParser = require('body-parser'); // Is used to parse JSON bodies
+const path = require('path');
+const express = require('express');
+const cors = require('cors');
+const https = require('https');
+const fs = require('fs');
+const socketIo = require('socket.io');
+const pgp = require('pg-promise')();
 
-const app = express(); // Create an Express app
-const server = http.createServer(app); // Create an HTTP server
-const io = socketIo(server); // Attach Socket.io to the server
+const PORT = process.env.PORT || 443;
+const DEV_PORT = 3000;
 
-app.use(bodyParser.json()); // Parse JSON bodies
+class Server {
+  constructor() {
+    this.app = express();
+    this.configureMiddleware();
+    this.configureRoutes();
+    this.configureHttpsServer();
+    this.configureSocketIO();
+    this.configureDatabase();
+  }
 
-const users = []; // This should be stored in a database
-const secretKey = 'yourSecretKey'; // Change this to a more secure key
+  // Used to configure the middleware
+  configureMiddleware() {
+    this.app.use(cors({
+      origin: [`https://localhost:${PORT}`, `https://localhost:${DEV_PORT}`],
+      methods: ['GET', 'POST'],
+      credentials: true,
+    }));
+    this.app.use(express.json());
+    this.app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+  }
 
-// Add the following routes to the server.js file
-const authMiddleware = (req, res, next) => {
-    const authHeader = req.headers['authorization']; // Get the Authorization header
-    const token = authHeader && authHeader.split(' ')[1]; // Get the token from the header
+  // Used to create the routes
+  configureRoutes() {
+    this.app.get('/', (req, res) => {
+      res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
+    });
+  }
 
-    if (!token) {
-        return res.sendStatus(401); // Return 401 if no token is found, this means the user is not authenticated
-    }
+  // Used to create the HTTPS server
+  configureHttpsServer() {
+    this.server = https.createServer({
+      key: fs.readFileSync('./server.key'),
+      cert: fs.readFileSync('./server.cert'),
+      passphrase: 'matcha',
+    }, this.app);
+  }
 
-    jwt.verify(token, secretKey, (err, user) => { // Verify the token
-        if (err) {
-            return res.sendStatus(403); // Return 403 if the token is invalid, this means the user is not authorized
+  // Used to create the socket server
+  configureSocketIO() {
+    this.io = socketIo(this.server, {
+      cors: {
+        origin: [`https://localhost:${PORT}`, `https://localhost:${DEV_PORT}`],
+        methods: ['GET', 'POST'],
+        credentials: true,
+      }
+    });
+
+    this.io.on('connection', (socket) => {
+      console.log('A user connected', socket.id);
+
+      socket.on('disconnect', () => {
+        console.log('User disconnected');
+      });
+    });
+  }
+
+  // Used to create the database and table
+  configureDatabase() {
+    this.defaultDb = pgp({
+      user: 'postgres',
+      host: 'localhost',
+      database: 'postgres',
+      password: 'pg',
+      port: 5432,
+    });
+    console.log('Database connection established');
+
+    this.defaultDb.query("SELECT to_regclass('public.users')")
+      .then(data => {
+        if (!data[0].to_regclass) {
+          console.log('Creating users table...');
+          return this.defaultDb.none(`
+          CREATE TABLE users(
+            id SERIAL PRIMARY KEY,
+            username TEXT UNIQUE,
+            password TEXT,
+            email TEXT UNIQUE,
+            gender TEXT,
+            date_of_birth DATE,
+            bio TEXT,
+            profile_picture TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
         }
-        req.user = user; // Set the user object in the request
-        next(); // Call the next middleware
+      })
+      .then(() => {
+        console.log('Table users is ready');
+        this.defaultDb.query("INSERT INTO users(username, password) VALUES('admin', 'admin')")
+          .catch(error => {
+            if (error.message.includes('users_username_key')) {
+              console.error('Username already exists');
+            } else {
+              console.error('Error inserting user', error);
+            }
+          });
+      })
+      .catch(error => {
+        console.error('Error checking or creating users table', error);
+      });
+  }
+
+  // Used to start the server
+  start() {
+    this.server.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
     });
-};
+  }
 
-// Add the following routes to the server.js file
-app.post('/register', async (req, res) => { // Create a new user
-    const { username, password } = req.body; // Get the username and password from the request body
-    const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
-    users.push({ username, password: hashedPassword }); // Add the user to the users array
-    res.status(201).json({ message: 'User registered successfully' }); // Return a success message
-});
+  // Used to close the server when testing
+  closeServer(done) {
+    this.server.close(done);
+    console.log(`Server on port ${PORT} is closed`);
+  }
+}
 
-// Add the following routes to the server.js file
-app.post('/login', async (req, res) => { // Login a user
-    const { username, password } = req.body; // Get the username and password from the request body
-    const user = users.find(u => u.username === username); // Find the user by username
-    if (user && await bcrypt.compare(password, user.password)) { // Check if the user exists and the password is correct
-        const token = jwt.sign({ userId: user.username }, secretKey, { expiresIn: '1h' }); // Sign a new token
-        res.json({ token }); // Return the token
-    } else {
-        res.status(401).json({ message: 'Invalid credentials' }); // Return an error message
-    }
-});
-
-// Add the following routes to the server.js file
-app.get('/profile', authMiddleware, (req, res) => { // Get the user profile
-    res.json({ message: `Hello, user ${req.user.userId}` }); // Return a message with the user ID
-});
-
-// Add the following routes to the server.js file
-io.use((socket, next) => { // Middleware to authenticate the user
-    const token = socket.handshake.auth.token; // Get the token from the handshake
-    if (!token) {
-        return next(new Error('Authentication error')); // Return an error if the token is missing
-    }
-
-    jwt.verify(token, secretKey, (err, decoded) => { // Verify the token
-        if (err) {
-            return next(new Error('Authentication error')); // Return an error if the token is invalid
-        }
-        socket.userId = decoded.userId; // Set the user ID in the socket object
-        next(); // Call the next middleware
-    });
-});
-
-// Add the following routes to the server.js file
-io.on('connection', (socket) => { // Handle incoming connections
-    console.log('User connected:', socket.userId); // Log the user ID
-
-    socket.on('message', (msg) => { // Handle incoming messages
-        io.emit('message', { userId: socket.userId, msg }); // Broadcast the message to all connected users
-    });
-
-    socket.on('disconnect', () => { // Handle disconnections
-        console.log('User disconnected:', socket.userId); // Log the user ID
-    });
-});
-
-// Add the following routes to the server.js file
-server.listen(1337, () => { // Start the server
-    console.log('Server running on port 1337'); // Log a message
-});
+const server = new Server();
+server.start();
