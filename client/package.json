@@ -2,17 +2,17 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:80",
+  "proxy": "https://localhost:443",
   "dependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.7.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-scripts": "5.0.1",
-    "socket.io-client": "^4.7.5",
-    "web-vitals": "^2.1.4"
+    "@testing-library/jest-dom": "Latest",
+    "@testing-library/react": "Latest",
+    "@testing-library/user-event": "Latest",
+    "axios": "Latest",
+    "react": "Latest",
+    "react-dom": "Latest",
+    "react-scripts": "Latest",
+    "socket.io-client": "Latest",
+    "web-vitals": "Latest"
   },
   "scripts": {
     "start": "cross-env HTTPS=true react-scripts start",
@@ -39,6 +39,6 @@
     ]
   },
   "devDependencies": {
-    "cross-env": "^7.0.3"
+    "cross-env": "Latest"
   }
 }

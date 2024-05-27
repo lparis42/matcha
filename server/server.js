@@ -5,13 +5,12 @@ const https = require('https');
 const fs = require('fs');
 const socketIo = require('socket.io');
 const pgp = require('pg-promise')();
-
-const PORT = process.env.PORT || 443;
-const DEV_PORT = 3000;
+const bcrypt = require('bcrypt');
+const database = require('./database');
 
 class Server {
   constructor() {
-    this.app = express();
+    this.app = express()
     this.configureMiddleware();
     this.configureRoutes();
     this.configureHttpsServer();
@@ -22,7 +21,7 @@ class Server {
   // Used to configure the middleware
   configureMiddleware() {
     this.app.use(cors({
-      origin: [`https://localhost:${PORT}`, `https://localhost:${DEV_PORT}`],
+      origin: [`https://localhost:${process.env.PORT}`],
       methods: ['GET', 'POST'],
       credentials: true,
     }));
@@ -50,7 +49,7 @@ class Server {
   configureSocketIO() {
     this.io = socketIo(this.server, {
       cors: {
-        origin: [`https://localhost:${PORT}`, `https://localhost:${DEV_PORT}`],
+        origin: [`https://localhost:${process.env.PORT}`],
         methods: ['GET', 'POST'],
         credentials: true,
       }
@@ -67,62 +66,56 @@ class Server {
 
   // Used to create the database and table
   configureDatabase() {
-    this.defaultDb = pgp({
-      user: 'postgres',
-      host: 'localhost',
-      database: 'postgres',
-      password: 'pg',
-      port: 5432,
-    });
-    console.log('Database connection established');
+    // Used to create database instance
+    this.db = new database('postgres', 'localhost', 'postgres', 'pg', 5432);
 
-    this.defaultDb.query("SELECT to_regclass('public.users')")
-      .then(data => {
-        if (!data[0].to_regclass) {
-          console.log('Creating users table...');
-          return this.defaultDb.none(`
-          CREATE TABLE users(
-            id SERIAL PRIMARY KEY,
-            username TEXT UNIQUE,
-            password TEXT,
-            email TEXT UNIQUE,
-            gender TEXT,
-            date_of_birth DATE,
-            bio TEXT,
-            profile_picture TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-          )
-        `);
-        }
+    // Used to connect to the database
+    this.db.connect()
+      .then(() => {
+        return this.db.dropTable('users');
       })
       .then(() => {
-        console.log('Table users is ready');
-        this.defaultDb.query("INSERT INTO users(username, password) VALUES('admin', 'admin')")
-          .catch(error => {
-            if (error.message.includes('users_username_key')) {
-              console.error('Username already exists');
-            } else {
-              console.error('Error inserting user', error);
-            }
-          });
+        const columns = [
+          `id SERIAL PRIMARY KEY`,
+          `username VARCHAR(20) UNIQUE CHECK (char_length(username) BETWEEN 6 AND 20 AND username ~ '^[A-Za-z0-9]+$')`,
+          `password VARCHAR(60)`,
+          `email VARCHAR(50) UNIQUE CHECK (char_length(email) BETWEEN 6 AND 50 AND email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')`,
+          `last_name VARCHAR(35)`,
+          `first_name VARCHAR(35)`,
+          `date_of_birth DATE CHECK (date_of_birth BETWEEN '1900-01-01' AND '2021-12-31')`,
+          `gender VARCHAR(35) CHECK (gender IN ('Male', 'Female', 'Other'))`,
+          `sexual_orientation VARCHAR(35) CHECK (sexual_orientation IN ('Heterosexual', 'Bisexual', 'Homosexual', 'Other'))`,
+          `biography VARCHAR(255)`,
+          `interests VARCHAR(50)[10]`,
+          `pictures VARCHAR(255)[5] DEFAULT ARRAY['defaut.jpg']::VARCHAR(255)[]`,
+          `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
+          `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
+        ];
+        return this.db.createTable('users', columns);
       })
-      .catch(error => {
-        console.error('Error checking or creating users table', error);
+      .then(() => {
+        const row = {
+          columns: ['username', 'password'],
+          values: ['matcha42', 'matcha42'],
+        };
+        return this.db.insert('users', row);
+      })
+      .catch((err) => {
+        console.error(err);
       });
   }
 
   // Used to start the server
   start() {
-    this.server.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+    this.server.listen(process.env.PORT, () => {
+      console.log(`Server is running on port ${process.env.PORT}`);
     });
   }
 
   // Used to close the server when testing
   closeServer(done) {
     this.server.close(done);
-    console.log(`Server on port ${PORT} is closed`);
+    console.log(`Server on port ${process.env.PORT} is closed`);
   }
 }
 
