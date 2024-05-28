@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cross-env PORT=443 pm2 start server.js",
-    "dev": "cross-env PORT=443 pm2 start server.js --watch && pm2 logs"
+    "dev": "cross-env PORT=443 pm2-dev start server.js"
   },
   "keywords": [],
   "author": "",

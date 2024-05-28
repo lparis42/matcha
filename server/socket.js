@@ -15,7 +15,7 @@ class Socket {
         });
 
         this.io.on('connection', (socket) => {
-            console.log(`${this.constructor.name} -> Client '${socket.id}' has connected`);
+            console.log(`${this.constructor.name} -> '${socket.id}' has connected`);
 
             socket.on('logout', (cb) => { this.logoutUser(socket, cb) });
             socket.on('register', (data, cb) => { this.registerUser(socket, data, cb) });
@@ -24,7 +24,7 @@ class Socket {
             socket.on('edit', (data, cb) => { this.editUser(socket, data, cb) });
 
             socket.on('disconnect', () => {
-                console.log(`${this.constructor.name} -> Client '${socket.id}' has disconnected`);
+                console.log(`${this.constructor.name} -> '${socket.id}' has disconnected`);
                 delete online.users[socket.id];
             });
         });
@@ -38,7 +38,7 @@ class Socket {
             }
             const username = online.users[socket.id].username;
             delete online.users[socket.id];
-            console.log(`${this.constructor.name} -> Client '${socket.id}' has logged out with username '${username}'`);
+            console.log(`${this.constructor.name} -> '${socket.id}' has logged out with username '${username}'`);
             cb(null, 'User logged out');
         } catch (err) {
             console.error(`${this.constructor.name} -> ${err}`);
@@ -50,7 +50,7 @@ class Socket {
     async registerUser(socket, data, cb) {
         try {
             await this.db.insert('users', data);
-            console.log(`${this.constructor.name} -> Client '${socket.id}' has registered with username '${data.username}'`);
+            console.log(`${this.constructor.name} -> '${socket.id}' has registered with username '${data.username}'`);
             cb(null, 'User registered');
         } catch (err) {
             console.error(`${this.constructor.name} -> ${err.message}`);
@@ -75,7 +75,7 @@ class Socket {
             }
             // 3. Add the user to the online list
             online.users[socket.id] = { username: data.username };
-            console.log(`${this.constructor.name} -> Client '${socket.id}' has logged in with username '${data.username}'`);
+            console.log(`${this.constructor.name} -> '${socket.id}' has logged in with username '${data.username}'`);
             cb(null, 'User logged in');
         } catch (err) {
             console.error(`${this.constructor.name} -> ${err.message}`);
@@ -112,7 +112,7 @@ class Socket {
                 text: `Your new password is ${newPassword}`
             };
             await transporter.sendMail(mailOptions);
-            console.log(`${this.constructor.name} -> Client '${socket.id}' has requested a new password by email '${email}'`);
+            console.log(`${this.constructor.name} -> '${socket.id}' has requested a new password by email '${email}'`);
             cb(null, 'New password sent by email');
         } catch (err) {
             console.error(`${this.constructor.name} -> ${err.message}`);
@@ -128,7 +128,7 @@ class Socket {
                 throw `${this.constructor.name} -> User not logged in`;
             }
             await this.db.update('users', data, `username = '${username}'`);
-            console.log(`${this.constructor.name} -> Client '${socket.id}' has edited the user with username '${username}'`);
+            console.log(`${this.constructor.name} -> '${socket.id}' has edited the user with username '${username}'`);
             cb(null, 'User edited');
         } catch (err) {
             console.error(`${this.constructor.name} -> ${err}`);
