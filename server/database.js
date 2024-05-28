@@ -19,9 +19,9 @@ class Database {
     async connect() {
         try {
             await this.pgp.connect();
-            return `${this.constructor.name}: Connected to the database '${this.pgp.$cn.database}'`;
+            return `${this.constructor.name} -> Connected to the database '${this.pgp.$cn.database}'`;
         } catch (err) {
-            throw new Error(`${this.constructor.name}: ${err}`);
+            throw new Error(`${this.constructor.name} -> ${err}`);
         }
     }
 
@@ -29,9 +29,9 @@ class Database {
     async create(table, columns) {
         try {
             await this.pgp.none(`CREATE TABLE IF NOT EXISTS ${table}(${columns})`);
-            return `${this.constructor.name}: The table '${table}' has been created`;
+            return `${this.constructor.name} -> The table '${table}' has been created`;
         } catch (err) {
-            throw new Error(`${this.constructor.name}: ${err}`);
+            throw new Error(`${this.constructor.name} -> ${err}`);
         }
     }
 
@@ -39,9 +39,9 @@ class Database {
     async drop(table) {
         try {
             await this.pgp.none(`DROP TABLE IF EXISTS ${table}`);
-            return `${this.constructor.name}: The table '${table}' has been dropped`;
+            return `${this.constructor.name} -> The table '${table}' has been dropped`;
         } catch (err) {
-            throw new Error(`${this.constructor.name}: ${err}`);
+            throw new Error(`${this.constructor.name} -> ${err}`);
         }
     }
 
@@ -52,9 +52,9 @@ class Database {
             const columns = Object.keys(row);
             const insert = pgp.helpers.insert(row, columns, table);
             await this.pgp.none(insert);
-            return `${this.constructor.name}: A record has been inserted in the table '${table}'`;
+            return `${this.constructor.name} -> A record has been inserted in the table '${table}'`;
         } catch (err) {
-            throw new Error(`${this.constructor.name}: ${err}`);
+            throw new Error(`${this.constructor.name} -> ${err}`);
         }
     }
 
@@ -62,9 +62,9 @@ class Database {
     async delete(table, condition) {
         try {
             await this.pgp.none(`DELETE FROM ${table} WHERE ${condition}`);
-            return `${this.constructor.name}: A record has been successfully deleted from the table '${table}'.`;
+            return `${this.constructor.name} -> A record has been successfully deleted from the table '${table}'.`;
         } catch (err) {
-            throw new Error(`${this.constructor.name}: ${err}`);
+            throw new Error(`${this.constructor.name} -> ${err}`);
         }
     }
 
@@ -74,33 +74,33 @@ class Database {
             const data = await this.pgp.any(`SELECT ${columns} FROM ${table} WHERE ${condition}`);
             return data;
         } catch (err) {
-            throw new Error(`${this.constructor.name}: ${err}`);
+            throw new Error(`${this.constructor.name} -> ${err}`);
         }
     }
 
     // To update a record in a table
     async update(table, row, condition) {
         try {
-            row = await this.hashPasswordIfPresent(row);
+            await this.hashPasswordIfPresent(row);
             const columns = Object.keys(row);
             const update = pgp.helpers.update(row, columns, table) + ' WHERE ' + condition;
             await this.pgp.none(update);
-            return `${this.constructor.name}: A record has been updated in the table '${table}'`;
+            return `${this.constructor.name} -> A record has been updated in the table '${table}'`;
         } catch (err) {
-            throw new Error(`${this.constructor.name}: ${err}`);
+            throw new Error(`${this.constructor.name} -> ${err}`);
         }
     }
 
     // To upsert a record in a table
     async upsert(table, row, condition) {
         try {
-            row = await this.hashPasswordIfPresent(row);
+            await this.hashPasswordIfPresent(row);
             const columns = Object.keys(row);
             const upsert = pgp.helpers.insert(row, columns, table) + ' ON CONFLICT (' + condition + ') DO UPDATE SET ' + pgp.helpers.sets(row, columns);
             await this.pgp.none(upsert);
-            return `${this.constructor.name}: A record has been upserted in the table '${table}'`;
+            return `${this.constructor.name} -> A record has been upserted in the table '${table}'`;
         } catch (err) {
-            throw new Error(`${this.constructor.name}: ${err}`);
+            throw new Error(`${this.constructor.name} -> ${err}`);
         }
     }
 
@@ -110,14 +110,14 @@ class Database {
             const { password } = row;
             if (password) {
                 if (!validator.isAlphanumeric(password) || !validator.isLength(password, { min: 8, max: 20 })) {
-                    throw `${this.constructor.name}: Password must be alphanumeric and between 8 and 20 characters`;
+                    throw `${this.constructor.name} -> Password must be alphanumeric and between 8 and 20 characters`;
                 } else {
                     const hashedPassword = await bcrypt.hash(password, 10);
                     row.password = hashedPassword;
                 }
             }
         } catch (err) {
-            throw new Error(`${this.constructor.name}: ${err}`);
+            throw new Error(`${this.constructor.name} -> ${err}`);
         }
     }
 }
