@@ -6,7 +6,13 @@ const nodemailer = require('nodemailer');
 class Socket {
     constructor(server, db) {
         this.db = db;
-        this.io = socketIo(server);
+        this.io = socketIo(server, {
+            cors: {
+                origin: `https://localhost:${process.env.PORT}`,
+                methods: ['GET', 'POST'],
+                credentials: true
+            }
+        });
 
         this.io.on('connection', (socket) => {
             console.log(`${this.constructor.name} -> Client '${socket.id}' has connected`);
@@ -15,6 +21,7 @@ class Socket {
             socket.on('register', (data, cb) => { this.registerUser(socket, data, cb) });
             socket.on('login', (data, cb) => { this.loginUser(socket, data, cb) });
             socket.on('forgot', (data, cb) => { this.forgotPassword(socket, data, cb) });
+            socket.on('edit', (data, cb) => { this.editUser(socket, data, cb) });
 
             socket.on('disconnect', () => {
                 console.log(`${this.constructor.name} -> Client '${socket.id}' has disconnected`);
@@ -110,6 +117,22 @@ class Socket {
         } catch (err) {
             console.error(`${this.constructor.name} -> ${err.message}`);
             cb(`${err.message}`);
+        }
+    }
+
+    // Method to edit users
+    async editUser(socket, data, cb) {
+        try {
+            const { username } = online.users[socket.id];
+            if (!username) {
+                throw `${this.constructor.name} -> User not logged in`;
+            }
+            await this.db.update('users', data, `username = '${username}'`);
+            console.log(`${this.constructor.name} -> Client '${socket.id}' has edited the user with username '${username}'`);
+            cb(null, 'User edited');
+        } catch (err) {
+            console.error(`${this.constructor.name} -> ${err}`);
+            cb(err);
         }
     }
 }

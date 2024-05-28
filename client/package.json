@@ -1,44 +1,27 @@
 {
   "name": "client",
-  "version": "0.1.0",
   "private": true,
-  "proxy": "https://localhost:443",
-  "dependencies": {
-    "@testing-library/jest-dom": "Latest",
-    "@testing-library/react": "Latest",
-    "@testing-library/user-event": "Latest",
-    "axios": "Latest",
-    "react": "Latest",
-    "react-dom": "Latest",
-    "react-scripts": "Latest",
-    "socket.io-client": "Latest",
-    "web-vitals": "Latest"
-  },
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "start": "cross-env HTTPS=true react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "react": "latest",
+    "react-dom": "latest",
+    "socket.io-client": "latest"
   },
   "devDependencies": {
-    "cross-env": "Latest"
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react-swc": "latest",
+    "eslint": "latest",
+    "eslint-plugin-react": "latest",
+    "eslint-plugin-react-hooks": "latest",
+    "eslint-plugin-react-refresh": "latest",
+    "vite": "latest"
   }
 }

@@ -25,20 +25,14 @@ class Server {
 
   // Used to configure the middleware
   configureMiddleware() {
-    this.app.use(cors({
-      origin: [`https://localhost:${process.env.PORT}`],
-      methods: ['GET', 'POST'],
-      credentials: true,
-    }));
-    this.app.use(express.json());
-    this.app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+    this.app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
     console.log(`${this.constructor.name} -> Middleware configured`);
   }
 
   // Used to create the routes
   configureRoutes() {
     this.app.get('/', (req, res) => {
-      res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
+      res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
     });
     console.log(`${this.constructor.name} -> Routes configured`);
   }
