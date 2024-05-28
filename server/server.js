@@ -3,10 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const https = require('https');
 const fs = require('fs');
-const socketIo = require('socket.io');
-const pgp = require('pg-promise')();
-const bcrypt = require('bcrypt');
 const Database = require('./database');
+const Socket = require('./socket');
 
 class Server {
 
@@ -16,8 +14,9 @@ class Server {
     this.configureMiddleware();
     this.configureRoutes();
     this.configureHttpsServer();
-    this.configureSocketIO();
     await this.configureDatabase();
+
+    this.configureSocketIO();
 
     this.server.listen(process.env.PORT, () => {
       console.log(`${this.constructor.name}: Listening on port ${process.env.PORT}`);
@@ -25,7 +24,7 @@ class Server {
   }
 
   // Used to configure the middleware
-  async configureMiddleware() {
+  configureMiddleware() {
     this.app.use(cors({
       origin: [`https://localhost:${process.env.PORT}`],
       methods: ['GET', 'POST'],
@@ -37,7 +36,7 @@ class Server {
   }
 
   // Used to create the routes
-  async configureRoutes() {
+  configureRoutes() {
     this.app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
     });
@@ -45,7 +44,7 @@ class Server {
   }
 
   // Used to create the HTTPS server
-  async configureHttpsServer() {
+  configureHttpsServer() {
     this.server = https.createServer({
       key: fs.readFileSync('./server.key'),
       cert: fs.readFileSync('./server.cert'),
@@ -55,22 +54,8 @@ class Server {
   }
 
   // Used to create the socket server
-  async configureSocketIO() {
-    this.io = socketIo(this.server, {
-      cors: {
-        origin: [`https://localhost:${process.env.PORT}`],
-        methods: ['GET', 'POST'],
-        credentials: true,
-      }
-    });
-
-    this.io.on('connection', (socket) => {
-      console.log('A user connected', socket.id);
-
-      socket.on('disconnect', () => {
-        console.log('User disconnected');
-      });
-    });
+  configureSocketIO() {
+    this.socket = new Socket(this.server, this.db);
     console.log(`${this.constructor.name}: Socket.IO configured`);
   }
 
@@ -79,14 +64,9 @@ class Server {
     this.db = new Database('postgres', 'localhost', 'postgres', 'pg', 5432);
 
     await this.db.connect();
-    await this.db.drop('users');
-    const users_columns = require('./variables').User.columns;
+    await this.db.drop('users'); // For testing purposes
+    const users_columns = require('./variables').database.users.columns;
     await this.db.create('users', users_columns);
-    const row = {
-      username: 'matcha42',
-      password: 'matcha42',
-    };
-    await this.db.insert('users', row);
     console.log(`${this.constructor.name}: Database configured`);
   }
 
