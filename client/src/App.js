@@ -17,7 +17,10 @@ const App = () => {
       const userData = {
         username: 'testuser',
         password: 'testpassword',
-        // Ajoutez d'autres champs si nécessaire
+        email: 'test@test.fr',
+        last_name: 'Test',
+        first_name: 'User',
+        date_of_birth: '2000-01-01',
       };
 
       socket.emit('register', userData, (err, message) => {
