@@ -21,7 +21,6 @@
     "jsonwebtoken": "latest",
     "matcha": "file:..",
     "nodemailer": "^6.9.13",
-    "nodemailer-direct-transport": "^3.3.2",
     "npm": "latest",
     "pg": "latest",
     "pg-promise": "latest",
