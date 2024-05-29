@@ -5,9 +5,10 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "init": "pm2 init",
     "close": "pm2 delete all",
-    "start": "pm2 start server.js || pm2 restart server.js",
-    "dev": "pm2-dev start server.js || pm2-dev restart server.js"
+    "start": "pm2 start ecosystem.prod.config.js && pm2 monit",
+    "dev": "pm2-dev start ecosystem.dev.config.js"
   },
   "keywords": [],
   "author": "",

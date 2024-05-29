@@ -6,6 +6,11 @@ const Socket = require('./socket');
 const Database = require('./database');
 const constant = require('./constant');
 
+if (process.env.NODE_ENV !== 'development') {
+  console.log = function() {};
+  console.error = function() {};
+}
+
 class Server {
 
   // Used to start the server
@@ -36,8 +41,12 @@ class Server {
 
     this.app.get('/confirm', (req, res) => {
 
-      //res.redirect('/');
-      res.redirect('http://localhost:5173/');
+      if (process.env.NODE_ENV === 'development') {
+        res.redirect('http://localhost:5173/');
+      }
+      else {
+        res.redirect('/');
+      }
       this.socket.io.on('connection', async (socket) => {
         try {
           const username = req.query.username;
