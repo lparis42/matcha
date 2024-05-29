@@ -33,6 +33,30 @@ class Server {
     this.app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
     });
+
+    this.app.get('/confirm', (req, res) => {
+
+      //res.redirect('/');
+      res.redirect('http://localhost:5173/');
+      this.socket.io.on('connection', async (socket) => {
+        try {
+          const username = req.query.username;
+          const user = (await this.db.select('users', '*', `username = '${username}'`))[0];
+          if (!user) {
+            throw `User ${username} not found`;
+          }
+          if (user.created_at < new Date(Date.now() - 1 * 60 * 60 * 1000)) {
+            throw `User ${username} registration has expired`;
+          }
+          await this.db.update('users', { activated: true }, `username = '${username}'`);
+
+          console.log(`${socket.id} - Registration confirmed for username '${username}'`);
+        } catch (error) {
+          console.error(`Registration confirmation failed: ${error}`);
+        }
+      });
+    });
+
     console.log(`Routes configured`);
   }
 

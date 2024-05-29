@@ -9,16 +9,21 @@ class Socket {
         this.online = {
             users: {},
         };
+        this.transporter = nodemailer.createTransport({
+            host: 'mail.smtpbucket.com', // Using SMTP Bucket for testing
+            port: 8025,
+            ignoreTLS: true, // TLS is a security feature, but not needed for testing
+        });
 
         this.io.on('connection', (socket) => {
             console.log(`${socket.id} - New connection`);
 
             socket.on('client:logout', (cb) => { this.handleClientLogout(socket, cb) });
-            socket.on('client:register', (data, cb) => { this.handleClientRegister(socket, data, cb) });
+            socket.on('client:registration', (data, cb) => { this.handleClientRegistration(socket, data, cb) });
             socket.on('client:login', (data, cb) => { this.handleClientLogin(socket, data, cb) });
             socket.on('client:password_reset', (data, cb) => { this.handleClientPasswordReset(socket, data, cb) });
             socket.on('client:edit', (data, cb) => { this.handleClientEditProfil(socket, data, cb) });
-            
+
             socket.on('disconnect', () => {
                 console.log(`${socket.id} - Disconnected`);
                 delete this.online.users[socket.id];
@@ -27,7 +32,7 @@ class Socket {
     }
 
     // Method to logout users
-    handleClientLogout(socket, cb) {
+    async handleClientLogout(socket, cb) {
         try {
             if (!this.online.users[socket.id]) {
                 throw `Not logged in`;
@@ -42,37 +47,52 @@ class Socket {
         }
     }
 
-    // Method to register users
-    async handleClientRegister(socket, data, cb) {
+    // Method to Registration users
+    async handleClientRegistration(socket, data, cb) {
         try {
+            if (this.online.users[socket.id]) {
+                throw `Cannot register while logged in`;
+            }
             await this.db.insert('users', data);
-            console.log(`${socket.id} - Register with username '${data.username}'`);
-            cb(null, 'Registered');
+            await this.transporter.sendMail({
+                from: 'email@server.com',
+                to: data.email,
+                subject: 'Account registration',
+                html: `Here is the link to confirm your registration:
+                <a href="https://localhost:443/confirm?username=${data.username}">
+                https://localhost:443/confirm?username=${data.username}
+                </a>`
+            });
+            console.log(`${socket.id} - Confirmation email sent to '${data.email}'`);
+            cb(null, 'Confirmation email sent');
         } catch (err) {
             cb(err);
-            console.error(`${socket.id} - Register error: ${err}`);
+            console.error(`${socket.id} - Registration error: ${err}`);
         }
     }
 
     // Method to login users
     async handleClientLogin(socket, data, cb) {
         try {
+            if (this.online.users[socket.id]) {
+                throw `Already logged in`;
+            }
             const { username, password } = data;
-            // 1. Find the user
             const users = await this.db.select('users', '*', `username = '${username}'`);
             const user = users[0];
             if (!user) {
                 throw `Username '${username}' not found`;
             }
-            // 2. Compare the password
+            if (!user.activated) {
+                throw `Username '${username}' not activated`;
+            }
             const match = await bcrypt.compare(password, user.password);
             if (!match) {
                 throw `Password mismatch for username '${username}'`;
             }
-            // 3. Add the user to the online list
             this.online.users[socket.id] = { username: data.username };
-            console.log(`${socket.id} - Login with username '${username}'`);
             cb(null, 'User logged in');
+            console.log(`${socket.id} - Login with username '${username}'`);
         } catch (err) {
             cb(err);
             console.error(`${socket.id} - Login error: ${err}`);
@@ -82,33 +102,25 @@ class Socket {
     // Method to send a new password by email
     async handleClientPasswordReset(socket, data, cb) {
         try {
-            // Check if the user is logged in
             if (this.online.users[socket.id]) {
                 throw `Cannot reset password while logged in`;
             }
             const { email } = data;
-            // 1. Find the user
-            const users = await this.db.select('users', '*', `email = '${email}'`);
-            const user = users[0];
+            const user = (await this.db.select('users', '*', `email = '${email}'`))[0];
             if (!user) {
                 throw `Email '${email}' not found`;
             }
-            // 2. Update the user
-            const newPassword = Math.random().toString(36).slice(-8);
-            await this.db.update('users', { password: newPassword }, `email = '${email}'`);
-            // 3. Send the new password by email
-            let transporter = nodemailer.createTransport({
-                host: 'mail.smtpbucket.com', // Using SMTP Bucket for testing
-                port: 8025,
-                ignoreTLS: true, // TLS is a security feature, but not needed for testing
-            });
-            let mailOptions = {
+            if (!user.activated) {
+                throw `Username '${row.username}' not activated`;
+            }
+            const password = Math.random().toString(36).slice(-8);
+            await this.db.update('users', { password: password }, `email = '${email}'`);
+            await this.transporter.sendMail({
                 from: 'email@server.com',
                 to: email,
-                subject: 'Your new password',
-                text: `Your new password is ${newPassword}`
-            };
-            await transporter.sendMail(mailOptions);
+                subject: 'New password',
+                html: `Your new password is: ${password}`
+            });
             console.log(`${socket.id} - New password sent by email to '${email}'`);
             cb(null, 'New password sent by email');
         } catch (err) {

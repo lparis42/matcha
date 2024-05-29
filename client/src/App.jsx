@@ -25,8 +25,8 @@ const App = () => {
       
       // For testing purposes ****************************************************
 
-      // Register
-      socket.emit('client:register', userData, (err, message) => {
+      // Registration
+      socket.emit('client:registration', userData, (err, message) => {
         if (err) {
           console.error('Error:', err);
         } else {

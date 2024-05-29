@@ -29,6 +29,7 @@ const constant = {
         `biography VARCHAR(255)`,
         `interests VARCHAR(50)[10]`,
         `pictures VARCHAR(255)[5] DEFAULT ARRAY['defaut.jpg']::VARCHAR(255)[]`,
+        `activated BOOLEAN DEFAULT FALSE`,
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],
