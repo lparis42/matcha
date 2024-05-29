@@ -27,7 +27,7 @@ class Socket {
 
             socket.on('disconnect', () => {
                 console.log(`${this.constructor.name} - ${socket.id} - Disconnected`);
-                delete online.users[socket.id];
+                delete this.online.users[socket.id];
             });
         });
     }
@@ -35,11 +35,11 @@ class Socket {
     // Method to logout users
     logoutUser(socket, cb) {
         try {
-            if (!online.users[socket.id]) {
+            if (!this.online.users[socket.id]) {
                 throw new Error(`${this.constructor.name} - Not logged in`);
             }
-            const username = online.users[socket.id].username;
-            delete online.users[socket.id];
+            const username = this.online.users[socket.id].username;
+            delete this.online.users[socket.id];
             console.log(`${this.constructor.name} - ${socket.id} - Logout with username '${username}'`);
             cb(null, 'Logged out');
         } catch (err) {
@@ -78,7 +78,7 @@ class Socket {
                 throw new Error(`${this.constructor.name} - Incorrect password`);
             }
             // 3. Add the user to the online list
-            online.users[socket.id] = { username: data.username };
+            this.online.users[socket.id] = { username: data.username };
             console.log(`${this.constructor.name} - ${socket.id} - Username '${username}' logged in`);
             cb(null, 'User logged in');
         } catch (err) {
@@ -126,7 +126,7 @@ class Socket {
     // Method to edit users
     async editUser(socket, data, cb) {
         try {
-            const { username } = online.users[socket.id];
+            const { username } = this.online.users[socket.id];
             if (!username) {
                 throw new Error(`${this.constructor.name} - .editUser -> User not logged in`);
             }
