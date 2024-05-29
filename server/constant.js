@@ -1,4 +1,19 @@
+const https = {
+  options: {
+    key: 'server.key',
+    cert: 'server.cert',
+    passphrase: 'matcha',
+  },
+};
+
 const database = {
+  connection_parameters: {
+    user: 'postgres',
+    host: 'localhost',
+    database: 'postgres',
+    password: 'pg',
+    port: 5432,
+  },
   users: {
     columns: [
       `id SERIAL PRIMARY KEY`,
@@ -19,8 +34,4 @@ const database = {
   },
 };
 
-const online = {
-  users: {},
-};
-
-module.exports = { database, online };
+module.exports = { https, database };

@@ -1,11 +1,9 @@
 const socketIo = require('socket.io');
-const { online } = require('./variables');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 
 class Socket {
     constructor(server, db) {
-        this.db = db;
         this.io = socketIo(server, {
             cors: {
                 origin: `https://localhost:${process.env.PORT}`,
@@ -13,9 +11,13 @@ class Socket {
                 credentials: true
             }
         });
+        this.db = db;
+        this.online = {
+            users: {},
+        };
 
         this.io.on('connection', (socket) => {
-            console.log(`${this.constructor.name} -> '${socket.id}' has connected`);
+            console.log(`${this.constructor.name} - ${socket.id} - New connection`);
 
             socket.on('logout', (cb) => { this.logoutUser(socket, cb) });
             socket.on('register', (data, cb) => { this.registerUser(socket, data, cb) });
@@ -24,7 +26,7 @@ class Socket {
             socket.on('edit', (data, cb) => { this.editUser(socket, data, cb) });
 
             socket.on('disconnect', () => {
-                console.log(`${this.constructor.name} -> '${socket.id}' has disconnected`);
+                console.log(`${this.constructor.name} - ${socket.id} - Disconnected`);
                 delete online.users[socket.id];
             });
         });
@@ -34,15 +36,16 @@ class Socket {
     logoutUser(socket, cb) {
         try {
             if (!online.users[socket.id]) {
-                throw `${this.constructor.name} -> User not logged in`;
+                throw new Error(`${this.constructor.name} - Not logged in`);
             }
             const username = online.users[socket.id].username;
             delete online.users[socket.id];
-            console.log(`${this.constructor.name} -> '${socket.id}' has logged out with username '${username}'`);
-            cb(null, 'User logged out');
+            console.log(`${this.constructor.name} - ${socket.id} - Logout with username '${username}'`);
+            cb(null, 'Logged out');
         } catch (err) {
-            console.error(`${this.constructor.name} -> ${err}`);
-            cb(err);
+            const error = `${this.constructor.name} - ${err.message}`;
+            cb(error);
+            throw new Error(error);
         }
     }
 
@@ -50,11 +53,12 @@ class Socket {
     async registerUser(socket, data, cb) {
         try {
             await this.db.insert('users', data);
-            console.log(`${this.constructor.name} -> '${socket.id}' has registered with username '${data.username}'`);
-            cb(null, 'User registered');
+            console.log(`${this.constructor.name} - ${socket.id} - Register with username '${data.username}'`);
+            cb(null, 'Registered');
         } catch (err) {
-            console.error(`${this.constructor.name} -> ${err.message}`);
-            cb(`${err.message}`);
+            const error = `${this.constructor.name} - ${err.message}`;
+            cb(error);
+            throw new Error(error);
         }
     }
 
@@ -66,20 +70,21 @@ class Socket {
             const users = await this.db.select('users', '*', `username = '${username}'`);
             const user = users[0];
             if (!user) {
-                throw `${this.constructor.name} -> User '${username}' not found`;
+                throw new Error(`${this.constructor.name} - Username '${username}' not found`);
             }
             // 2. Compare the password
             const match = await bcrypt.compare(password, user.password);
             if (!match) {
-                throw `${this.constructor.name} -> Incorrect password for user '${username}'`;
+                throw new Error(`${this.constructor.name} - Incorrect password`);
             }
             // 3. Add the user to the online list
             online.users[socket.id] = { username: data.username };
-            console.log(`${this.constructor.name} -> '${socket.id}' has logged in with username '${data.username}'`);
+            console.log(`${this.constructor.name} - ${socket.id} - Username '${username}' logged in`);
             cb(null, 'User logged in');
         } catch (err) {
-            console.error(`${this.constructor.name} -> ${err.message}`);
-            cb(`${err.message}`);
+            const error = `${this.constructor.name} - ${err.message}`;
+            cb(error);
+            throw new Error(error);
         }
     }
 
@@ -91,19 +96,16 @@ class Socket {
             const users = await this.db.select('users', '*', `email = '${email}'`);
             const user = users[0];
             if (!user) {
-                throw `${this.constructor.name} -> User with email '${email}' not found`;
+                throw new Error(`${this.constructor.name} - Email '${email}' not found`);
             }
             // 2. Update the user
-            const newPassword = Math.random().toString(36).slice(-8);     
+            const newPassword = Math.random().toString(36).slice(-8);
             await this.db.update('users', { password: newPassword }, `email = '${email}'`);
             // 3. Send the new password by email
             let transporter = nodemailer.createTransport({
-                host: 'sandbox.smtp.mailtrap.io', // Using mailtrap for testing
-                port: 2525,
-                auth: {
-                    user: '9caf58c4d412ae',
-                    pass: '4a4ec4660f87d5'
-                }
+                host: 'mail.smtpbucket.com', // Using SMTP Bucket for testing
+                port: 8025,
+                ignoreTLS: true, // TLS is a security feature, but not needed for testing
             });
             let mailOptions = {
                 from: 'email@server.com',
@@ -112,11 +114,12 @@ class Socket {
                 text: `Your new password is ${newPassword}`
             };
             await transporter.sendMail(mailOptions);
-            console.log(`${this.constructor.name} -> '${socket.id}' has requested a new password by email '${email}'`);
+            console.log(`${this.constructor.name} - ${socket.id} - New password sent by email to '${email}'`);
             cb(null, 'New password sent by email');
         } catch (err) {
-            console.error(`${this.constructor.name} -> ${err.message}`);
-            cb(`${err.message}`);
+            const error = `${this.constructor.name} - ${err.message}`;
+            cb(error);
+            throw new Error(error);
         }
     }
 
@@ -125,14 +128,15 @@ class Socket {
         try {
             const { username } = online.users[socket.id];
             if (!username) {
-                throw `${this.constructor.name} -> User not logged in`;
+                throw new Error(`${this.constructor.name} - .editUser -> User not logged in`);
             }
             await this.db.update('users', data, `username = '${username}'`);
-            console.log(`${this.constructor.name} -> '${socket.id}' has edited the user with username '${username}'`);
+            console.log(`${this.constructor.name} - ${socket.id} - .editUser -> User with username '${username}' edited`);
             cb(null, 'User edited');
         } catch (err) {
-            console.error(`${this.constructor.name} -> ${err}`);
-            cb(err);
+            const error = `${this.constructor.name} - ${err.message}`;
+            cb(error);
+            throw new Error(error);
         }
     }
 }

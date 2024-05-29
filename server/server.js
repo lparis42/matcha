@@ -1,6 +1,5 @@
 const path = require('path');
 const express = require('express');
-const cors = require('cors');
 const https = require('https');
 const fs = require('fs');
 const Database = require('./database');
@@ -39,10 +38,11 @@ class Server {
 
   // Used to create the HTTPS server
   configureHttpsServer() {
+    const { key, cert, passphrase } = require('./constant').https.options;
     this.server = https.createServer({
-      key: fs.readFileSync('./server.key'),
-      cert: fs.readFileSync('./server.cert'),
-      passphrase: 'matcha',
+      key: fs.readFileSync(key),
+      cert: fs.readFileSync(cert),
+      passphrase: passphrase,
     }, this.app);
     console.log(`HTTPS server configured`);
   }
@@ -55,11 +55,12 @@ class Server {
 
   // Used to configure the database
   async configureDatabase() {
-    this.db = new Database('postgres', 'localhost', 'postgres', 'pg', 5432);
+    const { user, host, database, password, port } = require('./constant').database.connection_parameters;
+    this.db = new Database(user, host, database, password, port);
 
     await this.db.connect();
     await this.db.drop('users'); // For testing purposes
-    const users_columns = require('./variables').database.users.columns;
+    const users_columns = require('./constant').database.users.columns;
     await this.db.create('users', users_columns);
     console.log(`Database configured`);
   }
