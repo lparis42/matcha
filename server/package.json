@@ -5,8 +5,9 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cross-env PORT=443 pm2 start server.js",
-    "dev": "pm2-dev start server.js"
+    "close": "pm2 delete all",
+    "start": "pm2 start server.js || pm2 restart server.js",
+    "dev": "pm2-dev start server.js || pm2-dev restart server.js"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +21,6 @@
     "validator": "latest"
   },
   "devDependencies": {
-    "cross-env": "latest",
     "pm2": "latest"
   }
 }

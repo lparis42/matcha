@@ -4,13 +4,7 @@ const nodemailer = require('nodemailer');
 
 class Socket {
     constructor(server, db) {
-        this.io = socketIo(server, {
-            cors: {
-                origin: `https://localhost:${process.env.PORT}`,
-                methods: ['GET', 'POST'],
-                credentials: true
-            }
-        });
+        this.io = socketIo(server);
         this.db = db;
         this.online = {
             users: {},
