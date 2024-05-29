@@ -2,8 +2,11 @@ const path = require('path');
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
-const Database = require('./database');
+const { key, cert, passphrase } = require('./constant').https.options;
 const Socket = require('./socket');
+const Database = require('./database');
+const { user, host, database, password, port } = require('./constant').database.connection_parameters;
+const users_columns = require('./constant').database.users.columns;
 
 class Server {
 
@@ -14,9 +17,7 @@ class Server {
     this.configureRoutes();
     this.configureHttpsServer();
     await this.configureDatabase();
-
     this.configureSocketIO();
-
     this.server.listen(process.env.PORT, () => {
       console.log(`Listening on port ${process.env.PORT}`);
     });
@@ -38,7 +39,6 @@ class Server {
 
   // Used to create the HTTPS server
   configureHttpsServer() {
-    const { key, cert, passphrase } = require('./constant').https.options;
     this.server = https.createServer({
       key: fs.readFileSync(key),
       cert: fs.readFileSync(cert),
@@ -55,12 +55,9 @@ class Server {
 
   // Used to configure the database
   async configureDatabase() {
-    const { user, host, database, password, port } = require('./constant').database.connection_parameters;
     this.db = new Database(user, host, database, password, port);
-
     await this.db.connect();
     await this.db.drop('users'); // For testing purposes
-    const users_columns = require('./constant').database.users.columns;
     await this.db.create('users', users_columns);
     console.log(`Database configured`);
   }
