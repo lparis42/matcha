@@ -26,27 +26,27 @@ const App = () => {
       // For testing purposes ****************************************************
 
       // Register
-      socket.emit('register', userData, (err, message) => {
+      socket.emit('client:register', userData, (err, message) => {
         if (err) {
           console.error('Error:', err);
         } else {
           console.log('Success:', message);
         }
         // Login
-        socket.emit('login', userData, (err, message) => {
+        socket.emit('client:login', userData, (err, message) => {
           if (err) {
             console.error('Error:', err);
           } else {
             console.log('Success:', message);
           }
           // Forgot password
-          socket.emit('forgot', { email: userData.email }, (err, message) => {
+          socket.emit('client:password_reset', { email: userData.email }, (err, message) => {
             if (err) {
               console.error('Error:', err);
             } else {
               console.log('Success:', message);
             }
-            socket.emit('logout', (err, message) => {
+            socket.emit('client:logout', (err, message) => {
               if (err) {
                 console.error('Error:', err);
               } else {

@@ -6,23 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cross-env PORT=443 pm2 start server.js",
-    "dev": "cross-env PORT=443 pm2-dev start server.js"
+    "dev": "pm2-dev start server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "latest",
-    "body-parser": "latest",
     "express": "latest",
-    "fs": "latest",
-    "https": "latest",
-    "install": "latest",
-    "jsonwebtoken": "latest",
-    "matcha": "file:..",
-    "nodemailer": "^6.9.13",
-    "npm": "latest",
-    "pg": "latest",
+    "nodemailer": "latest",
     "pg-promise": "latest",
     "socket.io": "latest",
     "validator": "latest"

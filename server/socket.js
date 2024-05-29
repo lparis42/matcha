@@ -17,86 +17,87 @@ class Socket {
         };
 
         this.io.on('connection', (socket) => {
-            console.log(`${this.constructor.name} - ${socket.id} - New connection`);
+            console.log(`${socket.id} - New connection`);
 
-            socket.on('logout', (cb) => { this.logoutUser(socket, cb) });
-            socket.on('register', (data, cb) => { this.registerUser(socket, data, cb) });
-            socket.on('login', (data, cb) => { this.loginUser(socket, data, cb) });
-            socket.on('forgot', (data, cb) => { this.forgotPassword(socket, data, cb) });
-            socket.on('edit', (data, cb) => { this.editUser(socket, data, cb) });
-
+            socket.on('client:logout', (cb) => { this.handleClientLogout(socket, cb) });
+            socket.on('client:register', (data, cb) => { this.handleClientRegister(socket, data, cb) });
+            socket.on('client:login', (data, cb) => { this.handleClientLogin(socket, data, cb) });
+            socket.on('client:password_reset', (data, cb) => { this.handleClientPasswordReset(socket, data, cb) });
+            socket.on('client:edit', (data, cb) => { this.handleClientEditProfil(socket, data, cb) });
+            
             socket.on('disconnect', () => {
-                console.log(`${this.constructor.name} - ${socket.id} - Disconnected`);
+                console.log(`${socket.id} - Disconnected`);
                 delete this.online.users[socket.id];
             });
         });
     }
 
     // Method to logout users
-    logoutUser(socket, cb) {
+    handleClientLogout(socket, cb) {
         try {
             if (!this.online.users[socket.id]) {
-                throw new Error(`${this.constructor.name} - Not logged in`);
+                throw `Not logged in`;
             }
             const username = this.online.users[socket.id].username;
             delete this.online.users[socket.id];
-            console.log(`${this.constructor.name} - ${socket.id} - Logout with username '${username}'`);
+            console.log(`${socket.id} - Logout from username '${username}'`);
             cb(null, 'Logged out');
         } catch (err) {
-            const error = `${this.constructor.name} - ${err.message}`;
-            cb(error);
-            throw new Error(error);
+            cb(err);
+            console.error(`${socket.id} - Logout error: ${err}`);
         }
     }
 
     // Method to register users
-    async registerUser(socket, data, cb) {
+    async handleClientRegister(socket, data, cb) {
         try {
             await this.db.insert('users', data);
-            console.log(`${this.constructor.name} - ${socket.id} - Register with username '${data.username}'`);
+            console.log(`${socket.id} - Register with username '${data.username}'`);
             cb(null, 'Registered');
         } catch (err) {
-            const error = `${this.constructor.name} - ${err.message}`;
-            cb(error);
-            throw new Error(error);
+            cb(err);
+            console.error(`${socket.id} - Register error: ${err}`);
         }
     }
 
     // Method to login users
-    async loginUser(socket, data, cb) {
+    async handleClientLogin(socket, data, cb) {
         try {
             const { username, password } = data;
             // 1. Find the user
             const users = await this.db.select('users', '*', `username = '${username}'`);
             const user = users[0];
             if (!user) {
-                throw new Error(`${this.constructor.name} - Username '${username}' not found`);
+                throw `Username '${username}' not found`;
             }
             // 2. Compare the password
             const match = await bcrypt.compare(password, user.password);
             if (!match) {
-                throw new Error(`${this.constructor.name} - Incorrect password`);
+                throw `Password mismatch for username '${username}'`;
             }
             // 3. Add the user to the online list
             this.online.users[socket.id] = { username: data.username };
-            console.log(`${this.constructor.name} - ${socket.id} - Username '${username}' logged in`);
+            console.log(`${socket.id} - Login with username '${username}'`);
             cb(null, 'User logged in');
         } catch (err) {
-            const error = `${this.constructor.name} - ${err.message}`;
-            cb(error);
-            throw new Error(error);
+            cb(err);
+            console.error(`${socket.id} - Login error: ${err}`);
         }
     }
 
     // Method to send a new password by email
-    async forgotPassword(socket, data, cb) {
+    async handleClientPasswordReset(socket, data, cb) {
         try {
+            // Check if the user is logged in
+            if (this.online.users[socket.id]) {
+                throw `Cannot reset password while logged in`;
+            }
             const { email } = data;
             // 1. Find the user
             const users = await this.db.select('users', '*', `email = '${email}'`);
             const user = users[0];
             if (!user) {
-                throw new Error(`${this.constructor.name} - Email '${email}' not found`);
+                throw `Email '${email}' not found`;
             }
             // 2. Update the user
             const newPassword = Math.random().toString(36).slice(-8);
@@ -114,29 +115,27 @@ class Socket {
                 text: `Your new password is ${newPassword}`
             };
             await transporter.sendMail(mailOptions);
-            console.log(`${this.constructor.name} - ${socket.id} - New password sent by email to '${email}'`);
+            console.log(`${socket.id} - New password sent by email to '${email}'`);
             cb(null, 'New password sent by email');
         } catch (err) {
-            const error = `${this.constructor.name} - ${err.message}`;
-            cb(error);
-            throw new Error(error);
+            cb(err);
+            console.error(`${socket.id} - Password reset error: ${err}`);
         }
     }
 
     // Method to edit users
-    async editUser(socket, data, cb) {
+    async handleClientEditProfil(socket, data, cb) {
         try {
             const { username } = this.online.users[socket.id];
             if (!username) {
-                throw new Error(`${this.constructor.name} - .editUser -> User not logged in`);
+                throw `Not logged in`;
             }
             await this.db.update('users', data, `username = '${username}'`);
-            console.log(`${this.constructor.name} - ${socket.id} - .editUser -> User with username '${username}' edited`);
+            console.log(`${socket.id} - Edit profil for username '${username}'`);
             cb(null, 'User edited');
         } catch (err) {
-            const error = `${this.constructor.name} - ${err.message}`;
-            cb(error);
-            throw new Error(error);
+            cb(err);
+            console.error(`${socket.id} - Edit profil error: ${err}`);
         }
     }
 }

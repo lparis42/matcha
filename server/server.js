@@ -9,7 +9,8 @@ const constant = require('./constant');
 class Server {
 
   // Used to start the server
-  async start() {
+  async start(port) {
+    process.env.PORT = port;
     this.app = express();
     this.configureMiddleware();
     this.configureRoutes();
@@ -71,4 +72,4 @@ class Server {
 }
 
 const server = new Server();
-server.start();
+server.start(constant.https.port);
