@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const validator = require('validator');
 
+const axios = require('axios');
+
 class Socket {
     constructor(server, db) {
         this.io = socketIo(server);
@@ -16,8 +18,9 @@ class Socket {
             ignoreTLS: true, // TLS is a security feature, but not needed for testing
         });
 
-        this.io.on('connection', (socket) => {
-            console.log(`${socket.id} - New connection`);
+        this.io.on('connection', async (socket) => {
+            const response = await axios.get('https://api.ipify.org?format=json');
+            console.log(`${socket.id} - New connection from IP address: ${response.data.ip}`);
 
             socket.on('client:logout', (cb) => { this.handleClientLogout(socket, cb) });
             socket.on('client:registration', (data, cb) => { this.handleClientRegistration(socket, data, cb) });
@@ -28,7 +31,7 @@ class Socket {
             socket.on('client:view', (data, cb) => { this.handleViewProfile(socket, data, cb) });
             socket.on('client:like', (data, cb) => { this.handleLikeProfile(socket, data, cb) });
             socket.on('client:unlike', (data, cb) => { this.handleUnlikeProfile(socket, data, cb) });
-            socket.on('client:gps', (data) => { this.handleClientCurrentPosition(socket, data) });
+            socket.on('client:gps', (data) => { this.handleClientCurrentPosition(socket, data, response.data.ip) });
 
             socket.on('disconnect', () => {
                 console.log(`${socket.id} - Disconnected`);
@@ -273,15 +276,25 @@ class Socket {
     }
 
     // Method to handle the current position of the client
-    async handleClientCurrentPosition(socket, data) {
+    async handleClientCurrentPosition(socket, data, ipAddress) {
         try {
-            if (!this.online.users[socket.id]) {
-                throw `Not logged in`;
+            // if (!this.online.users[socket.id]) {
+            //     throw `Not logged in`;
+            // }
+            if (!data) {
+                // Client didn't share his current position
+                const response = await axios.get(`http://ip-api.com/json/${ipAddress}`);
+                console.log(`${socket.id} - Approximative position by IP address: ${response.data.city}, ${response.data.regionName}, ${response.data.country}`);
+                // const query_update = this.db.update('users', { geolocation: [response.lat, response.lon] }, `username = '${this.online.users[socket.id].username}'`);
+                // await this.db.execute(query_update);
+                console.log(`${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
+            } else {
+                // Client shared his current position
+                const { latitude, longitude, address } = data;
+                // const query_update = this.db.update('users', { geolocation: [latitude, longitude] }, `username = '${this.online.users[socket.id].username}'`);
+                // await this.db.execute(query_update);
+                console.log(`${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
             }
-            const { latitude, longitude, address } = data;
-            const query_update = this.db.update('users', { geolocation: [latitude, longitude] }, `username = '${this.online.users[socket.id].username}'`);
-            await this.db.execute(query_update);
-            console.log(`${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
         } catch (err) {
             console.error(`${socket.id} - Current position error: ${err}`);
         }
@@ -300,6 +313,20 @@ class Socket {
             }
         } catch (err) {
             throw err;
+        }
+    }
+
+    // Reverse geocode the latitude and longitude
+    async getGeolocationByIP(ipAddress) {
+        try {
+            const response = await axios.get(`http://ip-api.com/json/${ipAddress}`);
+            if (response.data.status === 'success') {
+                return response.data;
+            } else {
+                throw new Error('Geolocation failed');
+            }
+        } catch (error) {
+            throw new Error('Request failed');
         }
     }
 }

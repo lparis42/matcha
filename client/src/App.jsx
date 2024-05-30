@@ -3,15 +3,6 @@ import io from 'socket.io-client';
 
 import axios from 'axios';
 
-async function reverseGeocode(latitude, longitude) {
-  try {
-    const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
-    return response.data.display_name;
-  } catch (error) {
-    throw new Error('Request failed');
-  }
-}
-
 const App = () => {
 
   const [socketConnected, setSocketConnected] = useState(false);
@@ -35,23 +26,27 @@ const App = () => {
         date_of_birth: '2000-01-01',
       };
 
-      const geolocation = await new Promise((resolve, reject) => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(resolve, reject);
-        } else {
-          reject(new Error('Geolocation is not supported by this browser.'));
-        }
-      });
-      const address = await reverseGeocode(geolocation.coords.latitude, geolocation.coords.longitude);
+      try {
+        const geolocation = await new Promise((resolve, reject) => {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          } else {
+            reject(new Error('Geolocation is not supported by this browser.'));
+          }
+        });
+        const address = await axios.get(`https://nominatim.openstreetmap.org/reverse?lat=${geolocation.coords.latitude}&lon=${geolocation.coords.longitude}&format=json`);
+        const newPosition = {
+          latitude: geolocation.coords.latitude,
+          longitude: geolocation.coords.longitude,
+          address: `${address.data.address.country}, ${address.data.address.state}, ${address.data.address.city}`
+        };
+        socket.emit('client:gps', newPosition);
+        setPosition(newPosition);
+      } catch (error) {
+        socket.emit('client:gps', null);
+        console.error('Error:', error);
+      }
 
-      const newPosition = {
-        latitude: geolocation.coords.latitude,
-        longitude: geolocation.coords.longitude,
-        address: address
-      };
-
-      socket.emit('client:gps', newPosition);
-      setPosition(newPosition);
 
       // For testing purposes ****************************************************
 
@@ -115,15 +110,15 @@ const App = () => {
     <div>
       <h1>Client Vite + React</h1>
       <p>{socketConnected ? 'Socket is connected' : 'Socket is disconnected'}</p>
-      {position 
-    ? <>
-        Latitude: {position.latitude}, 
-        Longitude: {position.longitude} 
-        <br />
-        Address: {position.address}
-      </>
-    : 'No position'
-  }    </div>
+      {position
+        ? <>
+          Latitude: {position.latitude},
+          Longitude: {position.longitude}
+          <br />
+          Address: {position.address}
+        </>
+        : 'No position'
+      }    </div>
   );
 };
 
