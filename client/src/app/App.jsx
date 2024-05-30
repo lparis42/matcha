@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
+import SignInRegister from '../components/SigninRegister';
 
 const App = () => {
 
@@ -8,7 +9,7 @@ const App = () => {
   useEffect(() => {
 
     // Used to connect to the socket server
-    const socket = io({ autoconnect: false });
+    const socket = io('ws://localhost:5173');
 
     // Used to detect when the socket is connected
     socket.on('connect', () => {
@@ -82,10 +83,7 @@ const App = () => {
   }, []);
 
   return (
-    <div>
-      <h1>Client Vite + React</h1>
-      <p>{socketConnected ? 'Socket is connected' : 'Socket is disconnected'}</p>
-    </div>
+    <SignInRegister/>
   );
 };
 
