@@ -26,99 +26,56 @@ class Database {
     }
 
     // To disconnect from the database
-    async create(table, columns) {
-        try {
-            await this.pgp.none(`CREATE TABLE IF NOT EXISTS ${table}(${columns})`);
-            console.log(`Database - The table '${table}' has been created`);
-        } catch (err) {
-            throw `Database - ${err.message}`;
-        }
+    create(table, columns) {
+        return pgp.as.format('CREATE TABLE IF NOT EXISTS $1:name ($2:raw)', [table, columns.join(', ')]);
     }
 
     // To drop a table
-    async drop(table) {
-        try {
-            await this.pgp.none(`DROP TABLE IF EXISTS ${table}`);
-            console.log(`Database - The table '${table}' has been dropped`);
-        } catch (err) {
-            throw `Database - ${err.message}`;
-        }
+    drop(table) {
+        return pgp.as.format('DROP TABLE IF EXISTS $1:name', table);
     }
 
     // To insert a record in a table
-    async insert(table, row) {
-        try {
-            await this.hashPasswordIfPresent(row);
-            const columns = Object.keys(row);
-            const insert = pgp.helpers.insert(row, columns, table);
-            await this.pgp.none(insert);
-            console.log(`Database - A record has been inserted in the table '${table}'`);
-        } catch (err) {
-            throw `Database - ${err.message}`;
-        }
+    insert(table, row) {
+        const columns = Object.keys(row);
+        return pgp.helpers.insert(row, columns, table);
     }
 
     // To delete a record from a table
-    async delete(table, condition) {
-        try {
-            await this.pgp.none(`DELETE FROM ${table} WHERE ${condition}`);
-            console.log(`Database - A record has been successfully deleted from the table '${table}'.`);
-        } catch (err) {
-            throw `Database - ${err.message}`;
-        }
+    delete(table, condition) {
+        return pgp.as.format('DELETE FROM $1:name WHERE $2:raw', [table, condition]);
     }
 
     // To select records from a table
-    async select(table, columns, condition) {
-        try {
-            const data = await this.pgp.any(`SELECT ${columns} FROM ${table} WHERE ${condition}`);
-            return data;
-        } catch (err) {
-            throw `Database - ${err.message}`;
-        }
+    select(table, columns, condition) {
+        return pgp.as.format('SELECT $1:name FROM $2:name WHERE $3:raw', [columns, table, condition]);
     }
 
     // To update a record in a table
-    async update(table, row, condition) {
-        try {
-            await this.hashPasswordIfPresent(row);
-            const columns = Object.keys(row);
-            const update = pgp.helpers.update(row, columns, table) + ' WHERE ' + condition;
-            await this.pgp.none(update);
-            console.log(`Database - A record has been updated in the table '${table}'`);
-        } catch (err) {
-            throw `Database - ${err.message}`;
-        }
+    update(table, columns, values, condition) {
+        return pgp.helpers.update(values, columns, table) + ' WHERE ' + condition;
     }
 
-    // To upsert a record in a table
-    async upsert(table, row, condition) {
+    insert_where_not_exists(table, row, condition) { 
+        const query = `
+            INSERT INTO $1:name ($2:name)
+            SELECT $2:csv
+            WHERE NOT EXISTS (
+                $3:raw
+            )
+            RETURNING 1
+        `;
+    
+        return pgp.as.format(query, [table, row, condition]);
+    }
+    
+
+    async execute(query) {
         try {
-            await this.hashPasswordIfPresent(row);
-            const columns = Object.keys(row);
-            const upsert = pgp.helpers.insert(row, columns, table) + ' ON CONFLICT (' + condition + ') DO UPDATE SET ' + pgp.helpers.sets(row, columns);
-            await this.pgp.none(upsert);
-            console.log(`Database - A record has been upserted in the table '${table}'`);
+            const data = await this.pgp.any(query);
+            return data;
         } catch (err) {
             throw `Database - ${err.message}`;
-        }
-    }
-
-    // To hash the password if present
-    async hashPasswordIfPresent(row) {
-        try {
-            const { password } = row;
-            if (password) {
-                if (!validator.isAlphanumeric(password) || !validator.isLength(password, { min: 8, max: 20 })) {
-                    throw new Error(`The password must be alphanumeric and between 8 and 20 characters`);
-                } else {
-                    const hashedPassword = await bcrypt.hash(password, 10);
-                    row.password = hashedPassword;
-                }
-            }
-        } catch (err) {
-            ;
-            throw err;
         }
     }
 }

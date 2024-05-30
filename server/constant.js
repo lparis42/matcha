@@ -29,7 +29,10 @@ const constant = {
         `biography VARCHAR(255)`,
         `interests VARCHAR(50)[10]`,
         `pictures VARCHAR(255)[5] DEFAULT ARRAY['defaut.jpg']::VARCHAR(255)[]`,
-        `activated BOOLEAN DEFAULT FALSE`,
+        `viewers VARCHAR(50)[]`,
+        `likers VARCHAR(50)[]`,
+        `fame_rating INT DEFAULT 0`,
+        `geolocation FLOAT[2]`,
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],

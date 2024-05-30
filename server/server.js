@@ -6,15 +6,17 @@ const Socket = require('./socket');
 const Database = require('./database');
 const constant = require('./constant');
 
+// Disable console.log and console.error in production
 if (process.env.NODE_ENV !== 'development') {
-  console.log = function() {};
-  console.error = function() {};
+  console.log = function () { };
+  console.error = function () { };
 }
 
 class Server {
 
-  // Used to start the server
+  // Start the server
   async start(port) {
+
     process.env.PORT = port;
     this.app = express();
     this.configureMiddleware();
@@ -25,51 +27,31 @@ class Server {
     this.server.listen(process.env.PORT, () => {
       console.log(`Listening on port ${process.env.PORT}`);
     });
+
   }
 
-  // Used to configure the middleware
+  // Configure the middleware
   configureMiddleware() {
     this.app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
     console.log(`Middleware configured`);
   }
 
-  // Used to create the routes
+  // Configure the routes
   configureRoutes() {
     this.app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
     });
 
     this.app.get('/confirm', (req, res) => {
-
-      if (process.env.NODE_ENV === 'development') {
-        res.redirect('http://localhost:5173/');
-      }
-      else {
-        res.redirect('/');
-      }
-      this.socket.io.on('connection', async (socket) => {
-        try {
-          const username = req.query.username;
-          const user = (await this.db.select('users', '*', `username = '${username}'`))[0];
-          if (!user) {
-            throw `User ${username} not found`;
-          }
-          if (user.created_at < new Date(Date.now() - 1 * 60 * 60 * 1000)) {
-            throw `User ${username} registration has expired`;
-          }
-          await this.db.update('users', { activated: true }, `username = '${username}'`);
-
-          console.log(`${socket.id} - Registration confirmed for username '${username}'`);
-        } catch (error) {
-          console.error(`Registration confirmation failed: ${error}`);
-        }
-      });
+      // For testing purposes, simulate the client registration confirmation
+      this.socket.handleClientRegistrationConfirmation({ id: 0 }, req.query, function () { });
+      //res.redirect('/');
     });
 
     console.log(`Routes configured`);
   }
 
-  // Used to create the HTTPS server
+  // Configure the HTTPS server
   configureHttpsServer() {
     const { key, cert, passphrase } = constant.https.options;
     this.server = https.createServer({
@@ -80,24 +62,24 @@ class Server {
     console.log(`HTTPS server configured`);
   }
 
-  // Used to create the socket server
+  // Configure Socket.IO
   configureSocketIO() {
     this.socket = new Socket(this.server, this.db);
     console.log(`Socket.IO configured`);
   }
 
-  // Used to configure the database
+  // Configure the database
   async configureDatabase() {
-    const { user, host, database, password, port } = constant.database.connection_parameters;
-    this.db = new Database(user, host, database, password, port);
+    this.db = new Database(...Object.values(constant.database.connection_parameters));
     await this.db.connect();
-    await this.db.drop('users'); // For testing purposes
-    const users_columns = constant.database.users.columns;
-    await this.db.create('users', users_columns);
+    await this.db.execute(this.db.drop('users_preview')); // For testing purposes
+    await this.db.execute(this.db.drop('users')); // For testing purposes
+    await this.db.execute(this.db.create('users_preview', [...constant.database.users.columns, 'activation_key VARCHAR(8)']));
+    await this.db.execute(this.db.create('users', constant.database.users.columns));
     console.log(`Database configured`);
   }
 
-  // Used to close the server when testing
+  // Close the server
   closeServer(done) {
     this.server.close(done);
     console.log(`Server closed`);
