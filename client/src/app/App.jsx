@@ -106,7 +106,7 @@ const App = () => {
       socket.disconnect();
     };
   }, []);
-
+  
   return (
     <div>
       <h1>Client Vite + React</h1>
@@ -119,8 +119,9 @@ const App = () => {
           Address: {position.address}
         </>
         : 'No position'
-      }    </div>
-    <SignInRegister/>
+      }
+      <SignInRegister/>
+    </div>
   );
 };
 
