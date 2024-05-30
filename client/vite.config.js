@@ -14,5 +14,6 @@ export default defineConfig({
         secure: false, // To accept self-signed certificate
       },
     },
+    host: true
   }
 })

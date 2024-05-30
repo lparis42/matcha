@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
+import SignInRegister from '../components/SigninRegister';
 
 import axios from 'axios';
 
@@ -119,6 +120,7 @@ const App = () => {
         </>
         : 'No position'
       }    </div>
+    <SignInRegister/>
   );
 };
 
