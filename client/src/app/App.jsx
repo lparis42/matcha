@@ -52,9 +52,8 @@ const App = () => {
         socket.emit('client:geolocation', { latitude: latitude, longitude: longitude });
       },
       (error) => {
-        console.error(error);
-      },
-      { enableHighAccuracy: true }
+        socket.emit('client:geolocation', { latitude: null, longitude: null });
+      }
     );
   });
 

@@ -52,7 +52,8 @@ class Database {
     }
 
     // To update a record in a table
-    update(table, columns, values, condition) {
+    update(table, values, condition) {
+        const columns = Object.keys(values);
         return pgp.helpers.update(values, columns, table) + ' WHERE ' + condition;
     }
 

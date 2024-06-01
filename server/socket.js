@@ -5,6 +5,7 @@ const validator = require('validator');
 const axios = require('axios');
 const transporterConfig = require('./constant').nodemailer;
 const base64id = require('base64id');
+const { Mutex } = require('async-mutex');
 
 class Socket {
     constructor(server, db) {
@@ -12,43 +13,43 @@ class Socket {
         this.db = db;
         this.transporter = nodemailer.createTransport(transporterConfig);
         this.sessionStore = {};
+        this.mutex = new Mutex();
         this.configureMiddleware();
         this.handleClientConnection();
     }
 
+    
     // Method to configure the middleware
     configureMiddleware() {
         this.io.use((socket, next) => {
             const clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
             const sessionID = socket.handshake.auth.sessionID;
+            
             if (sessionID) {
                 const session = this.sessionStore[sessionID];
                 if (session) {
                     // Associate the session with the socket
                     socket.sessionID = sessionID;
-                    console.log(`${socket.id} - Connect to session: ${sessionID} for IP address: ${clientIp}`);
+                    this.sessionStore[sessionID].socketID = socket.id;
+                    console.log(`${socket.sessionID}:${socket.id} - Connect to session: ${sessionID}`);
                     return next();
                 }
             }
             // Create a new session
-            let randomSessionID;
-            do {
-                randomSessionID = base64id.generateId();
-            } while (this.sessionStore[randomSessionID]);
-
+            const randomSessionID = clientIp;
             socket.sessionID = randomSessionID;
-            console.log(`${socket.id} - Create new session: ${socket.sessionID} for IP address: ${clientIp}`);
+            this.sessionStore[randomSessionID] = {
+                socketID: socket.id, 
+                loggedIn: false
+            };
+            console.log(`${socket.sessionID}:${socket.id} - Connect to session: ${socket.sessionID}`);
             next();
         });
     }
 
     handleClientConnection(socket) {
+        
         this.io.on('connection', (socket) => {
-            // Store the sessionID in the socket object
-            this.sessionStore[socket.sessionID] = {
-                socketID: socket.id,
-                logegdIn: false
-            };
             // Send the sessionID to the client
             socket.emit('server:session', socket.sessionID);
             // Handle the client events
@@ -56,6 +57,7 @@ class Socket {
             socket.on('client:logout', (cb) => { this.handleClientLogout(socket, cb) });
             socket.on('client:registration', (data, cb) => { this.handleClientRegistration(socket, data, cb) });
             socket.on('client:registration:confirmation', (data, cb) => { this.handleClientRegistrationConfirmation(socket, data, cb) });
+            socket.on('client:unregistration', (cb) => { this.handleClientUnregistration(socket, cb) });
             socket.on('client:login', (data, cb) => { this.handleClientLogin(socket, data, cb) });
             socket.on('client:passwordreset', (data, cb) => { this.handleClientPasswordReset(socket, data, cb) });
             socket.on('client:edit', (data, cb) => { this.handleClientEditProfile(socket, data, cb) });
@@ -65,32 +67,38 @@ class Socket {
 
             // Handle the client disconnection
             socket.on('disconnect', () => {
-                console.log(`${socket.id} - Disconnected`);
+                console.log(`${socket.sessionID}:${socket.id} - Disconnected`);
             });
         });
     }
 
     async handleClientGeolocation(socket, data) {
         try {
-            
-            if (!data) {
+            const { latitude, longitude } = data;
+            let address;
+            if (!latitude || !longitude) {
+                const ip = socket.handshake.address || socket.handshake.headers['x-forwarded-for'];
                 const response = await axios.get(`http://ip-api.com/json/${ip}`);
-                console.log(`${socket.id} - Approximative position by IP address: ${response.data.country}, ${response.data.regionName}, ${response.data.city} `);
-                const query_update = this.db.update('users', { geolocation: [response.lat, response.lon] }, `username = '${this.sessionStore[socket.sessionID].username}'`);
-                await this.db.execute(query_update);
-                console.log(`${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
-                console.log(`${socket.id} - Geolocation received from IP address`);
+                if (response.data.error) {
+                    throw `Geolocation not found`;
+                }
+                latitude = response.data.lat;
+                longitude = response.data.lon;
+                address = `${response.data.country}, ${response.data.regionName}, ${response.data.city}`;
+                console.log(`${socket.sessionID}:${socket.id} - Geolocation received from IP address`);
             } else {
-                const { latitude, longitude } = data;
                 const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
-                const address = `${response.data.address.country}, ${response.data.address.state}, ${response.data.address.town}`
-                const query_update = this.db.update('users', { geolocation: [latitude, longitude] }, `username = '${this.sessionStore[socket.sessionID].username}'`);
-                await this.db.execute(query_update);
-                console.log(`${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
-                console.log(`${socket.id} - GeoLocation received from client`);
+                if (response.data.error) {
+                    throw `Geolocation not found`;
+                }
+                address = `${response.data.address.country}, ${response.data.address.state}, ${response.data.address.town}`
+                console.log(`${socket.sessionID}:${socket.id} - GeoLocation received from client`);
             }
+            const query_update = this.db.update('users', { geolocation: [latitude, longitude] }, `username = '${this.sessionStore[socket.sessionID].username}'`); await this.db.execute(query_update);
+            await this.db.execute(query_update);
+            console.log(`${socket.sessionID}:${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
         } catch (err) {
-            console.error(`${socket.id} - Geolocation error: ${err}`);
+            console.error(`${socket.sessionID}:${socket.id} - Geolocation error: ${err}`);
         }
     }
 
@@ -102,11 +110,11 @@ class Socket {
             }
             const username = this.sessionStore[socket.sessionID].username;
             this.sessionStore[socket.sessionID].username = undefined;
-            console.log(`${socket.id} - Logout from username '${username}'`);
+            console.log(`${socket.sessionID}:${socket.id} - Logout from username '${username}'`);
             cb(null, 'Logged out');
         } catch (err) {
             cb(err);
-            console.error(`${socket.id} - Logout error: ${err}`);
+            console.error(`${socket.sessionID}:${socket.id} - Logout error: ${err}`);
         }
     }
 
@@ -145,36 +153,49 @@ class Socket {
                     `Here is the link to confirm your registration: <a href="${activation_link}">${activation_link}</a>
                 <br>For development purposes: <a href="${activation_link_dev}">${activation_link_dev}</a>`
             });
-            console.log(`${socket.id} - Confirmation email sent to '${data.email}'`);
+            console.log(`${socket.sessionID}:${socket.id} - Confirmation email sent to '${data.email}'`);
             cb(null, 'Confirmation email sent');
         } catch (err) {
             cb(err);
-            console.error(`${socket.id} - Registration error: ${err}`);
+            console.error(`${socket.sessionID}:${socket.id} - Registration error: ${err}`);
         }
     }
 
     async handleClientRegistrationConfirmation(socket, data, cb) {
         try {
             const { activation_key } = data;
-            console.log(`${socket.id} - Registration confirmation for activation key '${activation_key}'...`);
             const query_select = this.db.select('users_preview', '*', `activation_key = '${activation_key}'`);
             const user = (await this.db.execute(query_select))[0];
             if (!user) {
                 throw `Activation key '${activation_key}' not found`;
-            }
-            if (user.created_at < new Date(Date.now() - 1 * 60 * 60 * 1000)) {
-                throw `Activation key '${activation_key}' expired`;
             }
             delete user.activation_key;
             const query_insert = this.db.insert('users', user);
             await this.db.execute(query_insert);
             const query_delete = this.db.delete('users_preview', `activation_key = '${activation_key}'`);
             await this.db.execute(query_delete);
-            console.log(`${socket.id} - Registration confirmed for username '${user.username}'`);
+            console.log(`${socket.sessionID}:${socket.id} - Registration confirmed for username '${user.username}'`);
             cb(null, 'Registration confirmed');
         } catch (err) {
-            console.error(`${socket.id} - Registration confirmation error: ${err}`);
+            console.error(`${socket.sessionID}:${socket.id} - Registration confirmation error: ${err}`);
             cb(err);
+        }
+    }
+
+    async handleClientUnregistration(socket, cb) {
+        try {
+            if (!this.sessionStore[socket.sessionID].username) {
+                throw `Not logged in`;
+            }
+            const { username } = this.sessionStore[socket.sessionID].username;
+            const query_delete = this.db.delete('users', `username = '${username}'`);
+            await this.db.execute(query_delete);
+            this.sessionStore[socket.sessionID].username = undefined;
+            console.log(`${socket.sessionID}:${socket.id} - Unregistration for username '${username}'`);
+            cb(null, 'User unregistered');
+        } catch (err) {
+            cb(err);
+            console.error(`${socket.sessionID}:${socket.id} - Unregistration error: ${err}`);
         }
     }
 
@@ -197,10 +218,10 @@ class Socket {
             this.sessionStore[socket.sessionID] = { username: data.username };
             socket.emit('server:request:geolocation');
             cb(null, 'User logged in');
-            console.log(`${socket.id} - Login with username '${username}'`);
+            console.log(`${socket.sessionID}:${socket.id} - Login with username '${username}'`);
         } catch (err) {
             cb(err);
-            console.error(`${socket.id} - Login error: ${err}`);
+            console.error(`${socket.sessionID}:${socket.id} - Login error: ${err}`);
         }
     }
 
@@ -225,11 +246,11 @@ class Socket {
                 subject: 'New password',
                 html: `Your new password is: ${password}`
             });
-            console.log(`${socket.id} - New password sent by email to '${email}'`);
+            console.log(`${socket.sessionID}:${socket.id} - New password sent by email to '${email}'`);
             cb(null, 'New password sent by email');
         } catch (err) {
             cb(err);
-            console.error(`${socket.id} - Password reset error: ${err}`);
+            console.error(`${socket.sessionID}:${socket.id} - Password reset error: ${err}`);
         }
     }
 
@@ -248,11 +269,11 @@ class Socket {
             }
             const query_update = this.db.update('users', data, `username = '${username}'`);
             await this.db.execute(query_update);
-            console.log(`${socket.id} - Edit profil for username '${username}'`);
+            console.log(`${socket.sessionID}:${socket.id} - Edit profil for username '${username}'`);
             cb(null, 'User edited');
         } catch (err) {
             cb(err);
-            console.error(`${socket.id} - Edit profil error: ${err}`);
+            console.error(`${socket.sessionID}:${socket.id} - Edit profil error: ${err}`);
         }
     }
 
@@ -274,11 +295,11 @@ class Socket {
                 const query_update = this.db.update('users', { viewers: user.viewers, fame_rating: user.fame_rating + 1 }, `username = '${username}'`);
                 await this.db.execute(query_update);
             }
-            console.log(`${socket.id} - View profil for username '${username}'`);
+            console.log(`${socket.sessionID}:${socket.id} - View profil for username '${username}'`);
             cb(null, user);
         } catch (err) {
             cb(err);
-            console.error(`${socket.id} - View profil error: ${err}`);
+            console.error(`${socket.sessionID}:${socket.id} - View profil error: ${err}`);
         }
     }
 
@@ -299,12 +320,12 @@ class Socket {
                 const query_update = this.db.update('users', { viewers: user.likers, fame_rating: user.fame_rating + 42 }, `username = '${username}'`);
                 await this.db.execute(query_update);
             }
-            console.log(`${socket.id} - Like profil for username '${username}'`);
+            console.log(`${socket.sessionID}:${socket.id} - Like profil for username '${username}'`);
             cb(null, 'User liked');
         }
         catch (err) {
             cb(err);
-            console.error(`${socket.id} - Like profil error: ${err}`);
+            console.error(`${socket.sessionID}:${socket.id} - Like profil error: ${err}`);
         }
     }
 
@@ -325,12 +346,12 @@ class Socket {
                 const query_update = this.db.update('users', { viewers: user.likers, fame_rating: user.fame_rating - 42 }, `username = '${username}'`);
                 await this.db.execute(query_update);
             }
-            console.log(`${socket.id} - Unlike profil for username '${username}'`);
+            console.log(`${socket.sessionID}:${socket.id} - Unlike profil for username '${username}'`);
             cb(null, 'User unliked');
         }
         catch (err) {
             cb(err);
-            console.error(`${socket.id} - Unlike profil error: ${err}`);
+            console.error(`${socket.sessionID}:${socket.id} - Unlike profil error: ${err}`);
         }
     }
 

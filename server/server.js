@@ -24,7 +24,7 @@ class Server {
     this.configureHttpsServer();
     await this.configureDatabase();
     this.configureSocketIO();
-    this.server.listen(process.env.PORT, '127.0.0.1', () => {
+    this.server.listen(process.env.PORT, '0.0.0.0', () => {
       console.log(`Listening on port ${process.env.PORT}`);
     });
   }
