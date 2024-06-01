@@ -49,7 +49,6 @@ class Socket {
                 socketID: socket.id,
                 logegdIn: false
             };
-            socket.emit('server:request:geolocation');
             // Send the sessionID to the client
             socket.emit('server:session', socket.sessionID);
             // Handle the client events
@@ -85,8 +84,8 @@ class Socket {
                 const { latitude, longitude } = data;
                 const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
                 const address = `${response.data.address.country}, ${response.data.address.state}, ${response.data.address.town}`
-                // const query_update = this.db.update('users', { geolocation: [latitude, longitude] }, `username = '${this.sessionStore[socket.sessionID].username}'`);
-                // await this.db.execute(query_update);
+                const query_update = this.db.update('users', { geolocation: [latitude, longitude] }, `username = '${this.sessionStore[socket.sessionID].username}'`);
+                await this.db.execute(query_update);
                 console.log(`${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
                 console.log(`${socket.id} - GeoLocation received from client`);
             }
@@ -196,6 +195,7 @@ class Socket {
                 throw `Password mismatch for username '${username}'`;
             }
             this.sessionStore[socket.sessionID] = { username: data.username };
+            socket.emit('server:request:geolocation');
             cb(null, 'User logged in');
             console.log(`${socket.id} - Login with username '${username}'`);
         } catch (err) {
