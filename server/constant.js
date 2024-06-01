@@ -32,7 +32,7 @@ const constant = {
         `viewers VARCHAR(50)[]`,
         `likers VARCHAR(50)[]`,
         `fame_rating INT DEFAULT 0`,
-        `geolocation FLOAT[2]`,
+        `geolocation VARCHAR[2]`,
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],

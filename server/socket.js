@@ -74,13 +74,17 @@ class Socket {
 
     async handleClientGeolocation(socket, data) {
         try {
-            const { latitude, longitude } = data;
+            let { latitude, longitude } = data;
             let address;
             if (!latitude || !longitude) {
-                const ip = socket.handshake.address || socket.handshake.headers['x-forwarded-for'];
-                const response = await axios.get(`http://ip-api.com/json/${ip}`);
-                if (response.data.error) {
-                    throw `Geolocation not found`;
+                let ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+                let response = await axios.get(`http://ip-api.com/json/${ip}`);
+                if (response.data.status === 'fail') {  
+                    ip = (await axios.get('https://api.ipify.org?format=json')).data.ip;
+                    response = await axios.get(`http://ip-api.com/json/${ip}`);
+                    if (response.data.status === 'fail') {
+                        throw `Geolocation not found`;
+                    }
                 }
                 latitude = response.data.lat;
                 longitude = response.data.lon;

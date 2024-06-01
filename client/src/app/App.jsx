@@ -45,17 +45,29 @@ const App = () => {
   }, []);
 
   const handleRequestGeolocation = useCallback(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setGeolocation({ latitude, longitude });
-        socket.emit('client:geolocation', { latitude: latitude, longitude: longitude });
-      },
-      (error) => {
-        socket.emit('client:geolocation', { latitude: null, longitude: null });
-      }
-    );
-  });
+    if (navigator.geolocation) {
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      };
+  
+      navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setGeolocation({ latitude, longitude });
+          socket.emit('client:geolocation', { latitude, longitude });
+        },
+        (error) => {
+          console.error(`Erreur lors de la géolocalisation : ${error.message}`);
+          socket.emit('client:geolocation', { latitude: null, longitude: null });
+        },
+        options
+      );
+    } else {
+      alert("La géolocalisation n'est pas supportée par ce navigateur.");
+    }
+  }, []);
 
   const confirmRef = useRef(false);
 
