@@ -7,10 +7,10 @@ const Database = require('./database');
 const constant = require('./constant');
 
 // Disable console.log and console.error in production
-if (process.env.NODE_ENV !== 'development') {
-  console.log = function () { };
-  console.error = function () { };
-}
+// if (process.env.NODE_ENV !== 'development') {
+//   console.log = function () { };
+//   console.error = function () { };
+// }
 
 class Server {
 
@@ -24,10 +24,9 @@ class Server {
     this.configureHttpsServer();
     await this.configureDatabase();
     this.configureSocketIO();
-    this.server.listen(process.env.PORT, () => {
+    this.server.listen(process.env.PORT, '127.0.0.1', () => {
       console.log(`Listening on port ${process.env.PORT}`);
     });
-
   }
 
   // Configure the middleware
@@ -40,12 +39,6 @@ class Server {
   configureRoutes() {
     this.app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
-    });
-
-    this.app.get('/confirm', (req, res) => {
-      // For testing purposes, simulate the client registration confirmation
-      this.socket.handleClientRegistrationConfirmation({ id: 0 }, req.query, function () { });
-      //res.redirect('/');
     });
 
     console.log(`Routes configured`);
@@ -74,7 +67,7 @@ class Server {
     await this.db.connect();
     await this.db.execute(this.db.drop('users_preview')); // For testing purposes
     await this.db.execute(this.db.drop('users')); // For testing purposes
-    await this.db.execute(this.db.create('users_preview', [...constant.database.users.columns, 'activation_key VARCHAR(8)']));
+    await this.db.execute(this.db.create('users_preview', [...constant.database.users.columns, constant.database.users_preview.columns]));
     await this.db.execute(this.db.create('users', constant.database.users.columns));
     console.log(`Database configured`);
   }

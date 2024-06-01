@@ -37,7 +37,17 @@ const constant = {
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],
     },
+    users_preview: {
+      columns: [
+        `activation_key VARCHAR(20)`,
+      ],
+    },
   },
+  nodemailer: {
+    host: 'mail.smtpbucket.com', // Using SMTP Bucket for testing
+    port: 8025,
+    ignoreTLS: true, // TLS is a security feature, but not needed for testing
+  }
 };
 
 module.exports = constant;

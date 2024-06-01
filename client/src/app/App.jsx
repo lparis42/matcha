@@ -1,23 +1,99 @@
-import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import SignInRegister from '../components/SigninRegister';
+import io from 'socket.io-client';
 
-import axios from 'axios';
+const sessionID = localStorage.getItem("sessionID");
+const socket = io({
+  autoConnect: false,
+  auth: {
+    sessionID: sessionID
+  }
+});
+socket.connect();
 
 const App = () => {
-
   const [socketConnected, setSocketConnected] = useState(false);
-  const [position, setPosition] = useState(false);
+  const [geolocation, setGeolocation] = useState(null);
+  const [confirm, setConfirm] = useState(false);
+  const location = useLocation();
+
+  const handleSocketConnect = useCallback(() => {
+    console.log('Socket connected');
+    // Stockez l'identifiant de session dans le localStorage
+    localStorage.setItem("sessionID", socket.id);
+    setSocketConnected(true);
+  }, []);
+
+  const handleReconnectAttempt = useCallback((attemptNumber) => {
+    console.log('Reconnect attempt:', attemptNumber);
+    socket.auth.sessionID = localStorage.getItem("sessionID");
+  }, []);
+
+  const handleSocketDisconnect = useCallback(() => {
+    console.log('Socket disconnected');
+    setSocketConnected(false);
+  }, []);
+
+  const handleSocketError = useCallback((error) => {
+    console.error('Connection failed:', error);
+  }, []);
+
+  const handleSession = useCallback((sessionID) => {
+    console.log('Received sessionID:', sessionID);
+    localStorage.setItem("sessionID", sessionID);
+  }, []);
+
+  const handleRequestGeolocation = useCallback(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setGeolocation({ latitude, longitude });
+        socket.emit('client:geolocation', { latitude: latitude, longitude: longitude });
+      },
+      (error) => {
+        console.error(error);
+      },
+      { enableHighAccuracy: true }
+    );
+  });
+
+  const confirmRef = useRef(false);
 
   useEffect(() => {
+    if (location.pathname === '/confirm' && !confirmRef.current) {
+      confirmRef.current = true;
+      console.log('location.pathname:', location.pathname);
+      console.log('location.search:', location.search);
+      const activation_key = new URLSearchParams(location.search).get('activation_key');
+      socket.emit('client:registration:confirmation', { activation_key: activation_key }, (err, message) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+          setConfirm(true);
+        }
+        confirmRef.current = false;
+      });
+    }
+  }, [location.pathname, location.search]);
 
-    // Used to connect to the socket server
-    const socket = io({ withCredentials: true, autoconnect: false });
+  useEffect(() => {
+    if (confirm) {
+      console.log('Effect: login');
+      socket.emit('client:login', { username: 'testuser', password: 'testpassword' }, (err, message) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }
+  }, [confirm]);
 
-    // Used to detect when the socket is connected
-    socket.on('connect', async () => {
-      console.log('Socket connected');
-
+  useEffect(() => {
+    if (socketConnected) {
+      console.log('Effect: registration');
       const userData = {
         username: 'testuser',
         password: 'testpassword',
@@ -26,101 +102,50 @@ const App = () => {
         first_name: 'User',
         date_of_birth: '2000-01-01',
       };
+      socket.emit('client:registration', userData, (err, message) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }
+  }, [socketConnected]);
 
-      try {
-        const geolocation = await new Promise((resolve, reject) => {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(resolve, reject);
-          } else {
-            reject(new Error('Geolocation is not supported by this browser.'));
-          }
-        });
-        const address = await axios.get(`https://nominatim.openstreetmap.org/reverse?lat=${geolocation.coords.latitude}&lon=${geolocation.coords.longitude}&format=json`);
-        const newPosition = {
-          latitude: geolocation.coords.latitude,
-          longitude: geolocation.coords.longitude,
-          address: `${address.data.address.country}, ${address.data.address.state}, ${address.data.address.city}`
-        };
-        socket.emit('client:gps', newPosition);
-        setPosition(newPosition);
-      } catch (error) {
-        socket.emit('client:gps', null);
-        console.error('Error:', error);
-      }
+  useEffect(() => {
+    console.log('Setting up socket listeners');
 
-
-      // For testing purposes ****************************************************
-
-      // Registration
-      // socket.emit('client:registration', userData, (err, message) => {
-      //   if (err) {
-      //     console.error('Error:', err);
-      //   } else {
-      //     console.log('Success:', message);
-      //   }
-      //   // Login
-      //   socket.emit('client:login', userData, (err, message) => {
-      //     if (err) {
-      //       console.error('Error:', err);
-      //     } else {
-      //       console.log('Success:', message);
-      //     }
-      //     // Forgot password
-      //     socket.emit('client:passwordreset', { email: userData.email }, (err, message) => {
-      //       if (err) {
-      //         console.error('Error:', err);
-      //       } else {
-      //         console.log('Success:', message);
-      //       }
-      //       socket.emit('client:logout', (err, message) => {
-      //         if (err) {
-      //           console.error('Error:', err);
-      //         } else {
-      //           console.log('Success:', message);
-      //         }
-      //       });
-      //     });
-      //   });
-      // });
-
-      // End of testing *************************************************************
-
-      setSocketConnected(true);
-    });
-
-    // Used to detect when the socket is disconnected
-    socket.on('disconnect', () => {
-      console.log('Socket disconnected');
-      setSocketConnected(false);
-    });
-
-    // Used to detect when the socket connection fails
-    socket.on('connect_error', (error) => {
-      console.error('Connection failed:', error);
-    });
-
-    // Connect manually
-    socket.connect();
+    socket.on('server:session', handleSession);
+    socket.on('connect', handleSocketConnect);
+    socket.on('reconnect_attempt', handleReconnectAttempt);
+    socket.on('disconnect', handleSocketDisconnect);
+    socket.on('connect_error', handleSocketError);
+    socket.on('server:request:geolocation', handleRequestGeolocation);
 
     return () => {
-      socket.disconnect();
+      socket.off('server:session', handleSession);
+      socket.off('connect', handleSocketConnect);
+      socket.off('reconnect_attempt', handleReconnectAttempt);
+      socket.off('disconnect', handleSocketDisconnect);
+      socket.off('connect_error', handleSocketError);
+      socket.off('server:request:geolocation', handleRequestGeolocation);
+
+      console.log('Removing socket listeners');
     };
-  }, []);
-  
+  }, [handleSession, handleSocketConnect, handleReconnectAttempt, handleSocketDisconnect, handleSocketError, handleRequestGeolocation]);
+
   return (
     <div>
       <h1>Client Vite + React</h1>
       <p>{socketConnected ? 'Socket is connected' : 'Socket is disconnected'}</p>
-      {position
-        ? <>
-          Latitude: {position.latitude},
-          Longitude: {position.longitude}
-          <br />
-          Address: {position.address}
+      {geolocation ? (
+        <>
+          Latitude: {geolocation.latitude}, Longitude: {geolocation.longitude}
         </>
-        : 'No position'
-      }
-      <SignInRegister/>
+      ) : (
+        'No position'
+      )}
+      <SignInRegister />
     </div>
   );
 };

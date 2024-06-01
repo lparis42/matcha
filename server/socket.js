@@ -2,26 +2,58 @@ const socketIo = require('socket.io');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const validator = require('validator');
-
 const axios = require('axios');
+const transporterConfig = require('./constant').nodemailer;
+const base64id = require('base64id');
 
 class Socket {
     constructor(server, db) {
         this.io = socketIo(server);
         this.db = db;
-        this.online = {
-            users: {},
-        };
-        this.transporter = nodemailer.createTransport({
-            host: 'mail.smtpbucket.com', // Using SMTP Bucket for testing
-            port: 8025,
-            ignoreTLS: true, // TLS is a security feature, but not needed for testing
+        this.transporter = nodemailer.createTransport(transporterConfig);
+        this.sessionStore = {};
+        this.configureMiddleware();
+        this.handleClientConnection();
+    }
+
+    // Method to configure the middleware
+    configureMiddleware() {
+        this.io.use((socket, next) => {
+            const clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+            const sessionID = socket.handshake.auth.sessionID;
+            if (sessionID) {
+                const session = this.sessionStore[sessionID];
+                if (session) {
+                    // Associate the session with the socket
+                    socket.sessionID = sessionID;
+                    console.log(`${socket.id} - Connect to session: ${sessionID} for IP address: ${clientIp}`);
+                    return next();
+                }
+            }
+            // Create a new session
+            let randomSessionID;
+            do {
+                randomSessionID = base64id.generateId();
+            } while (this.sessionStore[randomSessionID]);
+
+            socket.sessionID = randomSessionID;
+            console.log(`${socket.id} - Create new session: ${socket.sessionID} for IP address: ${clientIp}`);
+            next();
         });
+    }
 
-        this.io.on('connection', async (socket) => {
-            const response = await axios.get('https://api.ipify.org?format=json');
-            console.log(`${socket.id} - New connection from IP address: ${response.data.ip}`);
-
+    handleClientConnection(socket) {
+        this.io.on('connection', (socket) => {
+            // Store the sessionID in the socket object
+            this.sessionStore[socket.sessionID] = {
+                socketID: socket.id,
+                logegdIn: false
+            };
+            socket.emit('server:request:geolocation');
+            // Send the sessionID to the client
+            socket.emit('server:session', socket.sessionID);
+            // Handle the client events
+            socket.on('client:geolocation', (data) => { this.handleClientGeolocation(socket, data) });
             socket.on('client:logout', (cb) => { this.handleClientLogout(socket, cb) });
             socket.on('client:registration', (data, cb) => { this.handleClientRegistration(socket, data, cb) });
             socket.on('client:registration:confirmation', (data, cb) => { this.handleClientRegistrationConfirmation(socket, data, cb) });
@@ -31,23 +63,46 @@ class Socket {
             socket.on('client:view', (data, cb) => { this.handleViewProfile(socket, data, cb) });
             socket.on('client:like', (data, cb) => { this.handleLikeProfile(socket, data, cb) });
             socket.on('client:unlike', (data, cb) => { this.handleUnlikeProfile(socket, data, cb) });
-            socket.on('client:gps', (data) => { this.handleClientCurrentPosition(socket, data, response.data.ip) });
 
+            // Handle the client disconnection
             socket.on('disconnect', () => {
                 console.log(`${socket.id} - Disconnected`);
-                delete this.online.users[socket.id];
             });
         });
+    }
+
+    async handleClientGeolocation(socket, data) {
+        try {
+            
+            if (!data) {
+                const response = await axios.get(`http://ip-api.com/json/${ip}`);
+                console.log(`${socket.id} - Approximative position by IP address: ${response.data.country}, ${response.data.regionName}, ${response.data.city} `);
+                const query_update = this.db.update('users', { geolocation: [response.lat, response.lon] }, `username = '${this.sessionStore[socket.sessionID].username}'`);
+                await this.db.execute(query_update);
+                console.log(`${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
+                console.log(`${socket.id} - Geolocation received from IP address`);
+            } else {
+                const { latitude, longitude } = data;
+                const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+                const address = `${response.data.address.country}, ${response.data.address.state}, ${response.data.address.town}`
+                // const query_update = this.db.update('users', { geolocation: [latitude, longitude] }, `username = '${this.sessionStore[socket.sessionID].username}'`);
+                // await this.db.execute(query_update);
+                console.log(`${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
+                console.log(`${socket.id} - GeoLocation received from client`);
+            }
+        } catch (err) {
+            console.error(`${socket.id} - Geolocation error: ${err}`);
+        }
     }
 
     // Method to logout users
     async handleClientLogout(socket, cb) {
         try {
-            if (!this.online.users[socket.id]) {
+            if (!this.sessionStore[socket.sessionID].username) {
                 throw `Not logged in`;
             }
-            const username = this.online.users[socket.id].username;
-            delete this.online.users[socket.id];
+            const username = this.sessionStore[socket.sessionID].username;
+            this.sessionStore[socket.sessionID].username = undefined;
             console.log(`${socket.id} - Logout from username '${username}'`);
             cb(null, 'Logged out');
         } catch (err) {
@@ -59,34 +114,37 @@ class Socket {
     // Method to Registration users
     async handleClientRegistration(socket, data, cb) {
         try {
-            if (this.online.users[socket.id]) {
+            if (this.sessionStore[socket.sessionID].username) {
                 throw `Cannot register while logged in`;
             }
-            const required_frields = ['username, password, email, last_name, first_name, date_of_birth'];
-            for (const field of required_frields) {
+            const required_fields = ['username', 'password', 'email', 'last_name', 'first_name', 'date_of_birth'];
+            for (const field of required_fields) {
                 if (!data[field]) {
-                    throw `Missing field for registration`;
+                    throw `Missing ${field} for registration`;
                 }
             }
             // Check if the username already exists to insert new registration in the users_preview table
-            const activation_key = Math.random().toString(36).slice(-8);
+            const activation_key = base64id.generateId();
             await this.checkAndHashPassword(data);
             const condition =
-                `SELECT username FROM users_preview WHERE username = '${username}'
+                `SELECT username FROM users_preview WHERE username = '${data.username}'
                 UNION
-                SELECT username FROM users WHERE username = '${username}'`;
+                SELECT username FROM users WHERE username = '${data.username}'`;
             const query_iwne = this.db.insert_where_not_exists('users_preview', { ...data, activation_key: activation_key }, condition);
             const result = await this.db.execute(query_iwne);
             if (result.length === 0) {
-                throw `Username '${username}' already exists`;
+                throw `Username '${data.username}' already exists`;
             }
             // Send the confirmation email
             const activation_link = `https://localhost:443/confirm?activation_key=${activation_key}`;
+            const activation_link_dev = `http://localhost:5173/confirm?activation_key=${activation_key}`;
             await this.transporter.sendMail({
                 from: 'email@server.com',
                 to: data.email,
                 subject: 'Account registration',
-                html: `Here is the link to confirm your registration: <a href="${activation_link}">${activation_link}</a>`
+                html:
+                    `Here is the link to confirm your registration: <a href="${activation_link}">${activation_link}</a>
+                <br>For development purposes: <a href="${activation_link_dev}">${activation_link_dev}</a>`
             });
             console.log(`${socket.id} - Confirmation email sent to '${data.email}'`);
             cb(null, 'Confirmation email sent');
@@ -99,6 +157,7 @@ class Socket {
     async handleClientRegistrationConfirmation(socket, data, cb) {
         try {
             const { activation_key } = data;
+            console.log(`${socket.id} - Registration confirmation for activation key '${activation_key}'...`);
             const query_select = this.db.select('users_preview', '*', `activation_key = '${activation_key}'`);
             const user = (await this.db.execute(query_select))[0];
             if (!user) {
@@ -123,7 +182,7 @@ class Socket {
     // Method to login users
     async handleClientLogin(socket, data, cb) {
         try {
-            if (this.online.users[socket.id]) {
+            if (this.sessionStore[socket.sessionID].username) {
                 throw `Already logged in`;
             }
             const { username, password } = data;
@@ -136,7 +195,7 @@ class Socket {
             if (!match) {
                 throw `Password mismatch for username '${username}'`;
             }
-            this.online.users[socket.id] = { username: data.username };
+            this.sessionStore[socket.sessionID] = { username: data.username };
             cb(null, 'User logged in');
             console.log(`${socket.id} - Login with username '${username}'`);
         } catch (err) {
@@ -148,7 +207,7 @@ class Socket {
     // Method to send a new password by email
     async handleClientPasswordReset(socket, data, cb) {
         try {
-            if (this.online.users[socket.id]) {
+            if (this.sessionStore[socket.sessionID].username) {
                 throw `Cannot reset password while logged in`;
             }
             const { email } = data;
@@ -157,7 +216,7 @@ class Socket {
             if (!user) {
                 throw `Email '${email}' not found`;
             }
-            const password = Math.random().toString(36).slice(-8);
+            const password = base64id.generateId();
             const query_update = this.db.update('users', { password: password }, `email = '${email}'`);
             await this.db.execute(query_update);
             await this.transporter.sendMail({
@@ -177,8 +236,8 @@ class Socket {
     // Method to edit users
     async handleClientEditProfile(socket, data, cb) {
         try {
-            const { username } = this.online.users[socket.id];
-            if (!this.online.users[socket.id]) {
+            const { username } = this.sessionStore[socket.sessionID];
+            if (!this.sessionStore[socket.sessionID].username) {
                 throw `Not logged in`;
             }
             const allowed_fields = ['email', 'last_name', 'first_name', 'date_of_birth', 'gender', 'sexual_orientation', 'biography', 'interests', 'pictures'];
@@ -200,7 +259,7 @@ class Socket {
     // Method to view user's profile
     async handleViewProfile(socket, data, cb) {
         try {
-            if (!this.online.users[socket.id]) {
+            if (!this.sessionStore[socket.sessionID].username) {
                 throw `Not logged in`;
             }
             const { username } = data;
@@ -210,8 +269,8 @@ class Socket {
             if (!user) {
                 throw `Username '${username}' not found`;
             }
-            if (!user.viewers.includes(this.online.users[socket.id].username)) {
-                user.viewers = [...user.viewers, this.online.users[socket.id].username];
+            if (!user.viewers.includes(this.sessionStore[socket.sessionID].username)) {
+                user.viewers = [...user.viewers, this.sessionStore[socket.sessionID].username];
                 const query_update = this.db.update('users', { viewers: user.viewers, fame_rating: user.fame_rating + 1 }, `username = '${username}'`);
                 await this.db.execute(query_update);
             }
@@ -226,7 +285,7 @@ class Socket {
     // Method to like user's profile
     async handleLikeProfile(socket, data, cb) {
         try {
-            if (!this.online.users[socket.id]) {
+            if (!this.sessionStore[socket.sessionID].username) {
                 throw `Not logged in`;
             }
             const { username } = data;
@@ -235,8 +294,8 @@ class Socket {
             if (!user) {
                 throw `Username '${username}' not found`;
             }
-            if (!user.likers.includes(this.online.users[socket.id].username)) {
-                user.likers = [...user.likers, this.online.users[socket.id].username];
+            if (!user.likers.includes(this.sessionStore[socket.sessionID].username)) {
+                user.likers = [...user.likers, this.sessionStore[socket.sessionID].username];
                 const query_update = this.db.update('users', { viewers: user.likers, fame_rating: user.fame_rating + 42 }, `username = '${username}'`);
                 await this.db.execute(query_update);
             }
@@ -252,7 +311,7 @@ class Socket {
     // Method to unlike user's profile
     async handleUnlikeProfile(socket, data, cb) {
         try {
-            if (!this.online.users[socket.id]) {
+            if (!this.sessionStore[socket.sessionID].username) {
                 throw `Not logged in`;
             }
             const { username } = data;
@@ -261,8 +320,8 @@ class Socket {
             if (!user) {
                 throw `Username '${username}' not found`;
             }
-            if (user.likers.includes(this.online.users[socket.id].username)) {
-                user.likers = user.likers.filter((liker) => liker !== this.online.users[socket.id].username);
+            if (user.likers.includes(this.sessionStore[socket.sessionID].username)) {
+                user.likers = user.likers.filter((liker) => liker !== this.sessionStore[socket.sessionID].username);
                 const query_update = this.db.update('users', { viewers: user.likers, fame_rating: user.fame_rating - 42 }, `username = '${username}'`);
                 await this.db.execute(query_update);
             }
@@ -272,31 +331,6 @@ class Socket {
         catch (err) {
             cb(err);
             console.error(`${socket.id} - Unlike profil error: ${err}`);
-        }
-    }
-
-    // Method to handle the current position of the client
-    async handleClientCurrentPosition(socket, data, ipAddress) {
-        try {
-            // if (!this.online.users[socket.id]) {
-            //     throw `Not logged in`;
-            // }
-            if (!data) {
-                // Client didn't share his current position
-                const response = await axios.get(`http://ip-api.com/json/${ipAddress}`);
-                console.log(`${socket.id} - Approximative position by IP address: ${response.data.city}, ${response.data.regionName}, ${response.data.country}`);
-                // const query_update = this.db.update('users', { geolocation: [response.lat, response.lon] }, `username = '${this.online.users[socket.id].username}'`);
-                // await this.db.execute(query_update);
-                console.log(`${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
-            } else {
-                // Client shared his current position
-                const { latitude, longitude, address } = data;
-                // const query_update = this.db.update('users', { geolocation: [latitude, longitude] }, `username = '${this.online.users[socket.id].username}'`);
-                // await this.db.execute(query_update);
-                console.log(`${socket.id} - Current position (${latitude}, ${longitude}): ${address}`);
-            }
-        } catch (err) {
-            console.error(`${socket.id} - Current position error: ${err}`);
         }
     }
 
@@ -313,20 +347,6 @@ class Socket {
             }
         } catch (err) {
             throw err;
-        }
-    }
-
-    // Reverse geocode the latitude and longitude
-    async getGeolocationByIP(ipAddress) {
-        try {
-            const response = await axios.get(`http://ip-api.com/json/${ipAddress}`);
-            if (response.data.status === 'success') {
-                return response.data;
-            } else {
-                throw new Error('Geolocation failed');
-            }
-        } catch (error) {
-            throw new Error('Request failed');
         }
     }
 }
