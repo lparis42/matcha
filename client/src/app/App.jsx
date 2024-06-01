@@ -46,12 +46,6 @@ const App = () => {
 
   const handleRequestGeolocation = useCallback(() => {
     if (navigator.geolocation) {
-      const options = {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      };
-  
       navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
@@ -59,13 +53,12 @@ const App = () => {
           socket.emit('client:geolocation', { latitude, longitude });
         },
         (error) => {
-          console.error(`Erreur lors de la géolocalisation : ${error.message}`);
+          console.error(`Error: ${error.message}`);
           socket.emit('client:geolocation', { latitude: null, longitude: null });
-        },
-        options
+        }
       );
     } else {
-      alert("La géolocalisation n'est pas supportée par ce navigateur.");
+      alert("Geolocation is not supported by this browser.");
     }
   }, []);
 
