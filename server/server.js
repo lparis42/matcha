@@ -21,7 +21,7 @@ class Server {
     this.app = express();
     this.configureMiddleware();
     this.configureRoutes();
-    this.configureHttpsServer();
+    this.configureHTTPSServer();
     await this.configureDatabase();
     this.configureSocketIO();
     this.server.listen(process.env.PORT, '0.0.0.0', () => {
@@ -45,8 +45,9 @@ class Server {
   }
 
   // Configure the HTTPS server
-  configureHttpsServer() {
+  configureHTTPSServer() {
     const { key, cert, passphrase } = constant.https.options;
+
     this.server = https.createServer({
       key: fs.readFileSync(key),
       cert: fs.readFileSync(cert),
