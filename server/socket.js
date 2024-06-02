@@ -5,6 +5,7 @@ const validator = require('validator');
 const axios = require('axios');
 const transporterConfig = require('./constant').nodemailer;
 const base64id = require('base64id');
+const e = require('express');
 
 class Socket {
     constructor(server, db) {
@@ -96,7 +97,7 @@ class Socket {
                 address = `${response.data.address.country}, ${response.data.address.state}, ${response.data.address.town}`
                 console.log(`${socket.handshake.auth.token}:${socket.id} - Current geolocation emited by the client (${latitude}, ${longitude}): ${address}`);
             }
-            const query_update = this.db.update('users', { geolocation: [latitude, longitude] }, `username = '${session.username}'`); await this.db.execute(query_update);
+            const query_update = this.db.update('users', { geolocation: [latitude, longitude] }, `username = '${this.sessionStore[socket.handshake.auth.token].username}'`);
             await this.db.execute(query_update);
         } catch (err) {
             console.error(`${socket.handshake.auth.token}:${socket.id} - Geolocation error: ${err}`);
@@ -295,7 +296,10 @@ class Socket {
                 throw `Not logged in`;
             }
             const { username } = data;
-            const fields = ['username', 'last_name', 'first_name', 'date_of_birth', 'gender', 'sexual_orientation', 'biography', 'interests', 'pictures', 'fame_rating', 'geolocation'];
+            if (!username) {
+                throw `Username not provided`;
+            }
+            const fields = ['username', 'last_name', 'first_name', 'date_of_birth', 'gender', 'sexual_orientation', 'biography', 'interests', 'pictures', 'fame_rating', 'geolocation', 'viewers', 'fame_rating'];
             const query_select = this.db.select('users', fields, `username = '${username}'`);
             const user = (await this.db.execute(query_select))[0];
             if (!user) {
@@ -307,6 +311,8 @@ class Socket {
                 await this.db.execute(query_update);
             }
             console.log(`${socket.handshake.auth.token}:${socket.id} - View profil for username '${username}'`);
+            delete user.viewers;
+            delete user.fame_rating;
             cb(null, user);
         } catch (err) {
             cb(err);
@@ -322,15 +328,17 @@ class Socket {
                 throw `Not logged in`;
             }
             const { username } = data;
-            const query_select = this.db.select('users', 'likers', `username = '${username}'`);
+            const query_select = this.db.select('users', ['likers', 'fame_rating'], `username = '${username}'`);
             const user = (await this.db.execute(query_select))[0];
             if (!user) {
                 throw `Username '${username}' not found`;
             }
             if (!user.likers.includes(session.username)) {
                 user.likers = [...user.likers, session.username];
-                const query_update = this.db.update('users', { viewers: user.likers, fame_rating: user.fame_rating + 42 }, `username = '${username}'`);
+                const query_update = this.db.update('users', { likers: user.likers, fame_rating: user.fame_rating + 10 }, `username = '${username}'`);
                 await this.db.execute(query_update);
+            } else {
+                throw `User already liked`;
             }
             console.log(`${socket.handshake.auth.token}:${socket.id} - Like profil for username '${username}'`);
             cb(null, 'User liked');
@@ -349,15 +357,17 @@ class Socket {
                 throw `Not logged in`;
             }
             const { username } = data;
-            const query_select = this.db.select('users', 'likers', `username = '${username}'`);
+            const query_select = this.db.select('users', ['likers', 'fame_rating'], `username = '${username}'`);
             const user = (await this.db.execute(query_select))[0];
             if (!user) {
                 throw `Username '${username}' not found`;
             }
             if (user.likers.includes(session.username)) {
                 user.likers = user.likers.filter((liker) => liker !== session.username);
-                const query_update = this.db.update('users', { viewers: user.likers, fame_rating: user.fame_rating - 42 }, `username = '${username}'`);
+                const query_update = this.db.update('users', { liker: user.likers, fame_rating: user.fame_rating - 10 }, `username = '${username}'`);
                 await this.db.execute(query_update);
+            } else {
+                throw `User '${session.username}' has not liked '${username}'`;
             }
             console.log(`${socket.handshake.auth.token}:${socket.id} - Unlike profil for username '${username}'`);
             cb(null, 'User unliked');

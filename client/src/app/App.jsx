@@ -40,7 +40,7 @@ const App = () => {
 
   const handleReconnectAttempt = useCallback((attemptNumber) => {
     console.log('Reconnect attempt:', attemptNumber);
-    socket.auth.session = localStorage.getItem("session");
+    socket.auth.token = localStorage.getItem("authentification_token");
   }, []);
 
   const handleSocketDisconnect = useCallback(() => {
@@ -78,6 +78,23 @@ const App = () => {
     }
   }, []);
 
+  const handleLocationPathname = useCallback(() => {
+    if (location.pathname === '/confirm' && location.search.includes('activation_key')) {
+      const activation_key = new URLSearchParams(location.search).get('activation_key');
+      console.log('Emitting registration confirmation:', activation_key);
+      socket.emit('client:registration:confirmation', { activation_key: activation_key }, (err, message) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+        navigate('/');
+      });
+    }
+  }, [location.pathname, location.search]);
+
+  // Logout functionalities
+
   const emitRegistration = useCallback(() => {
     console.log('Emitting registration');
     const userData = {
@@ -108,6 +125,19 @@ const App = () => {
     });
   }, []);
 
+  const emitPasswordReset = useCallback(() => {
+    console.log('Emitting password reset');
+    socket.emit('client:passwordreset', { email: 'email@client.com' }, (err, message) => {
+      if (err) {
+        console.error('Error:', err);
+      } else {
+        console.log('Success:', message);
+      }
+    });
+  }, []);
+
+  // Login functionalities
+
   const emitLogout = useCallback(() => {
     console.log('Emitting logout');
     socket.emit('client:logout', (err, message) => {
@@ -130,9 +160,14 @@ const App = () => {
     });
   }, []);
 
-  const emitPasswordReset = useCallback(() => {
-    console.log('Emitting password reset');
-    socket.emit('client:passwordreset', { email: 'email@client.com' }, (err, message) => {
+  const handleEditProfile = useCallback(() => {
+    console.log('Emitting edit profile');
+    const userData = {
+      gender: 'Male',
+      sexual_orientation: 'Heterosexual',
+      biography: 'Test biography',
+    };
+    socket.emit('client:edit', userData, (err, message) => {
       if (err) {
         console.error('Error:', err);
       } else {
@@ -141,29 +176,47 @@ const App = () => {
     });
   }, []);
 
-  const handleLocationPathname = useCallback(() => {
-    if (location.pathname === '/confirm' && location.search.includes('activation_key')) {
-      const activation_key = new URLSearchParams(location.search).get('activation_key');
-      console.log('Emitting registration confirmation:', activation_key);
-      socket.emit('client:registration:confirmation', { activation_key: activation_key }, (err, message) => {
-        if (err) {
-          console.error('Error:', err);
-        } else {
-          console.log('Success:', message);
-        }
-        navigate('/');
-      });
-    }
-  }, [location.pathname, location.search]);
+  const handleViewProfile = useCallback(() => {
+    console.log('Emitting view profile');
+    socket.emit('client:view', { username: 'testuser' }, (err, message) => {
+      if (err) {
+        console.error('Error:', err);
+      } else {
+        console.log('Success:', message);
+      }
+    });
+  }, []);
 
-  // Root effect
+  const handleLikeProfile = useCallback(() => {
+    console.log('Emitting like profile');
+    socket.emit('client:like', { username: 'testuser' }, (err, message) => {
+      if (err) {
+        console.error('Error:', err);
+      } else {
+        console.log('Success:', message);
+      }
+    });
+  }, []);
+
+  const handleUnLikeProfile = useCallback(() => {
+    console.log('Emitting unlike profile');
+    socket.emit('client:unlike', { username: 'testuser' }, (err, message) => {
+      if (err) {
+        console.error('Error:', err);
+      } else {
+        console.log('Success:', message);
+      }
+    });
+  }, []);
+
+  // useEffects
+
   useEffect(() => {
     if (socketConnected) {
       handleLocationPathname();
     }
   }, [socketConnected, handleLocationPathname]);
 
-  // Socket effect
   useEffect(() => {
     socket.connect();
     socket.on('connect', handleSocketConnect);
@@ -183,12 +236,19 @@ const App = () => {
       ) : (
         'No position'
       )}
-      <br /><br />Test buttons:
+      <br /><br />Test logout functionalities:
       <br /><button onClick={emitRegistration}>Try registration</button>
-      <br /><button onClick={emitUnregistration}>Try unregistration</button>
       <br /><button onClick={emitLogin}>Try login</button>
-      <br /><button onClick={emitLogout}>Try logout</button>
       <br /><button onClick={emitPasswordReset}>Try password reset</button>
+
+      <br /><br />Test login functionalities:
+      <br /><button onClick={emitUnregistration}>Try unregistration</button>
+      <br /><button onClick={emitLogout}>Try logout</button>
+      <br /><button onClick={handleEditProfile}>Try edit profile</button>
+      <br /><button onClick={handleViewProfile}>Try view profile</button>
+      <br /><button onClick={handleLikeProfile}>Try like profile</button>
+      <br /><button onClick={handleUnLikeProfile}>Try unlike profile</button>
+      
       <SignInRegister />
     </div>
   );
