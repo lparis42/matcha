@@ -71,7 +71,6 @@ const App = () => {
   const eventSession = useCallback((data, cb) => {
     console.log('Received new session:', data);
     localStorage.setItem("authentification_token", data);
-    socket.auth.token = data;
   }, [socket]);
 
   const eventSocketConnect = useCallback(() => {
