@@ -1,0 +1,14 @@
+{
+    "include": [
+        "/src/**/*"
+    ],
+    "exclude": [],
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
+    },
+}
