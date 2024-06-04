@@ -66,10 +66,15 @@ class Server {
   async configureDatabase() {
     this.db = new Database(...Object.values(constant.database.connection_parameters));
     await this.db.connect();
+    await this.db.execute(this.db.drop('users_matchs')); // For testing purposes
+    await this.db.execute(this.db.drop('users_private')); // For testing purposes
     await this.db.execute(this.db.drop('users_preview')); // For testing purposes
-    await this.db.execute(this.db.drop('users')); // For testing purposes
-    await this.db.execute(this.db.create('users_preview', [...constant.database.users.columns, constant.database.users_preview.columns]));
-    await this.db.execute(this.db.create('users', constant.database.users.columns));
+    await this.db.execute(this.db.drop('users_public')); // For testing purposes
+    await this.db.execute(this.db.create('users_private', constant.database.users_private.columns));
+    await this.db.execute(this.db.create('users_preview', constant.database.users_preview.columns));
+    await this.db.execute(this.db.create('users_public', constant.database.users_public.columns));
+    await this.db.execute(this.db.create('users_matchs', constant.database.users_matchs.columns));
+
     console.log(`Database configured`);
   }
 

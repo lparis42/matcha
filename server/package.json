@@ -14,8 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "async-mutex": "^0.5.0",
-    "axios": "^1.7.2",
+    "axios": "latest",
     "bcrypt": "latest",
     "express": "latest",
     "nodemailer": "latest",

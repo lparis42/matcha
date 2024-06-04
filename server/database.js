@@ -1,10 +1,7 @@
 const pgp = require('pg-promise')();
-const bcrypt = require('bcrypt');
-const validator = require('validator');
 
 class Database {
 
-    // Constructor to initialize the database
     constructor(user, host, database, password, port) {
         this.pgp = pgp({
             user: user,
@@ -15,46 +12,46 @@ class Database {
         });
     }
 
-    // To connect to the database
     async connect() {
         try {
             await this.pgp.connect();
-            console.log(`Database - Connected to the database '${this.pgp.$cn.database}'`);
+            console.log(`Database - Connected to the database '${this.pgp.$cn.database}'`) + ';\n';
         } catch (err) {
             throw `Database - ${err.message}`;
         }
     }
 
-    // To disconnect from the database
     create(table, columns) {
-        return pgp.as.format('CREATE TABLE IF NOT EXISTS $1:name ($2:raw)', [table, columns.join(', ')]);
+        return pgp.as.format('CREATE TABLE IF NOT EXISTS $1:name ($2:raw)', [table, columns.join(', ')]) + ';\n';
     }
 
-    // To drop a table
     drop(table) {
-        return pgp.as.format('DROP TABLE IF EXISTS $1:name', table);
+        return pgp.as.format('DROP TABLE IF EXISTS $1:name', table) + ';\n';
     }
 
-    // To insert a record in a table
-    insert(table, row) {
+    insert(table, row, returning = '') {
         const columns = Object.keys(row);
-        return pgp.helpers.insert(row, columns, table);
+        return pgp.helpers.insert(row, columns, table) + returning + ';\n';
     }
 
-    // To delete a record from a table
     delete(table, condition) {
-        return pgp.as.format('DELETE FROM $1:name WHERE $2:raw', [table, condition]);
+        return pgp.as.format('DELETE FROM $1:name WHERE $2:raw', [table, condition]) + ';\n';
     }
 
-    // To select records from a table
     select(table, columns, condition) {
-        return pgp.as.format('SELECT $1:name FROM $2:name WHERE $3:raw', [columns, table, condition]);
+        return pgp.as.format('SELECT $1:name FROM $2:name WHERE $3:raw', [columns, table, condition]) + ';\n';
     }
 
-    // To update a record in a table
     update(table, values, condition) {
         const columns = Object.keys(values);
-        return pgp.helpers.update(values, columns, table) + ' WHERE ' + condition;
+        return pgp.helpers.update(values, columns, table) + ' WHERE ' + condition + ';\n';
+    }
+
+    upsert(table, values, conflictTarget) {
+        const columns = Object.keys(values);
+        const insert = pgp.helpers.insert(values, columns, table);
+        const updates = Object.keys(values).map(column => `${column}=EXCLUDED.${column}`).join(", ");
+        return `${insert}` + pgp.as.format(` ON CONFLICT (${conflictTarget}) DO UPDATE SET ${updates}`) + ';\n';
     }
 
     insert_where_not_exists(table, row, condition) { 
@@ -64,10 +61,9 @@ class Database {
             WHERE NOT EXISTS (
                 $3:raw
             )
-            RETURNING 1
-        `;
+            RETURNING 1`;
     
-        return pgp.as.format(query, [table, row, condition]);
+        return pgp.as.format(query, [table, row, condition]) + ';\n';
     }
     
 
@@ -76,7 +72,7 @@ class Database {
             const data = await this.pgp.any(query);
             return data;
         } catch (err) {
-            throw `Database - ${err.message}`;
+            throw `Database - ${err.message} : \n ${query}`;
         }
     }
 }

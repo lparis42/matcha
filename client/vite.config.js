@@ -9,9 +9,9 @@ export default defineConfig({
     proxy: {
       '/socket.io': {
         target: 'https://localhost:443',
-        changeOrigin: true,
+        changeOrigin: false,
         ws: true,
-        secure: false, // To accept self-signed certificate
+        secure: false, 
       },
     },
     host: true
