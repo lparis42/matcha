@@ -12,9 +12,11 @@ import { Label } from "@/components/ui/label"
 
 import React from 'react'
 import { DatePicker } from './ui/datepicker'
+import { Link } from 'react-router-dom'
 
 export default function Signup () {
     return (
+      <div className="flex items-center justify-center h-screen">
       <Card className="mx-auto max-w-sm">
         <CardHeader>
           <CardTitle className="text-xl">Sign Up</CardTitle>
@@ -56,7 +58,7 @@ export default function Signup () {
                 required
               />
             </div>
-            <div>
+            <div className="grid gap-2">
               <Label htmlFor="birthday">Birthday</Label>
               <DatePicker />
             </div>
@@ -66,11 +68,12 @@ export default function Signup () {
           </div>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
-            <a onClick={() => {}} className="underline">
+            <Link to='/signin' className="underline" >
               Sign in
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>
+      </div>
     )
 }

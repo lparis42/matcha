@@ -288,8 +288,6 @@ const App = () => {
       <br /><button onClick={handleViewProfile}>Try view profile</button>
       <br /><button onClick={handleLikeProfile}>Try like profile</button>
       <br /><button onClick={handleUnLikeProfile}>Try unlike profile</button>
-      
-      <Signup />
     </div>
   );
 };
