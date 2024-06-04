@@ -116,7 +116,6 @@ const App = () => {
   }, [socket]);
 
   const eventLogin = useCallback(() => {
-    console.log(socket.auth.token);
     console.log('Emitting login');
     socket.emit('client:login', { email: `${username}@client.com`, password: 'testpassword' }, (err, message) => {
       if (err) {
