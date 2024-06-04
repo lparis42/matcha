@@ -9,6 +9,7 @@
             "@/*": [
                 "./src/*"
             ]
-        }
+        },
+        "types": ["vite-plugin-remix-router/client"]
     },
 }

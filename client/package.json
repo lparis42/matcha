@@ -38,6 +38,7 @@
     "eslint-plugin-react-hooks": "latest",
     "eslint-plugin-react-refresh": "latest",
     "postcss": "^8.4.38",
-    "vite": "latest"
+    "vite": "latest",
+    "vite-plugin-remix-router": "^2.0.0"
   }
 }
