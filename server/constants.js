@@ -26,14 +26,13 @@ const constant = {
         `password VARCHAR(60)`,
         `viewers INT[] DEFAULT ARRAY[]::INT[]`,
         `likers INT[] DEFAULT ARRAY[]::INT[]`,
-        `matchs INT[] DEFAULT ARRAY[]::INT[]`,
         `view_history INT[] DEFAULT ARRAY[]::INT[]`,
 
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],
       column_names: [
-        `email`, `password`, `viewers`, `likers`
+        `email`, `password`, `viewers`, `likers`, `view_history`
       ],
     },
     users_preview: {
@@ -65,19 +64,27 @@ const constant = {
         `gender VARCHAR(35) CHECK (gender IN ('Male', 'Female', 'Other'))`,
         `sexual_orientation VARCHAR(35) CHECK (sexual_orientation IN ('Heterosexual', 'Bisexual', 'Homosexual', 'Other'))`,
         `biography VARCHAR(255)`,
-        `interests VARCHAR(50)[10] DEFAULT ARRAY[]::VARCHAR(50)[]`,
+        `interests int[] DEFAULT ARRAY[]::INT[]`,
         `pictures VARCHAR(255)[5] DEFAULT ARRAY[]::VARCHAR(255)[]`,
         `fame_rating INT DEFAULT 0`,
-        `geolocation VARCHAR[2]`,
-        `localization VARCHAR(255)`,
+        `geolocation VARCHAR[2]` /* [latitude, longitude] */,
+        `localization VARCHAR(255) DEFAULT 'Unknown'`,
         `last_connection TIMESTAMP`,
 
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],
       column_names: [
-        `username`, `first_name`, `last_name`, `date_of_birth`, `gender`, `sexual_orientation`, `biography`, `interests`, `pictures`, `fame_rating`, `geolocation`, `last_connection`
+        `username`, `first_name`, `last_name`, `date_of_birth`, `gender`, `sexual_orientation`, `biography`, `interests`, `pictures`, `fame_rating`, `geolocation`, `localization`, `last_connection`
       ],
+      common_tags: [
+        'Technology', 'Health', 'Business', 'Entertainment', 
+        'Travel', 'Education', 'Arts and Culture', 'Lifestyle', 
+        'Science', 'Politics', 'Environment', 'Gastronomy', 
+        'Sports', 'Automobile', 'Fashion', 'Economy', 
+        'History', 'Philosophy', 'Religion', 'Law'
+      ],
+
     },
     users_matchs: {
       columns: [

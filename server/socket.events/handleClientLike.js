@@ -16,6 +16,12 @@ async function handleClientLike(socket, data, cb) {
         if (!target_likers) {
             throw { client: `Account '${target_account}' not found`, status: 404 };
         }
+        const pictures = (await this.db.execute(
+            this.db.select('users_public', 'pictures', `id = '${session.account}'`)
+        ))[0].pictures;
+        if (pictures.length === 0) {
+            throw { client: 'Cannot like without at least one picture', status: 403 };
+        }
 
         // Check if target account is already liked
         if (!target_likers.includes(session.account)) {
@@ -37,40 +43,20 @@ async function handleClientLike(socket, data, cb) {
             ))[0].likers;
 
             // Check if the target account already liked current account
-            const already_matched = (await this.db.execute(
-                this.db.select('users_matchs', 'id', `accounts @> ARRAY[${session.account}, ${target_account}]`)
-            ))[0] ? true : false;
-            if (already_matched) {
+            const connected = (await this.db.execute(
+                this.db.select('users_matchs', 'connected', `accounts @> ARRAY[${session.account}, ${target_account}]`)
+            ))[0]?.connected;
+            if (connected) {
                 await this.db.execute(
                     this.db.update('users_matchs', { connected: true }, `accounts @> ARRAY[${session.account}, ${target_account}]`)
                 );
             }
-
             // Check if current account liked target account
             else if (likers.includes(target_account)) {
 
-                // Extract data
-                const connected = (await this.db.execute(
-                    this.db.select('users_public', 'pictures', `id = '${session.account}'`))
-                )[0].pictures.length > 0 ? true : false;
-
                 // Create match and get match id
-                const match_id = (await this.db.execute(
-                    this.db.insert('users_matchs', { connected: connected, accounts: [session.account, target_account] }, 'RETURNING id')
-                ))[0].id;
-
-                // Extract data
-                const matchs = (await this.db.execute(
-                    this.db.select('users_private', 'matchs', `id = '${session.account}'`)
-                ))[0].matchs;
-                const target_matchs = (
-                    await this.db.execute(this.db.select('users_private', 'matchs', `id = '${target_account}'`)
-                    ))[0].matchs;
-
-                // Update matchs
                 await this.db.execute(
-                    this.db.update('users_private', { matchs: [...matchs, match_id] }, `id = '${session.account}'`) +
-                    this.db.update('users_private', { matchs: [...target_matchs, match_id] }, `id = '${target_account}'`)
+                    this.db.insert('users_matchs', { connected: true, accounts: [session.account, target_account] })
                 );
 
                 console.log(`${session_token}:${socket.id} - Match between '${session.account}' and '${target_account}'`);
