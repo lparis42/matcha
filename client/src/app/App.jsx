@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import SignInRegister from '../components/SigninRegister';
 import io from 'socket.io-client';
 import { Button, styles } from './button';
 
