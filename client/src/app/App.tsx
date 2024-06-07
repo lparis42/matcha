@@ -1,22 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import io, { Socket } from 'socket.io-client';
 import { Button, styles } from './button';
-
-const authentification_token = localStorage.getItem('authentification_token');
-const socket: Socket = io({
-  autoConnect: false,
-  auth: {
-    token: authentification_token
-  }
-});
+import { Link } from 'react-router-dom';
 
 interface Geolocation {
   latitude: number | null;
   longitude: number | null;
 }
 
-const App: React.FC = () => {
+const App: React.FC<{ socket: any }> = ({ socket }) => {
   const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
   const [socketConnected, setSocketConnected] = useState<boolean>(false);
   const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
@@ -274,6 +266,9 @@ const App: React.FC = () => {
         ) : (
           'No position'
         )}
+        <br /><Link to="/signin"> <button>Sign In</button> </Link>
+        <br /><Link to="/signup"> <button>Sign Up</button> </Link>
+        <br /><Link to="/profile"> <button>Profile</button> </Link>
       </div>
       <div style={styles.container}>
         <div style={styles.innerContainer}>

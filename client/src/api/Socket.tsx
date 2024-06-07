@@ -16,7 +16,7 @@ export type Login = {
 }
 
 const authentification_token = localStorage.getItem('authentification_token');
-const socket = io({
+export const socket = io({
   autoConnect: false,
   auth: {
     token: authentification_token
