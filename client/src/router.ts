@@ -1,6 +1,4 @@
-import { defineConfig } from 'vite'
-import reactPages from 'vite-plugin-react-pages'
+import { createBrowserRouter } from 'react-router-dom'
+import { routes } from 'virtual:routes'
 
-export default defineConfig({
-  plugins: [reactPages()]
-})
+export const router = createBrowserRouter(routes)
