@@ -98,14 +98,14 @@ const App = () => {
 
   const eventRegistration = useCallback(() => {
     console.log('Emitting registration');
-    const userData = {
+    const data = {
       username: username,
       password: 'testpassword',
       email: `${username}@client.com`,
       last_name: 'Test',
       first_name: 'User',
     };
-    socket.emit('client:registration', userData, (err, message) => {
+    socket.emit('client:registration', data, (err, message) => {
       if (err) {
         console.error('Error:', err);
       } else {
@@ -166,7 +166,7 @@ const App = () => {
       gender: 'Male',
       sexual_orientation: 'Heterosexual',
       biography: 'Test biography',
-      pictures: ['picture1'],
+      pictures: [null, null, null, null, null],
     };
     socket.emit('client:edit', userData, (err, message) => {
       if (err) {
@@ -179,7 +179,7 @@ const App = () => {
 
   const eventView = useCallback(() => {
     console.log('Emitting view profile');
-    let target_account = prompt("Please enter the target account:");
+    let target_account = +prompt("Please enter the target account:");
     socket.emit('client:view', { target_account: target_account }, (err, message) => {
       if (err) {
         console.error('Error:', err);
@@ -266,27 +266,41 @@ const App = () => {
 
   return (
     <div>
-      <h1>Client Vite + React</h1>
-      <p>{socketConnected ? 'Socket is connected' : 'Socket is disconnected'}</p>
-      {geolocation ? (
-        <>
-          Latitude: {geolocation.latitude}, Longitude: {geolocation.longitude}
-        </>
-      ) : (
-        'No position'
-      )}
-      <br /><br />Test logout functionalities:
-      <br /><button onClick={emitRegistration}>Try registration</button>
-      <br /><button onClick={emitLogin}>Try login</button>
-      <br /><button onClick={emitPasswordReset}>Try password reset</button>
-
-      <br /><br />Test login functionalities:
-      <br /><button onClick={emitUnregistration}>Try unregistration</button>
-      <br /><button onClick={emitLogout}>Try logout</button>
-      <br /><button onClick={handleEditProfile}>Try edit profile</button>
-      <br /><button onClick={handleViewProfile}>Try view profile</button>
-      <br /><button onClick={handleLikeProfile}>Try like profile</button>
-      <br /><button onClick={handleUnLikeProfile}>Try unlike profile</button>
+      <div style={{ position: 'absolute' }}>
+        <h1>Client Vite + React</h1>
+        <p>{socketConnected ? 'Socket is connected' : 'Socket is disconnected'}</p>
+        {geolocation ? (
+          <>
+            Latitude: {geolocation.latitude}, Longitude: {geolocation.longitude}
+          </>
+        ) : (
+          'No position'
+        )}
+      </div>
+      <div style={styles.container}>
+        <div style={styles.innerContainer}>
+          <div style={styles.logoutInnerContainer}>
+            <ul style={styles.ul}>
+              <Button onClick={eventRegistration}>registration</Button>
+              <Button onClick={eventLogin}>login</Button>
+              <Button onClick={eventPasswordReset}>password reset</Button>
+            </ul>
+          </div>
+          <div style={styles.loginInnerContainer}>
+            <ul style={styles.ul}>
+              <Button onClick={eventUnregistration}>unregistration</Button>
+              <Button onClick={eventLogout}>logout</Button>
+              <Button onClick={eventEdit}>edit profile</Button>
+              <Button onClick={eventView}>view profile</Button>
+              <Button onClick={eventLike}>like profile</Button>
+              <Button onClick={eventUnLike}>unlike profile</Button>
+              <Button onClick={eventViewers}>viewers</Button>
+              <Button onClick={eventLikers}>likers</Button>
+              <Button onClick={eventChat}>chat</Button>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
