@@ -13,5 +13,8 @@
   "license": "ISC",
   "devDependencies": {
     "concurrently": "latest"
+  },
+  "dependencies": {
+    "vite": "^5.2.13"
   }
 }
