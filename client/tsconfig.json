@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+        "types": ["vite-plugin-remix-router/client"],
+        "jsx": "react" // Add this line
+    },
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["node_modules"]
+}
