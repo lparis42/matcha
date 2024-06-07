@@ -68,7 +68,7 @@ const constant = {
         `pictures VARCHAR(255)[5] DEFAULT ARRAY[]::VARCHAR(255)[]`,
         `fame_rating INT DEFAULT 0`,
         `geolocation VARCHAR[2]` /* [latitude, longitude] */,
-        `localization VARCHAR(255) DEFAULT 'Unknown'`,
+        `location VARCHAR(255) DEFAULT 'Unknown'`,
         `last_connection TIMESTAMP`,
 
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
@@ -77,12 +77,18 @@ const constant = {
       column_names: [
         `username`, `first_name`, `last_name`, `date_of_birth`, `gender`, `sexual_orientation`, `biography`, `interests`, `pictures`, `fame_rating`, `geolocation`, `localization`, `last_connection`
       ],
-      common_tags: [
+      interests: [
         'Technology', 'Health', 'Business', 'Entertainment', 
         'Travel', 'Education', 'Arts and Culture', 'Lifestyle', 
         'Science', 'Politics', 'Environment', 'Gastronomy', 
         'Sports', 'Automobile', 'Fashion', 'Economy', 
         'History', 'Philosophy', 'Religion', 'Law'
+      ],
+      genders: [
+        'Male', 'Female', 'Other'
+      ],
+      sexual_orientations: [
+        'Heterosexual', 'Bisexual', 'Homosexual', 'Other'
       ],
 
     },

@@ -8,21 +8,24 @@ async function handle_client_view_profile(socket, data, cb) {
         if (!session.account) {
             throw { client: 'Cannot view profile while not logged in', status: 401 };
         }
-        const target_account_id = parseInt(data.target_account);
+        const { target_account } = data;
+        if (typeof target_account !== 'number' || target_account < 1) {
+            throw { client: 'Invalid target account', status: 400 };
+        }
         const target_public_data = (await this.db.execute(
-            this.db.select('users_public', [...constant.database.users_public.column_names], `id = '${target_account_id}'`)
+            this.db.select('users_public', [...constant.database.users_public.column_names], `id = '${target_account}'`)
         ))[0];
         if (!target_public_data) {
-            throw { client: `Account '${target_account_id}' not found`, status: 404 };
+            throw { client: `Account '${target_account}' not found`, status: 404 };
         }
         const target_viewers = (await this.db.execute(
-            this.db.select('users_private', 'viewers', `id = '${target_account_id}'`)
+            this.db.select('users_private', 'viewers', `id = '${target_account}'`)
         ))[0].viewers;
 
         // Update target account fame rating and viewers
         if (!target_viewers.includes(session.account)) {
-            const update_fame_rating_query = this.db.update('users_public', { fame_rating: target_public_data.fame_rating + 1 }, `id = '${target_account_id}'`);
-            const update_viewers_query = this.db.update('users_private', { viewers: [...target_viewers, session.account] }, `id = '${target_account_id}'`);
+            const update_fame_rating_query = this.db.update('users_public', { fame_rating: target_public_data.fame_rating + 1 }, `id = '${target_account}'`);
+            const update_viewers_query = this.db.update('users_private', { viewers: [...target_viewers, session.account] }, `id = '${target_account}'`);
             await this.db.execute(update_fame_rating_query + update_viewers_query);
         }
 

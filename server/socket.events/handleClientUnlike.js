@@ -7,7 +7,10 @@ async function handleClientUnlike(socket, data, cb) {
         if (!session.account) {
             throw { client: 'Cannot unlike profile while not logged in', status: 401 };
         }
-        const target_account = parseInt(data.target_account);
+        const { target_account } = data;
+        if (typeof target_account !== 'number' || target_account < 1) {
+            throw { client: 'Invalid target account', status: 400 };
+        }
         const target_fame_rating = (await this.db.execute(
             this.db.select('users_public', ['fame_rating'], `id = '${target_account}'`)
         ))[0]?.fame_rating;
@@ -20,7 +23,7 @@ async function handleClientUnlike(socket, data, cb) {
 
         // Check if target account is already liked
         if (target_likers.includes(session.account)) {
-            
+
             // Update target user's fame rating and likers
             const fame_rating = target_fame_rating - 10;
             const likers = target_likers.filter(liker => liker !== session.account);

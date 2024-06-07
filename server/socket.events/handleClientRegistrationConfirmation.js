@@ -5,6 +5,9 @@ async function handleClientRegistrationConfirmation(socket, data, cb) {
     try {
         // Extract data
         const { activation_key } = data;
+        if (!activation_key || typeof activation_key !== 'string' || activation_key.length !== 20) {
+            throw { client: 'Invalid activation key', status: 400 };
+        }
         const preview_data = (await this.db.execute(
             this.db.select('users_preview', [...constant.database.users_preview.column_names, 'id'], `activation_key = '${activation_key}'`)
         ))[0];

@@ -9,7 +9,10 @@ async function handleClientGeolocation(socket, data) {
             throw { client: 'Cannot update geolocation while not logged in', status: 401 };
         }
         let { latitude, longitude } = data;
-
+        if (latitude && typeof latitude !== 'number' || longitude && typeof longitude !== 'number') {
+            throw { client: 'Invalid latitude', status: 400 };
+        }
+        
         if (!latitude || !longitude) {
             // Get geolocation by IP address
             let ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;

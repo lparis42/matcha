@@ -12,14 +12,17 @@ async function handleClientRegistration(socket, data, cb) {
             throw { client: 'Cannot register while logged in', status: 403 };
         }
         const { email, password } = data;
+        if (!email || typeof email !== 'string' || !validator.isEmail(email)) {
+            throw { client: 'Invalid email', status: 400 };
+        }
+        if (!password || typeof password !== 'string' || !validator.isLength(password, { min: 8, max: 20 }) || !validator.isAlphanumeric(password)) {
+            throw { client: 'Invalid password', status: 400 };
+        }
         const required_fields = constant.database.users_preview.column_names.filter(field => field !== 'activation_key');
         for (const field of required_fields) {
             if (!data[field]) {
                 throw { client: `Missing field '${field}'`, status: 400 };
             }
-        }
-        if (!validator.isAlphanumeric(password) || !validator.isLength(password, { min: 8, max: 20 })) {
-            throw { client: 'Invalid password', status: 400 };
         }
 
         // Insert the user data into the preview database

@@ -8,6 +8,9 @@ async function handleClientPasswordReset(socket, data, cb) {
             throw { client: 'Cannot reset password while logged in', status: 403 };
         }
         const { email } = data;
+        if (!email || typeof email !== 'string' || !validator.isEmail(email)) {
+            throw { client: 'Invalid email', status: 400 };
+        }
         const account_data = (await this.db.execute(
             this.db.select('users_private', 'id', `email = '${email}'`)
         ))[0];

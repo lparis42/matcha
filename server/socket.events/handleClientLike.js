@@ -6,7 +6,10 @@ async function handleClientLike(socket, data, cb) {
         if (!session.account) {
             throw { client: 'Cannot like while not logged in', status: 401 };
         }
-        const target_account = parseInt(data.target_account);
+        const { target_account } = data;
+        if (typeof target_account !== 'number' || target_account < 1) {
+            throw { client: 'Invalid target account', status: 400 };
+        }
         if (session.account === target_account) {
             throw { client: 'Cannot like own account', status: 403 };
         }

@@ -10,6 +10,12 @@ async function handleClientLogin(socket, data, cb) {
             throw { client: 'Already logged in', status: 403 };
         }
         const { email, password } = data;
+        if (!email || typeof email !== 'string' || !validator.isEmail(email)) {
+            throw { client: 'Invalid email', status: 400 };
+        }
+        if (!password || typeof password !== 'string' || !validator.isLength(password, { min: 8, max: 20 })) {
+            throw { client: 'Invalid password', status: 400 };
+        }
         const account_data = (await this.db.execute(
             this.db.select('users_private', ['id', 'email', 'password'], `email = '${email}'`)
         ))[0];

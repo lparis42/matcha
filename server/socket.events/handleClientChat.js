@@ -9,8 +9,19 @@ async function handleClientChat(socket, data, cb) {
         if (!session.account) {
             throw { client: 'Cannot send message while not logged in', status: 401 };
         }
-        const { message } = data;
-        const target_account = parseInt(data.target_account);
+        const { target_account, message } = data;
+        if (!message || typeof message !== 'string' || !validator.isLength(message, { min: 1, max: 255 } || !validator.isAlphanumeric(message))) {
+            throw { client: 'Invalid message', status: 400 };
+        }
+        if (typeof target_account !== 'number' || target_account < 1) {
+            throw { client: 'Invalid target account', status: 400 };
+        }
+        const picture = (await this.db.execute(
+            this.db.select('users_public', 'pictures', `id = '${session.account}'`)
+        ))[0].pictures[0];
+        if (!picture) {
+            throw { client: 'Cannot send message without at least one picture', status: 403 };
+        }
         const match = (await this.db.execute(
             this.db.select('users_matchs', ['id', 'connected', 'accounts', 'messages'], `accounts @> ARRAY[${session.account}, ${target_account}]`)
         ))[0];
@@ -20,9 +31,6 @@ async function handleClientChat(socket, data, cb) {
         if (!match.connected) {
             throw { client: 'Match not connected', status: 403 };
         }
-        if (!message || !validator.isLength(message, { min: 1, max: 255 }) || !validator.isAlphanumeric(message)) {
-            throw { client: 'Invalid message', status: 400 };
-        }
 
         // Update the chat with the new message
         const messages = [...match.messages, `${session.account}:${message}`];
@@ -30,8 +38,8 @@ async function handleClientChat(socket, data, cb) {
             this.db.update('users_matchs', { messages: messages }, `id = '${match.id}'`)
         );
 
-        console.log(`${session_token}:${socket.id} - Chat message sent to match ${match.id}`);
         cb(null);
+        console.log(`${session_token}:${socket.id} - Chat message sent to match ${match.id}`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
         console.error(`${session_token}:${socket.id} - Chat error: ${err.client || err}`);
