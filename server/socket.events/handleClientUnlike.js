@@ -18,7 +18,7 @@ async function handleClientUnlike(socket, data, cb) {
             throw { client: `Account '${target_account}' not found`, status: 404 };
         }
         const target_likers = (await this.db.execute(
-            this.db.select('users_private', 'likers', `id = '${target_account}'`)
+            this.db.select('users_private', ['likers'], `id = '${target_account}'`)
         ))[0].likers;
 
         // Check if target account is already liked

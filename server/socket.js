@@ -5,7 +5,7 @@ class Socket {
     constructor(server, db) {
         this.io = socketIo(server);
         this.db = db;
-        this.email = new Email(require('nodemailer').createTransport(require('./constant').nodemailer));
+        this.email = new Email(require('nodemailer').createTransport(require('./constants').nodemailer));
         this.session_store = {};
         this.configureMiddleware();
         this.configureBinds();

@@ -8,7 +8,7 @@ async function handleClientViewers(socket, cb) {
             throw { client: 'Cannot request viewers while not logged in', status: 401 };
         }
         const viewers = (await this.db.execute(
-            this.db.select('users_private', 'viewers', `id = '${session.account}'`)
+            this.db.select('users_private', ['viewers'], `id = '${session.account}'`)
         ))[0].viewers;
         
         cb(null, viewers);

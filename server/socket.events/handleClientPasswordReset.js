@@ -1,3 +1,5 @@
+const validator = require('validator');
+
 // Handler function for client password reset event
 async function handleClientPasswordReset(socket, data, cb) {
     const session_token = socket.handshake.auth.token;
@@ -12,7 +14,7 @@ async function handleClientPasswordReset(socket, data, cb) {
             throw { client: 'Invalid email', status: 400 };
         }
         const account_data = (await this.db.execute(
-            this.db.select('users_private', 'id', `email = '${email}'`)
+            this.db.select('users_private', ['id'], `email = '${email}'`)
         ))[0];
         if (!account_data) {
             throw { client: `Email '${email}' not found`, status: 404 };

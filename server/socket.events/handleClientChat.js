@@ -17,7 +17,7 @@ async function handleClientChat(socket, data, cb) {
             throw { client: 'Invalid target account', status: 400 };
         }
         const picture = (await this.db.execute(
-            this.db.select('users_public', 'pictures', `id = '${session.account}'`)
+            this.db.select('users_public', ['pictures'], `id = '${session.account}'`)
         ))[0].pictures[0];
         if (!picture) {
             throw { client: 'Cannot send message without at least one picture', status: 403 };

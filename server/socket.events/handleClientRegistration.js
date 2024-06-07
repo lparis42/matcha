@@ -1,4 +1,4 @@
-const constant = require('../constant');
+const constants = require('../constants');
 const bcrypt = require('bcrypt');
 const validator = require('validator');
 
@@ -11,20 +11,24 @@ async function handleClientRegistration(socket, data, cb) {
         if (session.account) {
             throw { client: 'Cannot register while logged in', status: 403 };
         }
-        const { email, password } = data;
+        const { first_name, last_name, email, password, username } = data;
+        if (!first_name || typeof first_name !== 'string' || !validator.isLength(first_name, { min: 2, max: 35 }) || !validator.isAlpha(first_name)) {
+            throw { client: 'Invalid first name', status: 400 };
+        }
+        if (!last_name || typeof last_name !== 'string' || !validator.isLength(last_name, { min: 2, max: 35 }) || !validator.isAlpha(last_name)) {
+            throw { client: 'Invalid last name', status: 400 };
+        }
         if (!email || typeof email !== 'string' || !validator.isEmail(email)) {
             throw { client: 'Invalid email', status: 400 };
         }
         if (!password || typeof password !== 'string' || !validator.isLength(password, { min: 8, max: 20 }) || !validator.isAlphanumeric(password)) {
             throw { client: 'Invalid password', status: 400 };
         }
-        const required_fields = constant.database.users_preview.column_names.filter(field => field !== 'activation_key');
-        for (const field of required_fields) {
-            if (!data[field]) {
-                throw { client: `Missing field '${field}'`, status: 400 };
-            }
+        if (!username || typeof username !== 'string' || !validator.isLength(username, { min: 4, max: 20 }) || !validator.isAlphanumeric(username)) {
+            throw { client: 'Invalid username', status: 400 };
         }
-
+        data = { first_name, last_name, email, password, username };
+        
         // Insert the user data into the preview database
         const activation_key = this.generateSecurePassword(20);
         data.password = await bcrypt.hash(password, 10);
@@ -41,8 +45,8 @@ async function handleClientRegistration(socket, data, cb) {
         }
 
         // Send the activation link by email
-        const activation_link = `https://localhost:${constant.https.port}/confirm?activation_key=${activation_key}`;
-        const activation_link_dev = `http://localhost:${constant.http.port}/confirm?activation_key=${activation_key}`; // For testing purposes
+        const activation_link = `https://localhost:${constants.https.port}/confirm?activation_key=${activation_key}`;
+        const activation_link_dev = `http://localhost:${constants.http.port}/confirm?activation_key=${activation_key}`; // For testing purposes
         await this.email.post({
             from: 'email@server.com',
             to: email,

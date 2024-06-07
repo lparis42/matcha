@@ -4,7 +4,7 @@ const https = require('https');
 const fs = require('fs');
 const Socket = require('./socket');
 const Database = require('./database');
-const constant = require('./constant');
+const constants = require('./constants');
 
 // Disable console.log and console.error in production
 // if (process.env.NODE_ENV !== 'development') {
@@ -46,7 +46,7 @@ class Server {
 
   // Configure the HTTPS server
   configureHTTPSServer() {
-    const { key, cert, passphrase } = constant.https.options;
+    const { key, cert, passphrase } = constants.https.options;
 
     this.server = https.createServer({
       key: fs.readFileSync(key),
@@ -64,16 +64,16 @@ class Server {
 
   // Configure the database
   async configureDatabase() {
-    this.db = new Database(...Object.values(constant.database.connection_parameters));
+    this.db = new Database(...Object.values(constants.database.connection_parameters));
     await this.db.connect();
     await this.db.execute(this.db.drop('users_matchs')); // For testing purposes
     await this.db.execute(this.db.drop('users_private')); // For testing purposes
     await this.db.execute(this.db.drop('users_preview')); // For testing purposes
     await this.db.execute(this.db.drop('users_public')); // For testing purposes
-    await this.db.execute(this.db.create('users_private', constant.database.users_private.columns));
-    await this.db.execute(this.db.create('users_preview', constant.database.users_preview.columns));
-    await this.db.execute(this.db.create('users_public', constant.database.users_public.columns));
-    await this.db.execute(this.db.create('users_matchs', constant.database.users_matchs.columns));
+    await this.db.execute(this.db.create('users_private', constants.database.users_private.columns));
+    await this.db.execute(this.db.create('users_preview', constants.database.users_preview.columns));
+    await this.db.execute(this.db.create('users_public', constants.database.users_public.columns));
+    await this.db.execute(this.db.create('users_matchs', constants.database.users_matchs.columns));
 
     console.log(`Database configured`);
   }
@@ -86,4 +86,4 @@ class Server {
 }
 
 const server = new Server();
-server.start(constant.https.port);
+server.start(constants.https.port);

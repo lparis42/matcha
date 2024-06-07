@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const validator = require('validator');
 
 // Handler function for client login event
 async function handleClientLogin(socket, data, cb) {

@@ -1,5 +1,7 @@
-const constant = require('../constant');
+const constants = require('../constants');
 const fs = require('fs')
+const validator = require('validator');
+const sharp = require('sharp');
 
 // Handler function for client edit event
 async function handleClientEdit(socket, data, cb) {
@@ -28,36 +30,39 @@ async function handleClientEdit(socket, data, cb) {
         if (date_of_birth && (typeof date_of_birth !== 'string' || !validator.isDate(date_of_birth))) {
             throw { client: 'Invalid date of birth', status: 400 };
         }
-        if (gender && (typeof gender !== 'string' || !constant.genders.includes(gender))) {
+        if (gender && (typeof gender !== 'string' || !constants.database.users_public.genders.includes(gender))) {
             throw { client: 'Invalid gender', status: 400 };
         }
-        if (sexual_orientation && (typeof sexual_orientation !== 'string' || !constant.sexual_orientations.includes(sexual_orientation))) {
+        if (sexual_orientation && (typeof sexual_orientation !== 'string' || !constants.database.users_public.sexual_orientations.includes(sexual_orientation))) {
             throw { client: 'Invalid sexual orientation', status: 400 };
         }
         if (biography && (typeof biography !== 'string' || !validator.isLength(biography, { min: 1, max: 255 }))) {
             throw { client: 'Invalid biography', status: 400 };
         }
-        if (interests && (!Array.isArray(interests) || !interests.every(interest => constant.interests.includes(interest)))) {
+        if (interests && (!Array.isArray(interests) || !interests.every(interest => constants.interests.includes(interest)))) {
             throw { client: 'Invalid interests', status: 400 };
         }
         if (pictures) {
             if (!Array.isArray(pictures) || pictures.length !== 5) {
                 throw { client: 'Invalid pictures', status: 400 };
             }
-            pictures.forEach((image) => {
-                const type = fileType(image); // Check the MIME type of the image
-                if (image && (!type || !type.mime.startsWith('image/'))) {
+            await Promise.all(pictures.map(async (image) => {
+                if (!image) {
+                    return;
+                }
+                try {
+                    await sharp(image).metadata();
+                } catch (err) {
                     throw { client: 'Invalid pictures', status: 400 };
                 }
-            });
-        }     
+            }));
+        }
         const account_public_data = await this.db.execute(
             this.db.select('users_public', editable_fields.filter(field => field !== 'email'), `id = '${session.account}'`)
         )[0];
         const account_private_data = await this.db.execute(
-            this.db.select('users_private', 'email', `id = '${session.account}'`)
+            this.db.select('users_private', ['email'], `id = '${session.account}'`)
         )[0];
-
         // Update 
         if (account_public_data) {
             if (pictures) {
@@ -88,7 +93,7 @@ async function handleClientEdit(socket, data, cb) {
                 this.db.update('users_public', account_public_data, `id = '${session.account}'`)
             );
         }
-        
+
         if (account_private_data) {
             account_private_data.email = email || account_private_data.email;
 

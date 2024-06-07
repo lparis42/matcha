@@ -8,7 +8,7 @@ async function handleClientLikers(socket, cb) {
             throw { client: 'Cannot request likers while not logged in', status: 401 };
         }
         const likers = (await this.db.execute(
-            this.db.select('users_private', 'likers', `id = '${session.account}'`)
+            this.db.select('users_private', ['likers'], `id = '${session.account}'`)
         ))[0].likers;
     
         cb(null, likers);

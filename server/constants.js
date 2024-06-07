@@ -1,4 +1,4 @@
-const constant = {
+const constants = {
   http: {
     port: 5173,
   },
@@ -58,8 +58,8 @@ const constant = {
         `id SERIAL PRIMARY KEY`,
 
         `username VARCHAR(20) UNIQUE CHECK (char_length(username) BETWEEN 6 AND 20 AND username ~ '^[A-Za-z0-9]+$')`,
-        `first_name VARCHAR(35)`,
-        `last_name VARCHAR(35)`,
+        `first_name VARCHAR(35) CHECK (char_length(first_name) BETWEEN 2 AND 35 AND first_name ~ '^[A-Za-z]+$')`,
+        `last_name VARCHAR(35) CHECK (char_length(last_name) BETWEEN 2 AND 35 AND last_name ~ '^[A-Za-z]+$')`,
         `date_of_birth DATE CHECK (date_of_birth BETWEEN '1900-01-01' AND '2021-12-31')`,
         `gender VARCHAR(35) CHECK (gender IN ('Male', 'Female', 'Other'))`,
         `sexual_orientation VARCHAR(35) CHECK (sexual_orientation IN ('Heterosexual', 'Bisexual', 'Homosexual', 'Other'))`,
@@ -75,7 +75,7 @@ const constant = {
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],
       column_names: [
-        `username`, `first_name`, `last_name`, `date_of_birth`, `gender`, `sexual_orientation`, `biography`, `interests`, `pictures`, `fame_rating`, `geolocation`, `localization`, `last_connection`
+        `username`, `first_name`, `last_name`, `date_of_birth`, `gender`, `sexual_orientation`, `biography`, `interests`, `pictures`, `fame_rating`, `geolocation`, `location`, `last_connection`
       ],
       interests: [
         'Technology', 'Health', 'Business', 'Entertainment', 
@@ -115,4 +115,4 @@ const constant = {
   }
 };
 
-module.exports = constant;
+module.exports = constants;

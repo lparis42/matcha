@@ -20,7 +20,7 @@ async function handleClientLike(socket, data, cb) {
             throw { client: `Account '${target_account}' not found`, status: 404 };
         }
         const pictures = (await this.db.execute(
-            this.db.select('users_public', 'pictures', `id = '${session.account}'`)
+            this.db.select('users_public', ['pictures'], `id = '${session.account}'`)
         ))[0].pictures;
         if (pictures.length === 0) {
             throw { client: 'Cannot like without at least one picture', status: 403 };
@@ -42,12 +42,12 @@ async function handleClientLike(socket, data, cb) {
 
             // Extract data
             const likers = (await this.db.execute(
-                this.db.select('users_private', 'likers', `id = '${session.account}'`)
+                this.db.select('users_private', ['likers'], `id = '${session.account}'`)
             ))[0].likers;
 
             // Check if the target account already liked current account
             const connected = (await this.db.execute(
-                this.db.select('users_matchs', 'connected', `accounts @> ARRAY[${session.account}, ${target_account}]`)
+                this.db.select('users_matchs', ['connected'], `accounts @> ARRAY[${session.account}, ${target_account}]`)
             ))[0]?.connected;
             if (connected) {
                 await this.db.execute(

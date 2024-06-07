@@ -98,14 +98,14 @@ const App = () => {
 
   const eventRegistration = useCallback(() => {
     console.log('Emitting registration');
-    const userData = {
+    const data = {
       username: username,
       password: 'testpassword',
       email: `${username}@client.com`,
       last_name: 'Test',
       first_name: 'User',
     };
-    socket.emit('client:registration', userData, (err, message) => {
+    socket.emit('client:registration', data, (err, message) => {
       if (err) {
         console.error('Error:', err);
       } else {
@@ -166,7 +166,7 @@ const App = () => {
       gender: 'Male',
       sexual_orientation: 'Heterosexual',
       biography: 'Test biography',
-      pictures: ['picture1'],
+      pictures: [null, null, null, null, null],
     };
     socket.emit('client:edit', userData, (err, message) => {
       if (err) {
@@ -179,7 +179,7 @@ const App = () => {
 
   const eventView = useCallback(() => {
     console.log('Emitting view profile');
-    let target_account = prompt("Please enter the target account:");
+    let target_account = +prompt("Please enter the target account:");
     socket.emit('client:view', { target_account: target_account }, (err, message) => {
       if (err) {
         console.error('Error:', err);

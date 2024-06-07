@@ -19,6 +19,7 @@
     "express": "latest",
     "nodemailer": "latest",
     "pg-promise": "latest",
+    "sharp": "^0.33.4",
     "socket.io": "latest",
     "validator": "latest"
   },
