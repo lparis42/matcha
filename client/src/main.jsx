@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import App from './app/App.jsx'
 import './index.css'
-import router from '@/router'
+import {router} from '@/router'
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
