@@ -33,7 +33,7 @@ class Database {
 
     insert(table, row, returning = '') {
         const columns = Object.keys(row).join(', ');
-        const values = Object.values(row).map(value => typeof value === 'string' ? `'${value}'` : value).join(', ');
+        const values = Object.values(row).map(value => this.preventInjection(value)).join(', ');
         const query = `INSERT INTO ${table} (${columns}) VALUES (${values}) ${returning};`;
         return query;
     }
@@ -50,14 +50,14 @@ class Database {
     }
 
     update(table, values, condition) {
-        const updates = Object.keys(values).map(key => `${key}=${pgp.as.value(values[key])}`).join(', ');
+        const updates = Object.keys(values).map(key => `${key}=${this.preventInjection(values[key])}`).join(', ');
         const query = `UPDATE ${table} SET ${updates} WHERE ${condition};`;
         return query;
     }
 
     upsert(table, values, conflictTarget) {
         const columns = Object.keys(values).join(', ');
-        const valuesFormatted = Object.values(values).map(value => typeof value === 'string' ? `'${value}'` : value).join(', ');
+        const valuesFormatted = Object.values(values).map(value => this.preventInjection(value)).join(', ');
         const updates = Object.keys(values)
             .map(column => `${column}=EXCLUDED.${column}`)
             .join(', ');
@@ -67,7 +67,7 @@ class Database {
 
     insert_where_not_exists(table, row, condition) {
         const columns = Object.keys(row).join(', ');
-        const values = Object.values(row).map(value => typeof value === 'string' ? `'${value}'` : value).join(', ');
+        const values = Object.values(row).map(value => this.preventInjection(value)).join(', ');
         const query = `
             INSERT INTO ${table} (${columns})
             SELECT ${values}
@@ -85,6 +85,13 @@ class Database {
         } catch (err) {
             throw `Database - ${err.message} : \n ${query}`;
         }
+    }
+
+    // *** Helper functions *** //
+
+    preventInjection(value) {
+        const formatted_value = pgp.as.value(value);
+        return typeof value === 'string' ? `'${formatted_value}'` : formatted_value;
     }
 }
 

@@ -8,6 +8,8 @@ const styles = {
     height: '100vh',
     backgroundColor: '#f0f0f0',
     margin: 0,
+    padding: 0,
+    border: 0,
   },
   innerContainer: {
     background: 'white',

@@ -6,12 +6,18 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "client": "npm run dev --prefix client",
     "server": "npm run dev --prefix server",
-    "dev": "concurrently \"npm run client\" \"npm run server\" "
+    "dev": "concurrently \"npm run client\" \"npm run server\" ",
+    "server:update": "(cd server && git add . && git commit -am 'update' && git push)",
+    "server:pull": "(cd server && git fetch origin master && git merge origin/master)",
+    "server:push": "(cd server && git push origin backend:main)"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "concurrently": "latest"
+  },
+  "dependencies": {
+    "vite": "^5.2.13"
   }
 }
