@@ -6,7 +6,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "client": "npm run dev --prefix client",
     "server": "npm run dev --prefix server",
-    "dev": "concurrently \"npm run client\" \"npm run server\" "
+    "dev": "concurrently \"npm run client\" \"npm run server\" ",
+    "server:update": "git add . && git commit -m 'update' && git push --prefix server",
+    "server:pull": "git fetch origin master && git merge origin/master --prefix server",
+    "server:push": "git push origin backend:main --prefix server"
   },
   "keywords": [],
   "author": "",
