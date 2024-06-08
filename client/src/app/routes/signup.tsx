@@ -18,6 +18,7 @@ import { Link } from 'react-router-dom'
 
 
 export function Component() {
+  console.log("Signup");s
 
     const { eventRegistration } = useSocket();
 
@@ -27,7 +28,7 @@ export function Component() {
         email: "",
         password: "",
         username: "",
-        date_of_birth: new Date(),
+        //date_of_birth: new Date(),
     });
 
     const handleChange = (e) => {
@@ -98,7 +99,7 @@ export function Component() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="birthday">Birthday</Label>
-                <DatePicker id="date_of_birth" date={data.date_of_birth} setDate={handleDateChange}/>
+                {/*<DatePicker id="date_of_birth" date={data.date_of_birth} setDate={handleDateChange}/>*/}
               </div>
               <Button type="submit" className="w-full" onClick={() => {handleSubmit()}}>
                 Create an account

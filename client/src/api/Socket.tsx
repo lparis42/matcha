@@ -8,7 +8,6 @@ export type Register = {
   email: string;
   last_name: string;
   first_name: string;
-  date_of_birth: Date;
 }
 
 export type Login = {
@@ -48,22 +47,23 @@ export const useSocket = (): SocketValue => {
   }
   return context;
 };
+  
+const authentification_token = localStorage.getItem('authentification_token');
+const socket = io({
+  autoConnect: false,
+  auth: {
+    token: authentification_token
+  }
+});
 
 export const SocketProvider = ({ children }) => {
-
+    console.log('SocketProvider');
     const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
+    const [log, setLog] = useState<boolean>(false);
     const [socketConnected, setSocketConnected] = useState<boolean>(false);
     const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
     //const location = useLocation();
     //const navigate = useNavigate();
-  
-    const authentification_token = localStorage.getItem('authentification_token');
-    const socket = io({
-      autoConnect: false,
-      auth: {
-        token: authentification_token
-      }
-    });
   
     const eventReconnectAttempt = useCallback((attemptNumber: number) => {
       console.log('Reconnect attempt:', attemptNumber);
@@ -140,15 +140,21 @@ export const SocketProvider = ({ children }) => {
       };
     }, [eventReconnectAttempt, eventSocketDisconnect, eventSocketError, eventSession, eventGeolocation]);
   
-    const eventRegistration = useCallback(() => {
-      console.log('Emitting registration');
-      const data = {
-        username: username,
-        password: 'testpassword',
-        email: `${username}@client.com`,
-        last_name: 'Test',
-        first_name: 'User',
-      };
+    const eventRegistration = useCallback((data: Register) => {
+      console.log('Emitting registration', typeof data);
+      if (data === undefined) {
+        data = {
+          username: username,
+          password: 'testpassword',
+          email: `${username}@client.com`,
+          last_name: 'Test',
+          first_name: 'User'
+        };
+      console.log('Emitting registration 2');
+
+      }
+      console.log('Emitting registration 3');
+
       socket.emit('client:registration', data, (err: Error, message: string) => {
         if (err) {
           console.error('Error:', err);
@@ -156,21 +162,22 @@ export const SocketProvider = ({ children }) => {
           console.log('Success:', message);
         }
       });
-    }, [username]);
+    }, [username])
   
-    const eventLogin = (Data : Login) => {
+    const eventLogin = useCallback((data : Login) => {
       console.log('Emitting login');
-      if (!Data) {
-        Data = { email: `${username}@client.com`, password: 'testpassword' }
+      if (!data) {
+        data = { email: `${username}@client.com`, password: 'testpassword' }
       }
-      socket.emit('client:login', Data, (err: Error, message: string) => {
+      socket.emit('client:login', data, (err: Error, message: string) => {
         if (err) {
           console.error('Error:', err);
         } else {
           console.log('Success:', message);
+          setLog(true);
         }
       });
-    };
+    }, [username]);
   
     const eventPasswordReset = useCallback(() => {
       console.log('Emitting password reset');
@@ -190,6 +197,7 @@ export const SocketProvider = ({ children }) => {
           console.error('Error:', err);
         } else {
           console.log('Success:', message);
+          setLog(false);
         }
       });
     }, []);
@@ -322,7 +330,8 @@ export const SocketProvider = ({ children }) => {
       eventUnLike,
       eventViewers,
       eventLikers,
-      eventChat
+      eventChat,
+      log
     }
 
     return (

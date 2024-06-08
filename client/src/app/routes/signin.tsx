@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useSocket, Login } from "@/api/Socket"
 
 export function Component() {
+  console.log("Login");
 
   const { eventLogin } = useSocket();
 

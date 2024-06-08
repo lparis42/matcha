@@ -40,8 +40,8 @@ const App = () => {
         <div style={styles.innerContainer}>
           <div style={styles.logoutInnerContainer}>
             <ul style={styles.ul}>
-              <Button onClick={eventRegistration}>registration</Button>
-              <Button onClick={eventLogin}>login</Button>
+              <Button onClick={() => eventRegistration()}>registration</Button>
+              <Button onClick={() => eventLogin()}>login</Button>
               <Button onClick={eventPasswordReset}>password reset</Button>
             </ul>
           </div>
