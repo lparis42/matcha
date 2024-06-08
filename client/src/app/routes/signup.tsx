@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import Signup from "@/components/Signup";
-import { emitRegistration, Register } from "@/api/Socket";
+import { Register, useSocket } from "@/api/Socket";
 
 import { Button } from '@/components/ui/button'
 import {
@@ -18,6 +18,8 @@ import { Link } from 'react-router-dom'
 
 
 export function Component() {
+
+    const { eventRegistration } = useSocket();
 
     const [data, setData] = useState<Register>({
         first_name: "",
@@ -44,7 +46,7 @@ export function Component() {
 
     const handleSubmit = () => {
         console.log(data);
-        emitRegistration(data);
+        eventRegistration(data);
     }
 
     return (

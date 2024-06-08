@@ -1,200 +1,333 @@
-import { useCallback } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 
 export type Register = {
-    username: string;
-    password: string;
-    email: string;
-    last_name: string;
-    first_name: string;
-    date_of_birth: string;
+  username: string;
+  password: string;
+  email: string;
+  last_name: string;
+  first_name: string;
+  date_of_birth: Date;
 }
 
 export type Login = {
-  username: string;
+  email: string;
   password: string;
 }
 
-const authentification_token = localStorage.getItem('authentification_token');
-export const socket = io({
-  autoConnect: false,
-  auth: {
-    token: authentification_token
-  }
-});
+interface Geolocation {
+  latitude: number | null;
+  longitude: number | null;
+}
 
-const handleReconnectAttempt = (attemptNumber) => {
-    console.log('Reconnect attempt:', attemptNumber);
-    socket.auth.token = localStorage.getItem("authentification_token");
-  }
+interface SocketValue {
+  socket: SocketIOClient.Socket;
+  socketConnected: boolean;
+  geolocation: GeolocationType; // Replace with the actual type
+  eventRegistration: Function; // Replace with the actual type
+  eventLogin: Function; // Replace with the actual type
+  eventPasswordReset: Function; // Replace with the actual type
+  eventLogout: Function; // Replace with the actual type
+  eventUnregistration: Function; // Replace with the actual type
+  eventEdit: Function; // Replace with the actual type
+  eventView: Function; // Replace with the actual type
+  eventLike: Function; // Replace with the actual type
+  eventUnLike: Function; // Replace with the actual type
+  eventViewers: Function; // Replace with the actual type
+  eventLikers: Function; // Replace with the actual type
+  eventChat: Function; // Replace with the actual type
+}
 
-  const handleSocketDisconnect = () => {
-    console.log('Socket disconnected');
-  }
+const SocketContext = createContext()
 
-  const handleSocketError = (error) => {
-    console.error('Connection failed:', error);
+export const useSocket = (): SocketValue => {
+  const context = useContext(SocketContext);
+  if (context === undefined) {
+    throw new Error('useSocket must be used within a SocketProvider');
   }
+  return context;
+};
 
-  const handleSession = (data, cb) => {
-    console.log('Received new session:', data);
-    localStorage.setItem("authentification_token", data);
-    cb();
-  }
+export const SocketProvider = ({ children }) => {
 
-  const handleRequestGeolocation = () => {
-    if (navigator.geolocation) {
-      //navigator.geolocation.watchPosition( // to get continuous updates
-      navigator.geolocation.getCurrentPosition( // to get a single update
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setGeolocation({ latitude, longitude });
-          socket.emit('client:geolocation', { latitude, longitude });
-          console.log('Emitting geolocation:', latitude, longitude);
-        },
-        (error) => {       
-          socket.emit('client:geolocation', { latitude: null, longitude: null });
-          console.error(`Error: ${error.message}`);
-        }
-      );
-    } else {
-      alert("Geolocation is not supported by this browser.");
-    }
-  }
-
-  const handleLocationPathname = () => {
-    if (location.pathname === '/confirm' && location.search.includes('activation_key')) {
-      const activation_key = new URLSearchParams(location.search).get('activation_key');
-      console.log('Emitting registration confirmation:', activation_key);
-      socket.emit('client:registration:confirmation', { activation_key: activation_key }, (err, message) => {
+    const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
+    const [socketConnected, setSocketConnected] = useState<boolean>(false);
+    const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
+    //const location = useLocation();
+    //const navigate = useNavigate();
+  
+    const authentification_token = localStorage.getItem('authentification_token');
+    const socket = io({
+      autoConnect: false,
+      auth: {
+        token: authentification_token
+      }
+    });
+  
+    const eventReconnectAttempt = useCallback((attemptNumber: number) => {
+      console.log('Reconnect attempt:', attemptNumber);
+      socket.auth.token = localStorage.getItem("authentification_token");
+    }, [socket]);
+  
+    const eventSocketDisconnect = useCallback(() => {
+      console.log('Socket disconnected');
+      setSocketConnected(false);
+    }, []);
+  
+    const eventSocketError = useCallback((error: Error) => {
+      console.error('Connection failed:', error);
+    }, [socket]);
+  
+    const eventGeolocation = useCallback(() => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setGeolocation({ latitude, longitude });
+            socket.emit('client:geolocation', { latitude, longitude });
+            console.log('Emitting geolocation:', latitude, longitude);
+          },
+          (error) => {
+            socket.emit('client:geolocation', { latitude: null, longitude: null });
+            console.error(`Error: ${error.message}`);
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }, [socket]);
+  
+    //const eventLocationPathname = useCallback(() => {
+    //  if (location.pathname === '/confirm' && location.search.includes('activation_key')) {
+    //    const activation_key = new URLSearchParams(location.search).get('activation_key');
+    //    console.log('Emitting registration confirmation:', activation_key);
+    //    socket.emit('client:registration_confirmation', { activation_key: activation_key }, (err, message) => {
+    //      if (err) {
+    //        console.error('Error:', err);
+    //      } else {
+    //        console.log('Success:', message);
+    //      }
+    //      navigate('/');
+    //    });
+    //  }
+    //}, [socket, location, navigate]);
+  
+    const eventSession = useCallback((data: string, cb: (err?: Error) => void) => {
+      console.log('Received new session:', data);
+      localStorage.setItem("authentification_token", data);
+    }, []);
+  
+    const eventSocketConnect = useCallback(() => {
+      console.log('Socket connected');
+  
+      socket.on('reconnect_attempt', eventReconnectAttempt);
+      socket.on('disconnect', eventSocketDisconnect);
+      socket.on('connect_error', eventSocketError);
+  
+      socket.on('server:session', eventSession);
+      socket.on('server:geolocation', eventGeolocation);
+  
+      setSocketConnected(true);
+  
+      return () => {
+        socket.off('reconnect_attempt', eventReconnectAttempt);
+        socket.off('disconnect', eventSocketDisconnect);
+        socket.off('connect_error', eventSocketError);
+  
+        socket.off('server:session', eventSession);
+        socket.off('server:geolocation', eventGeolocation);
+      };
+    }, [eventReconnectAttempt, eventSocketDisconnect, eventSocketError, eventSession, eventGeolocation]);
+  
+    const eventRegistration = useCallback(() => {
+      console.log('Emitting registration');
+      const data = {
+        username: username,
+        password: 'testpassword',
+        email: `${username}@client.com`,
+        last_name: 'Test',
+        first_name: 'User',
+      };
+      socket.emit('client:registration', data, (err: Error, message: string) => {
         if (err) {
           console.error('Error:', err);
         } else {
           console.log('Success:', message);
         }
-        //navigate('/');
       });
-    }
-  }
-
-  // Logout functionalities
-
-export const emitRegistration = (userData: Register | null) => {
-    console.log('Emitting registration');
-    if (!userData)
-      userData = {
-        username: 'testuser',
-        password: 'testpassword',
-        email: 'email@client.com',
-        last_name: 'Test',
-        first_name: 'User',
-        date_of_birth: '2000-01-01',
-      };
-    socket.emit('client:registration', userData, (err, message) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
+    }, [username]);
+  
+    const eventLogin = (Data : Login) => {
+      console.log('Emitting login');
+      if (!Data) {
+        Data = { email: `${username}@client.com`, password: 'testpassword' }
       }
-    });
-  }
-
-  export const emitLogin = (userData: Login | null) => {
-    console.log('Emitting login');
-    if (!userData)
-      userData = {
-        username: 'testuser',
-        password: 'testpassword',
-      };
-    socket.emit('client:login', userData, (err, message) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
-      }
-    });
-  }
-
-  const emitPasswordReset = () => {
-    console.log('Emitting password reset');
-    socket.emit('client:passwordreset', { email: 'email@client.com' }, (err, message) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
-      }
-    });
-  }
-
-  // Login functionalities
-
-  const emitLogout = () => {
-    console.log('Emitting logout');
-    socket.emit('client:logout', (err, message) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
-      }
-    });
-  }
-
-  const emitUnregistration = () => {
-    console.log('Emitting unregistration');
-    socket.emit('client:unregistration', (err, message) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
-      }
-    });
-  }
-
-  const handleEditProfile = () => {
-    console.log('Emitting edit profile');
-    const userData = {
-      gender: 'Male',
-      sexual_orientation: 'Heterosexual',
-      biography: 'Test biography',
+      socket.emit('client:login', Data, (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
     };
-    socket.emit('client:edit', userData, (err, message) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
-      }
-    });
-  }
+  
+    const eventPasswordReset = useCallback(() => {
+      console.log('Emitting password reset');
+      socket.emit('client:password_reset', { email: `${username}@client.com` }, (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }, [username]);
+  
+    const eventLogout = useCallback(() => {
+      console.log('Emitting logout');
+      socket.emit('client:logout', (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }, []);
+  
+    const eventUnregistration = useCallback(() => {
+      console.log('Emitting unregistration');
+      socket.emit('client:unregistration', (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }, []);
+  
+    const eventEdit = useCallback(() => {
+      console.log('Emitting edit profile');
+      const userData = {
+        gender: 'Male',
+        sexual_orientation: 'Heterosexual',
+        biography: 'Test biography',
+        pictures: [null, null, null, null, null],
+      };
+      socket.emit('client:edit', userData, (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }, []);
+  
+    const eventView = useCallback(() => {
+      console.log('Emitting view profile');
+      const target_account = Number(prompt("Please enter the target account:"));
+      socket.emit('client:view', { target_account: target_account }, (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }, []);
+  
+    const eventLike = useCallback(() => {
+      console.log('Emitting like profile');
+      const target_account = prompt("Please enter the target account:");
+      socket.emit('client:like', { target_account: target_account }, (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }, []);
+  
+    const eventUnLike = useCallback(() => {
+      console.log('Emitting unlike profile');
+      const target_account = prompt("Please enter the target account:");
+      socket.emit('client:unlike', { target_account: target_account }, (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }, []);
+  
+    const eventViewers = useCallback(() => {
+      console.log('Emitting viewers');
+      socket.emit('client:viewers', (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }, []);
+  
+    const eventLikers = useCallback(() => {
+      console.log('Emitting likers');
+      socket.emit('client:likers', (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }, []);
+  
+    const eventChat = useCallback(() => {
+      console.log('Emitting chat');
+      const target_match = prompt("Please enter the target account:");
+      const message = Math.random().toString(36).substring(3);
+      socket.emit('client:chat', { match_id: target_match, message: message }, (err: Error, message: string) => {
+        if (err) {
+          console.error('Error:', err);
+        } else {
+          console.log('Success:', message);
+        }
+      });
+    }, []);
+  
+    //useEffect(() => {
+    //  if (socketConnected) {
+    //    eventLocationPathname();
+    //  }
+    //}, [socketConnected, eventLocationPathname]);
+  
+    useEffect(() => {
+      socket.connect();
+      socket.on('connect', eventSocketConnect);
+      return () => {
+        socket.off('connect', eventSocketConnect);
+      };
+    }, [eventSocketConnect]);
 
-  const handleViewProfile = () => {
-    console.log('Emitting view profile');
-    socket.emit('client:view', { username: 'testuser' }, (err, message) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
-      }
-    });
-  }
+    const socketValue = {
+      socket,
+      socketConnected,
+      geolocation,
+      eventRegistration,
+      eventLogin,
+      eventPasswordReset,
+      eventLogout,
+      eventUnregistration,
+      eventEdit,
+      eventView,
+      eventLike,
+      eventUnLike,
+      eventViewers,
+      eventLikers,
+      eventChat
+    }
 
-  const handleLikeProfile = () => {
-    console.log('Emitting like profile');
-    socket.emit('client:like', { username: 'testuser' }, (err, message) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
-      }
-    });
-  }
-
-  const handleUnLikeProfile = () => {
-    console.log('Emitting unlike profile');
-    socket.emit('client:unlike', { username: 'testuser' }, (err, message) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
-      }
-    });
-  }
+    return (
+      <SocketContext.Provider value={socketValue}>
+        {children}
+      </SocketContext.Provider>
+    );
+};

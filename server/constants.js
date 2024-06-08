@@ -13,7 +13,7 @@ const constants = {
   database: {
     connection_parameters: {
       user: 'postgres',
-      host: 'localhost',
+      host: '172.19.0.2',
       database: 'postgres',
       password: 'pg',
       port: 5432,
