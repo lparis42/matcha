@@ -7,9 +7,9 @@
     "client": "npm run dev --prefix client",
     "server": "npm run dev --prefix server",
     "dev": "concurrently \"npm run client\" \"npm run server\" ",
-    "server:update": "git add . && git commit -am 'update' && git push",
-    "server:pull": "git fetch origin main && git merge origin/main",
-    "server:push": "git push origin backend:main"
+    "update": "git add . && git commit -am 'update' && git push",
+    "pull": "git fetch origin main && git merge origin/main",
+    "push": "git push origin backend:main"
   },
   "keywords": [],
   "author": "",
