@@ -7,7 +7,7 @@
     "client": "npm run dev --prefix client",
     "server": "npm run dev --prefix server",
     "dev": "concurrently \"npm run client\" \"npm run server\" ",
-    "server:update": "(cd server && git add . && git commit -am 'update' && git push)",
+    "server:update": "git add . && git commit -am 'update' && git push",
     "server:pull": "git fetch origin main && git merge origin/main",
     "server:push": "git push origin backend:main"
   },
