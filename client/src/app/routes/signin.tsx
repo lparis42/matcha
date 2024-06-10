@@ -4,13 +4,16 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Login, emitLogin } from "@/api/Socket"
+import { useSocket, Login } from "@/api/Socket"
 
 export function Component() {
+  console.log("Login");
+
+  const { eventLogin } = useSocket();
 
   const [data, setData] = useState<Login>({
     password: "",
-    username: ""
+    email: ""
   });
 
   const handleChange = (e) => {
@@ -22,7 +25,7 @@ export function Component() {
 
   const handleSubmit = () => {
     console.log(data);
-    emitLogin(data);
+    eventLogin(data);
   }
 
   return (
@@ -37,12 +40,12 @@ export function Component() {
                 <CardContent>
                 <div className="grid gap-4">
                     <div className="grid gap-2">
-                    <Label htmlFor="username">Username</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
-                        id="username"
-                        type="username"
+                        id="email"
+                        type="email"
                         placeholder=""
-                        value={data.username} onChange={(e) => handleChange(e)}
+                        value={data.email} onChange={(e) => handleChange(e)}
                         required
                     />
                     </div>
