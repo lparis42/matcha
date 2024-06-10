@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom'
 
 
 export function Component() {
-  console.log("Signup");s
+  console.log("Signup");
 
     const { eventRegistration } = useSocket();
 

@@ -75,15 +75,16 @@ async function handleClientEdit(socket, data, cb) {
                         return;
                     }
                     filenames[index] = `${Date.now()}_${index}.jpg`;
-                    const imagePath = path.join(__dirname, 'images', filenames[index]);
-                    // Create the directory if it does not exist
+                    const imagePath = path.join(path.resolve('..'), 'images', filenames[index]);
+                    console.log(imagePath);
                     const dir = path.dirname(imagePath);
-                    if (!fs.existsSync(dir)) {
-                        fs.mkdirSync(dir, { recursive: true });
+                    try {
+                        await fs.promises.access(dir);
+                    } catch {
+                        await fs.promises.mkdir(dir, { recursive: true });
                     }
                     const imageBuffer = Buffer.from(image, 'base64');
-                    // Write the image to the file
-                    fs.writeFileSync(imagePath, imageBuffer);
+                    await fs.promises.writeFile(imagePath, imageBuffer);
                 }));
                 account_public_data.pictures = filenames;
             }

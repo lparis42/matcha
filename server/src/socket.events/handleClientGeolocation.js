@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-async function handleClientGeolocation(socket, data) {
+async function handleClientGeolocation(socket, data, cb) {
     
     try {
         // Extract data
@@ -8,9 +8,9 @@ async function handleClientGeolocation(socket, data) {
         if (!session.account) {
             throw { client: 'Cannot update geolocation while not logged in', status: 401 };
         }
-        let { latitude, longitude } = data;
+        const { latitude, longitude } = data;
         if (latitude && typeof latitude !== 'number' || longitude && typeof longitude !== 'number') {
-            throw { client: 'Invalid latitude', status: 400 };
+            throw { client: 'Invalid geolocation', status: 400 };
         }
         
         if (!latitude || !longitude) {
@@ -26,12 +26,14 @@ async function handleClientGeolocation(socket, data) {
                     throw 'Geolocation not found';
                 }
             }
-            latitude = response.data.lat;
-            longitude = response.data.lon;
+            const latitude = response.data.lat;
+            const longitude = response.data.lon;
             const address = `${response.data.country}, ${response.data.regionName}, ${response.data.city}`;
             await this.db.execute(
                 this.db.update('users_public', { geolocation: [latitude, longitude] }, `id = ${session.account}`)
             );
+
+            cb(null);
             console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Approximate geolocation by IP address (${latitude}, ${longitude}): ${address}`);
         } else {
             // Get geolocation by coordinates
@@ -39,13 +41,15 @@ async function handleClientGeolocation(socket, data) {
             if (response.data.error) {
                 throw 'Geolocation not found';
             }
-            const address = `${response.data.address.country}, ${response.data.address.state}, ${response.data.address.town}`
             await this.db.execute(
                 this.db.update('users_public', { geolocation: [latitude, longitude] }, `id = ${session.account}`)
             );
-            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Current geolocation emitted by the client (${latitude}, ${longitude}): ${address}`);
+
+            cb(null);
+            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Current geolocation emitted by the client (${latitude}, ${longitude}): ${response.data.display_name}`);
         }
     } catch (err) {
+        cb({ message: err.client || 'Internal server error', status: err.status || 500 });
         console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Geolocation error: ${err.client || err}`);
     }
 }

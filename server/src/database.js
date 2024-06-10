@@ -15,7 +15,7 @@ class Database {
         try {
             await this.pgp.connect();
             console.log(`Database - Connected to the database '${this.pgp.$cn.database}'`);
-        } catch (err) {
+        } catch (err) {         
             throw `Database - ${err.message}`;
         }
     }

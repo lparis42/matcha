@@ -5,10 +5,9 @@ const fs = require('fs');
 const event = require('./event');
 const constants = require('./constants');
 const session = require('express-session');
-const sharedsession = require("express-socket.io-session");
+const sharedsession = require('express-socket.io-session');
 const cookieParser = require('cookie-parser');
 const socketIo = require('socket.io');
-const e = require('express');
 
 class Server {
 
@@ -24,11 +23,10 @@ class Server {
     this.configureSocketIO();
     this.configureMiddleware();
     this.configureRoutes();
-    this.server.listen(process.env.PORT, '0.0.0.0', () => {
+    this.server.listen(process.env.PORT, () => {
       console.log(`Listening on port ${process.env.PORT}`);
     });
   }
-
 
   // Configure the HTTPS server
   configureHTTPSServer() {
@@ -51,7 +49,6 @@ class Server {
     console.log(`Socket.IO configured`);
   }
 
-
   // Configure the middleware
   configureMiddleware() {
 
@@ -66,17 +63,14 @@ class Server {
       secret: secretKey,
       resave: false,
       saveUninitialized: true,
-      proxy: true,
       cookie: {
         secure: true,
         httpOnly: true,
         sameSite: true,
-        maxAge: 1000 * 60 * 60 * 24,
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
         path: '/',
-        signed: true,
       },
     });
-
 
     // Use the cookie parser middleware
     this.app.use(cookieParser(secretKey));
@@ -89,15 +83,20 @@ class Server {
       autoSave: true
     }));
 
-    // Log the cookies and session ID
-    this.app.use((req, res, next) => {
-      console.log('signedCookies: ', req.signedCookies['connect.sid']);
-      console.log('Session ID: ', req.sessionID);
-      next();
-    });
-
     // Configure the Socket.IO middleware
-    this.io.use((socket, next) => {
+    this.io.use(async (socket, next) => {
+
+      // Check if the session is testing
+      if (socket.handshake.auth?.testing === true) {
+        await this.event.setSession(socket.handshake.sessionID, { account: 0 });
+      }
+
+      // Get the session
+      const session = await this.event.getSession(socket.handshake.sessionID);
+      if (!session) {
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Session not found`);
+        return next(new Error('Session not found'));
+      }
 
       // Log the packet size
       socket.use((packet, next) => {
@@ -116,7 +115,6 @@ class Server {
 
   // Configure the routes
   configureRoutes() {
-
     // Serve the client
     this.app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
@@ -136,8 +134,6 @@ class Server {
     this.server.close(done);
     console.log(`Server closed`);
   }
-
-
 }
 
 module.exports = Server;

@@ -5,12 +5,9 @@ const e = require('express');
 
 class ClientSimulator {
     constructor() {
-        console.log('ClientSimulator: Starting');
         // Connexion au serveur Socket.IO
-        this.clientSocket = clientIo.connect(`https://localhost:${process.env.PORT}`, {
-            secure: true,
-            rejectUnauthorized: true,
-            withCredentials: true,
+        this.clientSocket = clientIo.connect(`https://localhost:443`, {
+            rejectUnauthorized: false,
             auth: { testing: true },
         });
 
@@ -95,8 +92,8 @@ class ClientSimulator {
         });
     }
 
-    async simulateGeolocation() {
-        return this.emit('client:geolocation', null);
+    async simulateGeolocation(latitude, longitude) {
+        return this.emit('client:geolocation', { latitude: latitude, longitude: longitude });
     }
 
     async simulateLikers() {
@@ -113,14 +110,14 @@ class ClientSimulator {
         return new Promise((resolve, reject) => {
             const callback = (err, message) => {
                 if (err) {
-                    resolve(0);
+                    reject(0);
                     console.error(`ClientSimulator: Event ${event} failed`);
                 } else {
                     console.log(`ClientSimulator: Event ${event} successful`, message || '');
                     resolve(1);
                 }
             };
-    
+
             if (data) {
                 this.clientSocket.emit(event, data, callback);
 
@@ -155,7 +152,7 @@ class ClientSimulator {
             case 'last_name':
                 return generateRandomString(2, 35, alpha);
             case 'message':
-                return generateRandomString(1, 255, allPrintableAscii);
+                return generateRandomString(1, 255 - 20 /*username*/ - 1 /*':'*/, allPrintableAscii);
             default:
                 throw new Error('Invalid type specified');
         }
