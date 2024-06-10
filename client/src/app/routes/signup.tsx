@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import Signup from "@/components/Signup";
-import { emitRegistration, Register } from "@/api/Socket";
+import { Register, useSocket } from "@/api/Socket";
 
 import { Button } from '@/components/ui/button'
 import {
@@ -18,6 +18,9 @@ import { Link } from 'react-router-dom'
 
 
 export function Component() {
+  console.log("Signup");s
+
+    const { eventRegistration } = useSocket();
 
     const [data, setData] = useState<Register>({
         first_name: "",
@@ -25,7 +28,7 @@ export function Component() {
         email: "",
         password: "",
         username: "",
-        date_of_birth: new Date(),
+        //date_of_birth: new Date(),
     });
 
     const handleChange = (e) => {
@@ -44,7 +47,7 @@ export function Component() {
 
     const handleSubmit = () => {
         console.log(data);
-        emitRegistration(data);
+        eventRegistration(data);
     }
 
     return (
@@ -96,7 +99,7 @@ export function Component() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="birthday">Birthday</Label>
-                <DatePicker id="date_of_birth" date={data.date_of_birth} setDate={handleDateChange}/>
+                {/*<DatePicker id="date_of_birth" date={data.date_of_birth} setDate={handleDateChange}/>*/}
               </div>
               <Button type="submit" className="w-full" onClick={() => {handleSubmit()}}>
                 Create an account
