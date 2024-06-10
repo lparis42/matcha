@@ -1,8 +1,8 @@
 async function handleClientLike(socket, data, cb) {
-    const session_token = socket.handshake.auth.token;
+    
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
         if (!session.account) {
             throw { client: 'Cannot like while not logged in', status: 401 };
         }
@@ -62,17 +62,17 @@ async function handleClientLike(socket, data, cb) {
                     this.db.insert('users_matchs', { connected: true, accounts: [session.account, target_account] })
                 );
 
-                console.log(`${session_token}:${socket.id} - Match between '${session.account}' and '${target_account}'`);
+                console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Match between '${session.account}' and '${target_account}'`);
             }
         } else {
             throw { client: `Account '${target_account}' already liked`, status: 403 };
         }
 
         cb(null);
-        console.log(`${session_token}:${socket.id} - Liked account '${target_account}'`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Liked account '${target_account}'`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${session_token}:${socket.id} - Like error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Like error: ${err.client || err}`);
     }
 }
 

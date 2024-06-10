@@ -1,9 +1,9 @@
 // Handler function for client unregistration event
 async function handleClientUnregistration(socket, cb) {
-    const session_token = socket.handshake.auth.token;
+    
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
         if (!session.account) {
             throw { client: 'Cannot unregister while not logged in', status: 401 };
         }
@@ -18,10 +18,10 @@ async function handleClientUnregistration(socket, cb) {
         session.account = null;
 
         cb(null);
-        console.log(`${session_token}:${socket.id} - Unregistration for account '${account_id}'`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Unregistration for account '${account_id}'`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${session_token}:${socket.id} - Unregistration error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Unregistration error: ${err.client || err}`);
     }
 }
 

@@ -5,10 +5,9 @@ const validator = require('validator');
 
 // Handler function for client registration event
 async function handleClientRegistration(socket, data, cb) {
-    const session_token = socket.handshake.auth.token;
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
         if (session.account) {
             throw { client: 'Cannot register while logged in', status: 403 };
         }
@@ -46,17 +45,15 @@ async function handleClientRegistration(socket, data, cb) {
         }
 
         // Send the activation link by email
-        const activation_link = `https://localhost:${constants.https.port}/confirm?activation_key=${activation_key}`;
-        const activation_link_dev = `http://localhost:${constants.http.port}/confirm?activation_key=${activation_key}`; // For testing purposes
+        const link = `https://localhost:${constants.https.port}/confirm?activation_key=${activation_key}`;
         await this.email.post({
             from: 'email@server.com',
             to: email,
             subject: 'Account registration',
-            html: `Here is the link to confirm your registration: <a href="${activation_link}">${activation_link}</a>
-                <br>For development purposes: <a href="${activation_link_dev}">${activation_link_dev}</a>` // For testing purposes
+            html: `Here is the link to confirm your registration: <a href="${link}">${link}</a>`
         });
 
-        console.log(`${session_token}:${socket.id} - Confirmation email sent to '${email}'`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Confirmation email sent to '${email}'`);
 
         // Confirm registration for testing purposes
         await new Promise((resolve, reject) => {
@@ -71,7 +68,7 @@ async function handleClientRegistration(socket, data, cb) {
         cb(null);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${session_token}:${socket.id} - Registration error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Registration error: ${err.client || err}`);
     }
 }
 

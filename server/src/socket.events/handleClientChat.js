@@ -2,10 +2,10 @@ const validator = require('validator');
 
 // Method to send a message to a chat
 async function handleClientChat(socket, data, cb) {
-    const session_token = socket.handshake.auth.token;
+    
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
         if (!session.account) {
             throw { client: 'Cannot send message while not logged in', status: 401 };
         }
@@ -39,10 +39,10 @@ async function handleClientChat(socket, data, cb) {
         );
 
         cb(null);
-        console.log(`${session_token}:${socket.id} - Chat message sent to match ${match.id}`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Chat message sent to match ${match.id}`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${session_token}:${socket.id} - Chat error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Chat error: ${err.client || err}`);
     }
 }
 

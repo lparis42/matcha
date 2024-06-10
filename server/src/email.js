@@ -1,10 +1,18 @@
+const constants = require('./constants');
+const nodemailer = require('nodemailer');
+
 class Email {
-  constructor(transporter) {
-    this.transporter =  transporter;
+  constructor() {
+    this.transporter = nodemailer.createTransport(constants.nodemailer);
   }
 
-  post(recipients) {
-    return this.transporter.sendMail(recipients);
+  async post(recipients) {
+    try {
+      return await this.transporter.sendMail(recipients);
+    } catch (error) {
+      console.error(error);
+      throw error; // re-throw the error so it can be handled elsewhere
+    }
   }
 }
 

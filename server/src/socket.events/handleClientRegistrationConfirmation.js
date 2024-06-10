@@ -27,10 +27,10 @@ async function handleClientRegistrationConfirmation(socket, data, cb) {
         );
 
         cb(null);
-        console.log(`${socket.handshake.auth.token}:${socket.id} - Registration confirmed for preview account '${preview_data.id}'`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Registration confirmed for preview account '${preview_data.id}'`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${socket.handshake.auth.token}:${socket.id} - Registration confirmation error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Registration confirmation error: ${err.client || err}`);
     }
 }
 

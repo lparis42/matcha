@@ -1,24 +1,21 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import io from 'socket.io-client';
 import { Button, styles } from './button';
+import { Link } from 'react-router-dom';
 
-const authentification_token = localStorage.getItem('authentification_token');
-const socket = io({
-  autoConnect: false,
-  auth: {
-    token: authentification_token
-  }
-});
+interface Geolocation {
+  latitude: number | null;
+  longitude: number | null;
+}
 
-const App = () => {
-  const [username, setUsername] = useState((Math.random().toString(36)).slice(2, 8));
-  const [socketConnected, setSocketConnected] = useState(false);
-  const [geolocation, setGeolocation] = useState(null);
+const App: React.FC<{ socket: any }> = ({ socket }) => {
+  const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
+  const [socketConnected, setSocketConnected] = useState<boolean>(false);
+  const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const eventReconnectAttempt = useCallback((attemptNumber) => {
+  const eventReconnectAttempt = useCallback((attemptNumber: number) => {
     console.log('Reconnect attempt:', attemptNumber);
     socket.auth.token = localStorage.getItem("authentification_token");
   }, [socket]);
@@ -28,14 +25,13 @@ const App = () => {
     setSocketConnected(false);
   }, []);
 
-  const eventSocketError = useCallback((error) => {
+  const eventSocketError = useCallback((error: Error) => {
     console.error('Connection failed:', error);
   }, [socket]);
 
   const eventGeolocation = useCallback(() => {
     if (navigator.geolocation) {
-      //navigator.geolocation.watchPosition( // to get continuous updates
-      navigator.geolocation.getCurrentPosition( // to get a single update
+      navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setGeolocation({ latitude, longitude });
@@ -67,10 +63,10 @@ const App = () => {
     }
   }, [socket, location, navigate]);
 
-  const eventSession = useCallback((data, cb) => {
+  const eventSession = useCallback((data: string, cb: (err?: Error) => void) => {
     console.log('Received new session:', data);
     localStorage.setItem("authentification_token", data);
-  }, [socket]);
+  }, []);
 
   const eventSocketConnect = useCallback(() => {
     console.log('Socket connected');
@@ -92,73 +88,69 @@ const App = () => {
       socket.off('server:session', eventSession);
       socket.off('server:geolocation', eventGeolocation);
     };
-  }, [socket, eventReconnectAttempt, eventSocketDisconnect, eventSocketError, eventSession, eventGeolocation]);
-
-  // Logout functionalities
+  }, [eventReconnectAttempt, eventSocketDisconnect, eventSocketError, eventSession, eventGeolocation]);
 
   const eventRegistration = useCallback(() => {
     console.log('Emitting registration');
-    const userData = {
+    const data = {
       username: username,
       password: 'testpassword',
       email: `${username}@client.com`,
       last_name: 'Test',
       first_name: 'User',
     };
-    socket.emit('client:registration', userData, (err, message) => {
+    socket.emit('client:registration', data, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
+  }, [username]);
 
   const eventLogin = useCallback(() => {
     console.log('Emitting login');
-    socket.emit('client:login', { email: `${username}@client.com`, password: 'testpassword' }, (err, message) => {
+    socket.emit('client:login', { email: `${username}@client.com`, password: 'testpassword' }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
+  }, [username]);
 
   const eventPasswordReset = useCallback(() => {
     console.log('Emitting password reset');
-    socket.emit('client:password_reset', { email: `${username}@client.com`, }, (err, message) => {
+    socket.emit('client:password_reset', { email: `${username}@client.com` }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
-
-  // Login functionalities
+  }, [username]);
 
   const eventLogout = useCallback(() => {
     console.log('Emitting logout');
-    socket.emit('client:logout', (err, message) => {
+    socket.emit('client:logout', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
+  }, []);
 
   const eventUnregistration = useCallback(() => {
     console.log('Emitting unregistration');
-    socket.emit('client:unregistration', (err, message) => {
+    socket.emit('client:unregistration', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
+  }, []);
 
   const eventEdit = useCallback(() => {
     console.log('Emitting edit profile');
@@ -166,89 +158,87 @@ const App = () => {
       gender: 'Male',
       sexual_orientation: 'Heterosexual',
       biography: 'Test biography',
-      pictures: ['picture1'],
+      pictures: [null, null, null, null, null],
     };
-    socket.emit('client:edit', userData, (err, message) => {
+    socket.emit('client:edit', userData, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
+  }, []);
 
   const eventView = useCallback(() => {
     console.log('Emitting view profile');
-    let target_account = prompt("Please enter the target account:");
-    socket.emit('client:view', { target_account: target_account }, (err, message) => {
+    const target_account = Number(prompt("Please enter the target account:"));
+    socket.emit('client:view', { target_account: target_account }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
+  }, []);
 
   const eventLike = useCallback(() => {
     console.log('Emitting like profile');
-    let target_account = prompt("Please enter the target account:");
-    socket.emit('client:like', { target_account: target_account }, (err, message) => {
+    const target_account = prompt("Please enter the target account:");
+    socket.emit('client:like', { target_account: target_account }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
+  }, []);
 
   const eventUnLike = useCallback(() => {
     console.log('Emitting unlike profile');
-    let target_account = prompt("Please enter the target account:");
-    socket.emit('client:unlike', { target_account: target_account }, (err, message) => {
+    const target_account = prompt("Please enter the target account:");
+    socket.emit('client:unlike', { target_account: target_account }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
+  }, []);
 
   const eventViewers = useCallback(() => {
     console.log('Emitting viewers');
-    socket.emit('client:viewers', (err, message) => {
+    socket.emit('client:viewers', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
+  }, []);
 
   const eventLikers = useCallback(() => {
     console.log('Emitting likers');
-    socket.emit('client:likers', (err, message) => {
+    socket.emit('client:likers', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
+  }, []);
 
   const eventChat = useCallback(() => {
     console.log('Emitting chat');
-    let target_match = prompt("Please enter the target account:");
+    const target_match = prompt("Please enter the target account:");
     const message = Math.random().toString(36).substring(3);
-    socket.emit('client:chat', { match_id: target_match, message: message }, (err, message) => {
+    socket.emit('client:chat', { match_id: target_match, message: message }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
       }
     });
-  }, [socket]);
-
-  // useEffects
+  }, []);
 
   useEffect(() => {
     if (socketConnected) {
@@ -262,31 +252,48 @@ const App = () => {
     return () => {
       socket.off('connect', eventSocketConnect);
     };
-  }, [socket, eventSocketConnect]);
+  }, [eventSocketConnect]);
 
   return (
     <div>
-      <h1>Client Vite + React</h1>
-      <p>{socketConnected ? 'Socket is connected' : 'Socket is disconnected'}</p>
-      {geolocation ? (
-        <>
-          Latitude: {geolocation.latitude}, Longitude: {geolocation.longitude}
-        </>
-      ) : (
-        'No position'
-      )}
-      <br /><br />Test logout functionalities:
-      <br /><button onClick={emitRegistration}>Try registration</button>
-      <br /><button onClick={emitLogin}>Try login</button>
-      <br /><button onClick={emitPasswordReset}>Try password reset</button>
-
-      <br /><br />Test login functionalities:
-      <br /><button onClick={emitUnregistration}>Try unregistration</button>
-      <br /><button onClick={emitLogout}>Try logout</button>
-      <br /><button onClick={handleEditProfile}>Try edit profile</button>
-      <br /><button onClick={handleViewProfile}>Try view profile</button>
-      <br /><button onClick={handleLikeProfile}>Try like profile</button>
-      <br /><button onClick={handleUnLikeProfile}>Try unlike profile</button>
+      <div style={{ position: 'absolute' }}>
+        <h1>Client Vite + React</h1>
+        <p>{socketConnected ? 'Socket is connected' : 'Socket is disconnected'}</p>
+        {geolocation ? (
+          <>
+            Latitude: {geolocation.latitude}, Longitude: {geolocation.longitude}
+          </>
+        ) : (
+          'No position'
+        )}
+        <br /><Link to="/signin"> <button>Sign In</button> </Link>
+        <br /><Link to="/signup"> <button>Sign Up</button> </Link>
+        <br /><Link to="/profile"> <button>Profile</button> </Link>
+      </div>
+      <div style={styles.container}>
+        <div style={styles.innerContainer}>
+          <div style={styles.logoutInnerContainer}>
+            <ul style={styles.ul}>
+              <Button onClick={eventRegistration}>registration</Button>
+              <Button onClick={eventLogin}>login</Button>
+              <Button onClick={eventPasswordReset}>password reset</Button>
+            </ul>
+          </div>
+          <div style={styles.loginInnerContainer}>
+            <ul style={styles.ul}>
+              <Button onClick={eventUnregistration}>unregistration</Button>
+              <Button onClick={eventLogout}>logout</Button>
+              <Button onClick={eventEdit}>edit profile</Button>
+              <Button onClick={eventView}>view profile</Button>
+              <Button onClick={eventLike}>like profile</Button>
+              <Button onClick={eventUnLike}>unlike profile</Button>
+              <Button onClick={eventViewers}>viewers</Button>
+              <Button onClick={eventLikers}>likers</Button>
+              <Button onClick={eventChat}>chat</Button>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

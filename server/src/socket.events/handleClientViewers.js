@@ -1,9 +1,9 @@
 // Method to request the likers of a user
 async function handleClientViewers(socket, cb) {
-    const session_token = socket.handshake.auth.token;
+    
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
         if (!session.account) {
             throw { client: 'Cannot request viewers while not logged in', status: 401 };
         }
@@ -12,10 +12,10 @@ async function handleClientViewers(socket, cb) {
         ))[0].viewers;
         
         cb(null, viewers);
-        console.log(`${session_token}:${socket.id} - Request viewers for account '${session.account}'`);  
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Request viewers for account '${session.account}'`);  
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${session_token}:${socket.id} - Request viewers error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Request viewers error: ${err.client || err}`);
     }
 }
 

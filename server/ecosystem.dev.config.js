@@ -2,7 +2,7 @@ module.exports = {
     apps: [
       {
         name: 'server-dev',
-        script: './server.js',
+        script: './src/index.js',
         instances: 1,
         autorestart: true,
         watch: true,

@@ -1,14 +1,17 @@
 const clientIo = require('socket.io-client');
+const fs = require('fs');
+const path = require('path');
+const e = require('express');
 
 class ClientSimulator {
     constructor() {
+        console.log('ClientSimulator: Starting');
         // Connexion au serveur Socket.IO
         this.clientSocket = clientIo.connect(`https://localhost:${process.env.PORT}`, {
             secure: true,
-            rejectUnauthorized: false,
-            path: '/socket.io',
-            transports: ['websocket'],
-            withCredentials: true
+            rejectUnauthorized: true,
+            withCredentials: true,
+            auth: { testing: true },
         });
 
         this.clientData = {
@@ -106,20 +109,23 @@ class ClientSimulator {
 
     // ** Tools **
 
-    async emit(event, data) {
-        return await new Promise((resolve) => {
-            const cb = (err, data) => {
+    emit(event, data) {
+        return new Promise((resolve, reject) => {
+            const callback = (err, message) => {
                 if (err) {
-                    console.error(`ClientSimulator: ${event} - ${err.message} (${err.status})`);
-                    return resolve(0);
+                    resolve(0);
+                    console.error(`ClientSimulator: Event ${event} failed`);
+                } else {
+                    console.log(`ClientSimulator: Event ${event} successful`, message || '');
+                    resolve(1);
                 }
-                return resolve(1);
             };
-
+    
             if (data) {
-                this.clientSocket.emit(event, data, cb);
+                this.clientSocket.emit(event, data, callback);
+
             } else {
-                this.clientSocket.emit(event, cb);
+                this.clientSocket.emit(event, callback);
             }
         });
     }
@@ -144,7 +150,7 @@ class ClientSimulator {
             case 'password':
                 return generateRandomString(8, 20, alphanumeric);
             case 'email':
-                return `${generateRandomString(6, 40, alphanumeric)}@client.fr`;
+                return `${generateRandomString(6, 30, alphanumeric)}@client.com`;
             case 'first_name':
             case 'last_name':
                 return generateRandomString(2, 35, alpha);

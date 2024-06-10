@@ -1,10 +1,10 @@
 const constants = require('../constants');
 
 async function handleClientView(socket, data, cb) {
-    const session_token = socket.handshake.auth.token;
+    
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
         if (!session.account) {
             throw { client: 'Cannot view profile while not logged in', status: 401 };
         }
@@ -42,10 +42,10 @@ async function handleClientView(socket, data, cb) {
         );
 
         cb(null, target_public_data);
-        console.log(`${session_token}:${socket.id} - view_profile '${target_account}'`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - view_profile '${target_account}'`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${session_token}:${socket.id} - view_profile_error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - view_profile_error: ${err.client || err}`);
     }
 }
 

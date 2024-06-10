@@ -3,10 +3,10 @@ const validator = require('validator');
 
 // Handler function for client login event
 async function handleClientLogin(socket, data, cb) {
-    const session_token = socket.handshake.auth.token;
+    
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
         if (session.account) {
             throw { client: 'Already logged in', status: 403 };
         }
@@ -29,16 +29,16 @@ async function handleClientLogin(socket, data, cb) {
         if (!is_password_valid) {
             throw { client: 'Invalid password', status: 401 };
         }
-        session.account = account_data.id;
+        await this.setSession(socket.handshake.sessionID, { account: account_data.id });
 
         // Request geolocation
         socket.emit('server:geolocation');
 
         cb(null);
-        console.log(`${session_token}:${socket.id} - Logged in to account '${account_data.id}'`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Logged in to account '${account_data.id}'`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${session_token}:${socket.id} - Login error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Login error: ${err.client || err}`);
     }
 }
 

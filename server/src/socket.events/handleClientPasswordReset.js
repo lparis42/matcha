@@ -3,10 +3,11 @@ const constants = require('../constants');
 
 // Handler function for client password reset event
 async function handleClientPasswordReset(socket, data, cb) {
-    const session_token = socket.handshake.auth.token;
+    
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
+        
         if (session.account) {
             throw { client: 'Cannot reset password while logged in', status: 403 };
         }
@@ -34,11 +35,11 @@ async function handleClientPasswordReset(socket, data, cb) {
         await this.email.post({
             from: 'email@server.com',
             to: email,
-            subject: 'New password',
-            html: `Click here to confirm your new password: <a href="${link}">${link}</a>`
+            subject: 'Password reset',
+            html: `Here the link to confirm your new password: <a href="${link}">${link}</a>`
         });
 
-        console.log(`${session_token}:${socket.id} - New password sent by email to '${email}'`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - New password sent by email to '${email}'`);
 
         // Confirm the password reset for testing purposes
         await new Promise((resolve, reject) => {
@@ -53,7 +54,7 @@ async function handleClientPasswordReset(socket, data, cb) {
         cb(null);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${session_token}:${socket.id} - Password reset error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Password reset error: ${err.client || err}`);
     }
 }
 

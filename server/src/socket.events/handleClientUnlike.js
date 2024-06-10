@@ -1,14 +1,13 @@
 // Method to unlike user's profile
 async function handleClientUnlike(socket, data, cb) {
-    const session_token = socket.handshake.auth.token;
+    
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
         if (!session.account) {
             throw { client: 'Cannot unlike profile while not logged in', status: 401 };
         }
         const { target_account } = data;
-        console.log(data);
         if (typeof target_account !== 'number' || target_account < 1) {
             throw { client: 'Invalid target account', status: 400 };
         }
@@ -42,10 +41,10 @@ async function handleClientUnlike(socket, data, cb) {
         }
 
         cb(null);
-        console.log(`${session_token}:${socket.id} - Unlike ${target_account}`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Unlike ${target_account}`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${session_token}:${socket.id} - Unlike error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Unlike error: ${err.client || err}`);
     }
 }
 

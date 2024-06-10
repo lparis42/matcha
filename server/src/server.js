@@ -2,10 +2,13 @@ const path = require('path');
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
-const Socket = require('./socket');
+const event = require('./event');
 const constants = require('./constants');
 const session = require('express-session');
+const sharedsession = require("express-socket.io-session");
 const cookieParser = require('cookie-parser');
+const socketIo = require('socket.io');
+const e = require('express');
 
 class Server {
 
@@ -17,88 +20,19 @@ class Server {
   async start(port) {
     process.env.PORT = port;
     this.app = express();
-    this.configureRoutes();
     this.configureHTTPSServer();
     this.configureSocketIO();
     this.configureMiddleware();
+    this.configureRoutes();
     this.server.listen(process.env.PORT, '0.0.0.0', () => {
       console.log(`Listening on port ${process.env.PORT}`);
     });
   }
 
-  // Configure the middleware
-  configureMiddleware() {
-    const secretKey = 'your_secure_and_random_secret_key';
-
-    this.app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
-    this.app.use(cookieParser(secretKey));
-    // Create a session
-    this.app.use(session({
-      secret: secretKey,
-      resave: false,
-      saveUninitialized: true,
-      cookie: {
-        secure: true,
-        maxAge: 900000,
-        httpOnly: true
-      },
-    }));
-
-    this.socket.io.use((socket, next) => {
-      const ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
-
-      socket.use((packet, nextPacket) => {
-        try {
-          const size = Buffer.byteLength(JSON.stringify(packet), 'utf8');
-          console.log(`Socket.io middleware - ${ip} - Packet size: ${size} bytes`);
-        } catch (err) {
-          console.error(`Socket.io middleware - ${ip} - ${err} - Ignoring packet`);
-        }
-        nextPacket();
-      });
-
-      const cookie = socket.handshake.headers.cookie;
-      console.log(`Socket.io middleware - ${ip} - Received cookie: ${cookie}`);
-
-      if (cookie) {
-        const parsedCookie = require('cookie').parse(cookie);
-        const sessionId = cookieParser.signedCookie(parsedCookie['connect.sid'], secretKey);
-        console.log(`Socket.io middleware - ${ip} - Parsed cookie: ${parsedCookie}`);
-        console.log(`Socket.io middleware - ${ip} - Found session ID: ${sessionId}`);
-        this.sessionStore.get(sessionId, (err, session) => {
-          if (err || !session) {
-            session = {
-              isNew: true,
-              id: socket.id
-            };
-          }
-
-          socket.session = session;
-
-          console.log(`Socket.io middleware - ${ip} - Found session with ID: ${session.id}`);
-        });
-      }
-
-      next();
-    });
-
-
-    console.log(`Middleware configured`);
-  }
-
-  // Configure the routes
-  configureRoutes() {
-    this.app.get('/', (req, res) => {
-      req.session.views = (req.session.views || 0) + 1;
-      res.send(`You have viewed this page ${req.session.views} times`);
-    });
-    console.log(`Routes configured`);
-  }
 
   // Configure the HTTPS server
   configureHTTPSServer() {
     const { key, cert, passphrase } = constants.https.options;
-
     this.server = https.createServer({
       key: fs.readFileSync(key),
       cert: fs.readFileSync(cert),
@@ -109,9 +43,92 @@ class Server {
 
   // Configure Socket.IO
   configureSocketIO() {
-
-    this.socket = new Socket(this.server);
+    this.io = socketIo(this.server, {
+      maxHttpBufferSize: 1e7, // 10 MB
+    });
+    this.store = new session.MemoryStore();
+    this.event = new event(this.io, this.store);
     console.log(`Socket.IO configured`);
+  }
+
+
+  // Configure the middleware
+  configureMiddleware() {
+
+    // Serve the client
+    this.app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
+
+    // Configure the session middleware
+    const secretKey = this.event.generateSecurePassword(32);
+    console.log(`Secret key: ${secretKey}`);
+    const sessionMiddleware = session({
+      store: this.store,
+      secret: secretKey,
+      resave: false,
+      saveUninitialized: true,
+      proxy: true,
+      cookie: {
+        secure: true,
+        httpOnly: true,
+        sameSite: true,
+        maxAge: 1000 * 60 * 60 * 24,
+        path: '/',
+        signed: true,
+      },
+    });
+
+
+    // Use the cookie parser middleware
+    this.app.use(cookieParser(secretKey));
+
+    // Use the session middleware
+    this.app.use(sessionMiddleware);
+
+    // Use the shared session middleware for Socket.IO
+    this.io.use(sharedsession(sessionMiddleware, {
+      autoSave: true
+    }));
+
+    // Log the cookies and session ID
+    this.app.use((req, res, next) => {
+      console.log('signedCookies: ', req.signedCookies['connect.sid']);
+      console.log('Session ID: ', req.sessionID);
+      next();
+    });
+
+    // Configure the Socket.IO middleware
+    this.io.use((socket, next) => {
+
+      // Log the packet size
+      socket.use((packet, next) => {
+        const size = Buffer.byteLength(JSON.stringify(packet), 'utf8');
+        console.log('\r\x1b[K');
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Sending packet of size ${size} bytes:`);
+
+        next();
+      });
+
+      next();
+    });
+
+    console.log(`Middleware configured`);
+  }
+
+  // Configure the routes
+  configureRoutes() {
+
+    // Serve the client
+    this.app.get('/', (req, res) => {
+      res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+    });
+
+    // Redirect the socket.io route
+    this.app.get('/socket.io', (req, res) => {
+      res.redirect('/');
+      res.end();
+    });
+
+    console.log(`Routes configured`);
   }
 
   // Close the server
@@ -119,6 +136,8 @@ class Server {
     this.server.close(done);
     console.log(`Server closed`);
   }
+
+
 }
 
 module.exports = Server;

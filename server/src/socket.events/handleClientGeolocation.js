@@ -1,10 +1,10 @@
 const axios = require('axios');
 
 async function handleClientGeolocation(socket, data) {
-    const session_token = socket.handshake.auth.token;
+    
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
         if (!session.account) {
             throw { client: 'Cannot update geolocation while not logged in', status: 401 };
         }
@@ -32,7 +32,7 @@ async function handleClientGeolocation(socket, data) {
             await this.db.execute(
                 this.db.update('users_public', { geolocation: [latitude, longitude] }, `id = ${session.account}`)
             );
-            console.log(`${session_token}:${socket.id} - Approximate geolocation by IP address (${latitude}, ${longitude}): ${address}`);
+            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Approximate geolocation by IP address (${latitude}, ${longitude}): ${address}`);
         } else {
             // Get geolocation by coordinates
             const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
@@ -43,10 +43,10 @@ async function handleClientGeolocation(socket, data) {
             await this.db.execute(
                 this.db.update('users_public', { geolocation: [latitude, longitude] }, `id = ${session.account}`)
             );
-            console.log(`${session_token}:${socket.id} - Current geolocation emitted by the client (${latitude}, ${longitude}): ${address}`);
+            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Current geolocation emitted by the client (${latitude}, ${longitude}): ${address}`);
         }
     } catch (err) {
-        console.error(`${session_token}:${socket.id} - Geolocation error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Geolocation error: ${err.client || err}`);
     }
 }
 

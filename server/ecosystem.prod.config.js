@@ -4,7 +4,7 @@ module.exports = {
   apps: [
     {
       name: 'server-prod',
-      script: './server.js',
+      script: './src/index.js',
       instances: 1, //os.cpus().length,
       autorestart: true,
       watch: false,

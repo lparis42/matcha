@@ -2,13 +2,14 @@ const constants = require('../constants');
 const fs = require('fs')
 const validator = require('validator');
 const sharp = require('sharp');
+const path = require('path');
 
 // Handler function for client edit event
 async function handleClientEdit(socket, data, cb) {
-    const session_token = socket.handshake.auth.token;
+
     try {
         // Extract data
-        const session = this.session_store[session_token];
+        const session = await this.getSession(socket.handshake.sessionID);
         if (!session.account) {
             throw { client: 'Cannot edit profile while not logged in', status: 401 };
         }
@@ -44,38 +45,45 @@ async function handleClientEdit(socket, data, cb) {
         }
         if (pictures) {
             if (!Array.isArray(pictures) || pictures.length !== 5) {
-                throw { client: 'Invalid pictures', status: 400 };
+                throw { client: 'Invalid pictures A', status: 400 };
             }
-            await Promise.all(pictures.map(async (image) => {
-                if (!image) {
+            await Promise.all(pictures.map(async (base64Image) => {
+                if (!base64Image) {
                     return;
                 }
                 try {
-                    await sharp(image).metadata();
+                    const imageBuffer = Buffer.from(base64Image, 'base64');
+                    await sharp(imageBuffer).metadata();
                 } catch (err) {
-                    throw { client: 'Invalid pictures', status: 400 };
+                    throw { client: err.message, status: 400 };
                 }
             }));
         }
-        const account_public_data = await this.db.execute(
+        const account_public_data = (await this.db.execute(
             this.db.select('users_public', editable_fields.filter(field => field !== 'email'), `id = '${session.account}'`)
-        )[0];
-        const account_private_data = await this.db.execute(
+        ))[0];
+        const account_private_data = (await this.db.execute(
             this.db.select('users_private', ['email'], `id = '${session.account}'`)
-        )[0];
+        ))[0];
+
         // Update 
         if (account_public_data) {
             if (pictures) {
-                const filenames = 5 * [0];
+                const filenames = new Array(5).fill("");
                 await Promise.all(pictures.map(async (image, index) => {
                     if (!image) {
                         return;
                     }
                     filenames[index] = `${Date.now()}_${index}.jpg`;
                     const imagePath = path.join(__dirname, 'images', filenames[index]);
-                    await fs.promises.writeFile(imagePath, image, 'binary').catch(error => {
-                        throw { client: 'Failed to write image', status: 500 };
-                    });
+                    // Create the directory if it does not exist
+                    const dir = path.dirname(imagePath);
+                    if (!fs.existsSync(dir)) {
+                        fs.mkdirSync(dir, { recursive: true });
+                    }
+                    const imageBuffer = Buffer.from(image, 'base64');
+                    // Write the image to the file
+                    fs.writeFileSync(imagePath, imageBuffer);
                 }));
                 account_public_data.pictures = filenames;
             }
@@ -103,11 +111,11 @@ async function handleClientEdit(socket, data, cb) {
         }
 
 
-        console.log(`${session_token}:${socket.id} - Edit profile for account ${session.account}`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Edit profile for account ${session.account}`);
         cb(null);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`${session_token}:${socket.id} - Edit profile error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Edit profile error: ${err.client || err}`);
     }
 }
 
