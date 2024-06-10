@@ -69,7 +69,6 @@ class Event {
         await clientSimulators[0].simulateLogout() ? scores[0]++ : scores[1]++;
         // Password reset simulation
         await clientSimulators[0].simulatePasswordReset() ? scores[0]++ : scores[1]++;
-
         // Display the results
         console.log('\r\x1b[K');
         console.log(`ClientSimulator: \x1b[32m${scores[0]} tests passed\x1b[0m, \x1b[31m${scores[1]} tests failed\x1b[0m`);
