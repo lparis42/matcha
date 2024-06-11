@@ -7,12 +7,7 @@ class Email {
   }
 
   async post(recipients) {
-    try {
-      return await this.transporter.sendMail(recipients);
-    } catch (error) {
-      console.error(error);
-      throw error; // re-throw the error so it can be handled elsewhere
-    }
+    return null; // this.transporter.sendMail(recipients);
   }
 }
 

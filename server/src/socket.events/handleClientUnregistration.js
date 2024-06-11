@@ -11,11 +11,13 @@ async function handleClientUnregistration(socket, cb) {
 
         // Delete the account from the database
         await this.db.execute(
-            this.db.delete('users_private', `id = '${account_id}'`) + this.db.delete('users_public', `id = '${account_id}'`)
+            this.db.delete('users_private', `id = '${account_id}'`) +
+            this.db.delete('users_public', `id = '${account_id}'`) +
+            this.db.delete('users_matchs', `accounts @> ARRAY[${account_id}]`)
         );
 
         // Unregister the account from the session
-        session.account = null;
+        await this.setSession(socket.handshake.sessionID, { account: null });
 
         cb(null);
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Unregistration for account '${account_id}'`);

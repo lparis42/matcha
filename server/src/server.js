@@ -43,6 +43,8 @@ class Server {
   configureSocketIO() {
     this.io = socketIo(this.server, {
       maxHttpBufferSize: 1e7, // 10 MB
+      // For testing purposes
+      pingTimeout: 30000,  // 30 seconds
     });
     this.store = new session.MemoryStore();
     this.event = new event(this.io, this.store);
@@ -67,7 +69,7 @@ class Server {
         secure: true,
         httpOnly: true,
         sameSite: true,
-        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+        //maxAge: 1000 * 60 * 60 * 24, // 24 hours
         path: '/',
       },
     });
@@ -85,29 +87,41 @@ class Server {
 
     // Configure the Socket.IO middleware
     this.io.use(async (socket, next) => {
+      try {
 
-      // Check if the session is testing
-      if (socket.handshake.auth?.testing === true) {
-        await this.event.setSession(socket.handshake.sessionID, { account: 0 });
-      }
+        // Check if the session is testing
+        if (socket.handshake.auth?.testing === true) {
+          await this.event.setSession(socket.handshake.sessionID, { account: 0 });
+        }
 
-      // Get the session
-      const session = await this.event.getSession(socket.handshake.sessionID);
-      if (!session) {
-        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Session not found`);
-        return next(new Error('Session not found'));
-      }
+        // Get the session
+        const session = await this.event.getSession(socket.handshake.sessionID);
+        if (!session) {
+          console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Session not found`);
+          return next(new Error('Session not found'));
+        }
 
-      // Log the packet size
-      socket.use((packet, next) => {
-        const size = Buffer.byteLength(JSON.stringify(packet), 'utf8');
-        console.log('\r\x1b[K');
-        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Sending packet of size ${size} bytes:`);
+        socket.use((packet, next) => { 
+          try {
+            // Get the packet size
+            const size = Buffer.byteLength(JSON.stringify(packet), 'utf8');
+            console.log('\r\x1b[K');
+            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Sending packet of size ${size} bytes:`);
 
+            // Next
+            next();
+          } catch (err) {
+            next(err);
+            console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Error: ${err}`);
+          }
+        });
+
+        // Next
         next();
-      });
-
-      next();
+      } catch (err) {
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Error: ${err}`);
+        return next(err);
+      }
     });
 
     console.log(`Middleware configured`);

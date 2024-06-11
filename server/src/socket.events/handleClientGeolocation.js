@@ -16,8 +16,7 @@ async function handleClientGeolocation(socket, data, cb) {
         if (!latitude || !longitude) {
             // Get geolocation by IP address
             let ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
-            let response;
-            response = await axios.get(`http://ip-api.com/json/${ip}`);
+            let response = await axios.get(`http://ip-api.com/json/${ip}`);
             if (response.data.status === 'fail') {
                 // Get public IP address if socket IP address is private
                 ip = (await axios.get('https://api.ipify.org?format=json')).data.ip;
@@ -30,10 +29,10 @@ async function handleClientGeolocation(socket, data, cb) {
             const longitude = response.data.lon;
             const address = `${response.data.country}, ${response.data.regionName}, ${response.data.city}`;
             await this.db.execute(
-                this.db.update('users_public', { geolocation: [latitude, longitude] }, `id = ${session.account}`)
+                this.db.update('users_public', { geolocation: [latitude, longitude], location: address }, `id = ${session.account}`)
             );
 
-            cb(null);
+            cb && typeof cb === 'function' ? cb(null) : null;
             console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Approximate geolocation by IP address (${latitude}, ${longitude}): ${address}`);
         } else {
             // Get geolocation by coordinates
@@ -41,15 +40,15 @@ async function handleClientGeolocation(socket, data, cb) {
             if (response.data.error) {
                 throw 'Geolocation not found';
             }
+            const address = response.data.display_name;
             await this.db.execute(
-                this.db.update('users_public', { geolocation: [latitude, longitude] }, `id = ${session.account}`)
+                this.db.update('users_public', { geolocation: [latitude, longitude], location: address }, `id = ${session.account}`)
             );
-
-            cb(null);
-            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Current geolocation emitted by the client (${latitude}, ${longitude}): ${response.data.display_name}`);
+            cb && typeof cb === 'function' ? cb(null) : null;
+            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Current geolocation emitted by the client (${latitude}, ${longitude}): ${address}`);
         }
     } catch (err) {
-        cb({ message: err.client || 'Internal server error', status: err.status || 500 });
+        cb && typeof cb === 'function' ? cb({ message: err.client || 'Internal server error', status: err.status || 500 }) : null;
         console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Geolocation error: ${err.client || err}`);
     }
 }

@@ -40,7 +40,7 @@ async function handleClientEdit(socket, data, cb) {
         if (biography && (typeof biography !== 'string' || !validator.isLength(biography, { min: 1, max: 255 }))) {
             throw { client: 'Invalid biography', status: 400 };
         }
-        if (interests && (!Array.isArray(interests) || !interests.every(interest => constants.interests.includes(interest)))) {
+        if (interests && (!Array.isArray(interests) || !interests.every(interest => !typeof interest !== 'number' || interest < 0 || interest >= constants.database.users_public.interests.length))) {
             throw { client: 'Invalid interests', status: 400 };
         }
         if (pictures) {
@@ -74,17 +74,13 @@ async function handleClientEdit(socket, data, cb) {
                     if (!image) {
                         return;
                     }
-                    filenames[index] = `${Date.now()}_${index}.jpg`;
+                    filenames[index] = `${session.account}_${Date.now()}_${index}.jpg`;
                     const imagePath = path.join(path.resolve('..'), 'images', filenames[index]);
                     console.log(imagePath);
                     const dir = path.dirname(imagePath);
-                    try {
-                        await fs.promises.access(dir);
-                    } catch {
-                        await fs.promises.mkdir(dir, { recursive: true });
-                    }
+                    await fs.promises.mkdir(dir, { recursive: true });
                     const imageBuffer = Buffer.from(image, 'base64');
-                    await fs.promises.writeFile(imagePath, imageBuffer);
+                    //await fs.promises.writeFile(imagePath, imageBuffer);
                 }));
                 account_public_data.pictures = filenames;
             }

@@ -28,54 +28,11 @@ class Event {
         await this.db.execute(this.db.create('users_matchs', constants.database.users_matchs.columns));
 
         console.log(`Database configured`);
-
-        // For testing purposes
-        const ClientSimulator = require('./client.simulator');
-        const clientSimulators = Array.from({ length: 2 }, () => new ClientSimulator());
-        let scores = [0, 0];
-        // Registration simulation
-        await clientSimulators[0].simulateRegistration() ? scores[0]++ : scores[1]++;
-        await clientSimulators[1].simulateRegistration() ? scores[0]++ : scores[1]++;
-        // Login simulation
-        await clientSimulators[0].simulateLogin() ? scores[0]++ : scores[1]++;
-        await clientSimulators[1].simulateLogin() ? scores[0]++ : scores[1]++;
-        // Edit simulation
-        await clientSimulators[0].simulateEdit() ? scores[0]++ : scores[1]++;
-        await clientSimulators[1].simulateEdit() ? scores[0]++ : scores[1]++;
-        // View simulation
-        await clientSimulators[0].simulateView(2) ? scores[0]++ : scores[1]++;
-        await clientSimulators[1].simulateView(1) ? scores[0]++ : scores[1]++;
-        // Viewers simulation
-        await clientSimulators[0].simulateViewers() ? scores[0]++ : scores[1]++;
-        await clientSimulators[1].simulateViewers() ? scores[0]++ : scores[1]++;
-        // Like simulation
-        await clientSimulators[0].simulateLike(2) ? scores[0]++ : scores[1]++;
-        await clientSimulators[1].simulateLike(1) ? scores[0]++ : scores[1]++;
-        // Likers simulation
-        await clientSimulators[0].simulateLikers() ? scores[0]++ : scores[1]++;
-        await clientSimulators[1].simulateLikers() ? scores[0]++ : scores[1]++;
-        // Chat simulation
-        await clientSimulators[0].simulateChat(2) ? scores[0]++ : scores[1]++;
-        await clientSimulators[1].simulateChat(1) ? scores[0]++ : scores[1]++;
-        // Unlike simulation
-        await clientSimulators[0].simulateUnlike(2) ? scores[0]++ : scores[1]++;
-        await clientSimulators[1].simulateUnlike(1) ? scores[0]++ : scores[1]++;
-        // Geolocation simulation
-        await clientSimulators[0].simulateGeolocation(null, null) ? scores[0]++ : scores[1]++;
-        await clientSimulators[1].simulateGeolocation(48.8588443, 2.2943506) ? scores[0]++ : scores[1]++;
-        // Unregistration simulation
-        await clientSimulators[1].simulateUnregistration() ? scores[0]++ : scores[1]++;
-        // Logout simulation
-        await clientSimulators[0].simulateLogout() ? scores[0]++ : scores[1]++;
-        // Password reset simulation
-        await clientSimulators[0].simulatePasswordReset() ? scores[0]++ : scores[1]++;
-        // Display the results
-        console.log('\r\x1b[K');
-        console.log(`ClientSimulator: \x1b[32m${scores[0]} tests passed\x1b[0m, \x1b[31m${scores[1]} tests failed\x1b[0m`);
     }
 
     configureBinds() {
         const eventHandlers = [
+            'handleClientBrowsing',
             'handleClientChat',
             'handleClientEdit',
             'handleClientGeolocation',
@@ -108,6 +65,7 @@ class Event {
             console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Connected`);
 
             // Handle the client events
+            socket.on('client:browsing', (data, cb) => { this.handleClientBrowsing(socket, data, cb) });
             socket.on('client:chat', (data, cb) => { this.handleClientChat(socket, data, cb) });
             socket.on('client:edit', (data, cb) => { this.handleClientEdit(socket, data, cb) });
             socket.on('client:geolocation', (data, cb) => { this.handleClientGeolocation(socket, data, cb) });
@@ -125,9 +83,9 @@ class Event {
             socket.on('client:viewers', (cb) => { this.handleClientViewers(socket, cb) });
 
             // Handle the client disconnection
-            socket.on('disconnect', () => {
+            socket.on('disconnect', (err, message) => {
                 socket.leave(socket.handshake.sessionID);
-                console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Disconnected`);
+                console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Disconnected${(' - ' + err) || ''}`);
             });
         });
     }
@@ -158,11 +116,18 @@ class Event {
 
     setSession(sessionId, session) {
         return new Promise((resolve, reject) => {
-            this.store.set(sessionId, session, (error) => {
+            this.store.get(sessionId, (error, oldSession) => {
                 if (error) {
                     reject(error);
                 } else {
-                    resolve();
+                    const mergedSession = {...oldSession, ...session};
+                    this.store.set(sessionId, mergedSession, (error) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve();
+                        }
+                    });
                 }
             });
         });

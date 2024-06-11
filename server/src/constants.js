@@ -67,7 +67,7 @@ const constants = {
         `first_name VARCHAR(35) CHECK (char_length(first_name) BETWEEN 2 AND 35 AND first_name ~ '^[A-Za-z]+$')`,
         `last_name VARCHAR(35) CHECK (char_length(last_name) BETWEEN 2 AND 35 AND last_name ~ '^[A-Za-z]+$')`,
         `date_of_birth DATE CHECK (date_of_birth BETWEEN '1900-01-01' AND '2021-12-31')`,
-        `gender VARCHAR(35) CHECK (gender IN ('Male', 'Female', 'Other'))`,
+        `gender VARCHAR(35) CHECK (gender IN ('Male', 'Female'))`,
         `sexual_orientation VARCHAR(35) CHECK (sexual_orientation IN ('Heterosexual', 'Bisexual', 'Homosexual', 'Other'))`,
         `biography VARCHAR(255)`,
         `interests INT[] DEFAULT ARRAY[]::INT[]`,
@@ -91,7 +91,7 @@ const constants = {
         'History', 'Philosophy', 'Religion', 'Law'
       ],
       genders: [
-        'Male', 'Female', 'Other'
+        'Male', 'Female'
       ],
       sexual_orientations: [
         'Heterosexual', 'Bisexual', 'Homosexual', 'Other'
