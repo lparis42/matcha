@@ -10,7 +10,7 @@ async function handleClientOnline(socket, data, cb) {
         if (!target_account || typeof target_account !== 'number' || target_account < 1) {
             throw { client: 'Invalid target account', status: 400 };
         }
-        const target_session = await this.getSessionByAccount(target_account);
+        const target_session = await this.getSessionByAccount(target_account).account;
 
         cb(null, target_session);
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Client online check for account '${target_account}'`);
