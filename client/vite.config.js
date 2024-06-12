@@ -16,9 +16,9 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,
         secure: false,
-        withCredentials: true,
+        withCredentials: true
       },
     },
-    host: false,
+    host: true,
   }
 })

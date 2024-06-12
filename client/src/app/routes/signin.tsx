@@ -5,27 +5,30 @@ import { Input } from "@/components/ui/input"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { useSocket, Login } from "@/api/Socket"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { login } from "@/types"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 export function Component() {
-  console.log("Login");
 
   const { eventLogin } = useSocket();
 
-  const [data, setData] = useState<Login>({
-    password: "",
-    email: ""
-  });
-
-  const handleChange = (e) => {
-    setData({
-      ...data,
-      [e.target.id]: e.target.value
-    });
-  }
-
-  const handleSubmit = () => {
-    console.log(data);
-    eventLogin(data);
+  const form = useForm<z.infer<typeof login>>({
+    resolver: zodResolver(login),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
+ 
+  // 2. Define a submit handler.
+  function onSubmit(values: z.infer<typeof login>) {
+    // Do something with the form values.
+    // ✅ This will be type-safe and validated.
+    console.log(values)
+    eventLogin(values);
   }
 
   return (
@@ -38,8 +41,54 @@ export function Component() {
                 </CardDescription>
                 </CardHeader>
                 <CardContent>
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)}>
                 <div className="grid gap-4">
-                    <div className="grid gap-2">
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="john@doe.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                    />
+                    <Button type="submit" className="w-full">
+                    Login
+                    </Button>
+                </div>
+                <div className="mt-4 text-center text-sm">
+                    Don&apos;t have an account?{" "}
+                    <Link to="/signup" className="underline">
+                    Sign up
+                    </Link>
+                </div>
+                </form>
+                </Form>
+                </CardContent>
+            </Card>
+        </div>
+  )
+}
+
+                    {/*<div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
                         id="email"
@@ -57,19 +106,4 @@ export function Component() {
                         </Link>
                     </div>
                     <Input id="password" type="password" value={data.password} onChange={(e) => handleChange(e)} required />
-                    </div>
-                    <Button type="submit" className="w-full" onClick={() => {handleSubmit()}}>
-                    Login
-                    </Button>
-                </div>
-                <div className="mt-4 text-center text-sm">
-                    Don&apos;t have an account?{" "}
-                    <Link to="/signup" className="underline">
-                    Sign up
-                    </Link>
-                </div>
-                </CardContent>
-            </Card>
-        </div>
-  )
-}
+                    </div>*/}
