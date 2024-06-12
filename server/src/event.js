@@ -63,10 +63,7 @@ class Event {
             socket.join(socket.request.sessionID);
 
             // Emit the account ID to the client if logged in
-            const session = await this.getSession(socket.handshake.sessionID);
-            if (session.account) {
-                socket.emit('server:account', session.account);
-            }
+            socket.emit('server:account', await this.getSession(socket.handshake.sessionID).account);
 
             // Log the connection
             console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Connected`);
@@ -101,7 +98,7 @@ class Event {
                         this.db.update('users_public', { last_connection: 'NOW()' }, `id = ${session.account}`)
                     );
                 }
-                
+
                 console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Disconnected${(' - ' + err) || ''}`);
             });
         });
@@ -130,6 +127,17 @@ class Event {
             });
         });
     };
+
+    getSessionByAccount(account) {
+        return new Promise((resolve, reject) => {
+            const session = this.store.filter(item => item.account === account)[0];
+            if (session) {
+                resolve(session);
+            } else {
+                reject('Session not found');
+            }
+        });
+    }
 
     setSession(sessionId, session) {
         return new Promise((resolve, reject) => {

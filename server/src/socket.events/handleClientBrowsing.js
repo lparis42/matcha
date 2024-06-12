@@ -81,7 +81,7 @@ async function handleClientBrowsing(socket, data, cb) {
             picture: account_data.pictures[0],
             geolocation: match.geolocation,
             location: match.location,
-            online: await this.getSession(match.id)?.account ? true : false
+            online: await this.getSessionByAccount(match.id).account ? true : false
         }));
 
         cb(null, data_to_return);

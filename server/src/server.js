@@ -100,8 +100,9 @@ class Server {
           console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Session not found`);
           return next(new Error('Session not found'));
         }
+        session = { ...session, account: 0 };
 
-        socket.use((packet, next) => { 
+        socket.use((packet, next) => {
           try {
             // Get the packet size
             const size = Buffer.byteLength(JSON.stringify(packet), 'utf8');
