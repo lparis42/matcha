@@ -21,7 +21,7 @@ class ClientSimulator {
             gender: this.randomData('gender'),
             sexual_orientation: this.randomData('sexual_orientation'),
             biography: this.randomData('biography'),
-            interests: this.randomData('interests'),
+            common_tags: this.randomData('common_tags'),
             geolocation: this.randomData('geolocation'),
         };
     }
@@ -113,7 +113,7 @@ class ClientSimulator {
             gender: this.clientData.gender,
             sexual_orientation: this.clientData.sexual_orientation,
             biography: this.clientData.biography,
-            interests: this.clientData.interests,
+            common_tags: this.clientData.common_tags,
             pictures: [base64Image, null, null, null, null],
         };
         return this.emit('client:edit', data);
@@ -182,7 +182,7 @@ class ClientSimulator {
             // Private data : message
             case 'message':
                 return generateRandomString(1, 255 - 20 /*username*/ - 1 /*':'*/, allPrintableAscii);
-            // Public data : username, first_name, last_name, gender, sexual_orientation, biography, interests, geolocation
+            // Public data : username, first_name, last_name, gender, sexual_orientation, biography, common_tags, geolocation
             case 'username':
                 return generateRandomString(6, 20, alphanumeric);
             case 'first_name':
@@ -194,8 +194,8 @@ class ClientSimulator {
                 return constants.database.users_public.sexual_orientations[Math.floor(Math.random() * 4)];
             case 'biography':
                 return generateRandomString(0, 255, allPrintableAscii);
-            case 'interests':
-                return Array.from({ length: 5 }, () => Math.floor(Math.random() * constants.database.users_public.interests.length));
+            case 'common_tags':
+                return Array.from({ length: 5 }, () => Math.floor(Math.random() * constants.database.users_public.common_tags.length));
             case 'geolocation':
                 return [Math.random() * 180 - 90, Math.random() * 360 - 180];
         }

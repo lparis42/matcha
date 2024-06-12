@@ -40,6 +40,7 @@ class Event {
             'handleClientLikers',
             'handleClientLogin',
             'handleClientLogout',
+            'handleClientOnline',
             'handleClientPasswordReset',
             'handleClientPasswordResetConfirmation',
             'handleClientRegistration',
@@ -61,6 +62,12 @@ class Event {
             // Join the room of the current session
             socket.join(socket.request.sessionID);
 
+            // Emit the account ID to the client if logged in
+            const session = await this.getSession(socket.handshake.sessionID);
+            if (session.account) {
+                socket.emit('server:account', session.account);
+            }
+
             // Log the connection
             console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Connected`);
 
@@ -73,6 +80,7 @@ class Event {
             socket.on('client:likers', (cb) => { this.handleClientLikers(socket, cb) });
             socket.on('client:login', (data, cb) => { this.handleClientLogin(socket, data, cb) });
             socket.on('client:logout', (cb) => { this.handleClientLogout(socket, cb) });
+            socket.on('client:online', (data, cb) => { this.handleClientOnline(socket, data, cb) });
             socket.on('client:password_reset', (data, cb) => { this.handleClientPasswordReset(socket, data, cb) });
             socket.on('client:password_reset_confirmation', (data, cb) => { this.handleClientPasswordResetConfirmation(socket, data, cb) });
             socket.on('client:registration', (data, cb) => { this.handleClientRegistration(socket, data, cb) });
@@ -83,8 +91,17 @@ class Event {
             socket.on('client:viewers', (cb) => { this.handleClientViewers(socket, cb) });
 
             // Handle the client disconnection
-            socket.on('disconnect', (err, message) => {
+            socket.on('disconnect', async (err, message) => {
+
                 socket.leave(socket.handshake.sessionID);
+
+                const session = await this.getSession(socket.handshake.sessionID);
+                if (session.account) {
+                    await this.db.execute(
+                        this.db.update('users_public', { last_connection: 'NOW()' }, `id = ${session.account}`)
+                    );
+                }
+                
                 console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Disconnected${(' - ' + err) || ''}`);
             });
         });
@@ -120,7 +137,7 @@ class Event {
                 if (error) {
                     reject(error);
                 } else {
-                    const mergedSession = {...oldSession, ...session};
+                    const mergedSession = { ...oldSession, ...session };
                     this.store.set(sessionId, mergedSession, (error) => {
                         if (error) {
                             reject(error);

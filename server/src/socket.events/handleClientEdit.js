@@ -13,8 +13,8 @@ async function handleClientEdit(socket, data, cb) {
         if (!session.account) {
             throw { client: 'Cannot edit profile while not logged in', status: 401 };
         }
-        const { first_name, last_name, email, date_of_birth, gender, sexual_orientation, biography, interests, pictures, geolocation } = data;
-        const editable_fields = ['first_name', 'last_name', 'email', 'date_of_birth', 'gender', 'sexual_orientation', 'biography', 'interests', 'pictures', 'geolocation'];
+        const { first_name, last_name, email, date_of_birth, gender, sexual_orientation, biography, common_tags, pictures, geolocation } = data;
+        const editable_fields = ['first_name', 'last_name', 'email', 'date_of_birth', 'gender', 'sexual_orientation', 'biography', 'common_tags', 'pictures', 'geolocation'];
         const fields = Object.fromEntries(Object.entries(data).filter(([key]) => editable_fields.includes(key)));
         if (fields.length === 0) {
             throw { client: 'No valid fields to edit', status: 400 };
@@ -40,8 +40,8 @@ async function handleClientEdit(socket, data, cb) {
         if (biography && (typeof biography !== 'string' || !validator.isLength(biography, { min: 1, max: 255 }))) {
             throw { client: 'Invalid biography', status: 400 };
         }
-        if (interests && (!Array.isArray(interests) || !interests.every(interest => !typeof interest !== 'number' || interest < 0 || interest >= constants.database.users_public.interests.length))) {
-            throw { client: 'Invalid interests', status: 400 };
+        if (common_tags && (!Array.isArray(common_tags) || !common_tags.every(interest => !typeof interest !== 'number' || interest < 0 || interest >= constants.database.users_public.common_tags.length))) {
+            throw { client: 'Invalid common_tags', status: 400 };
         }
         if (pictures) {
             if (!Array.isArray(pictures) || pictures.length !== 5) {
@@ -91,7 +91,7 @@ async function handleClientEdit(socket, data, cb) {
             account_public_data.gender = gender || account_public_data.gender;
             account_public_data.sexual_orientation = sexual_orientation || account_public_data.sexual_orientation;
             account_public_data.biography = biography || account_public_data.biography;
-            account_public_data.interests = interests || account_public_data.interests;
+            account_public_data.common_tags = common_tags || account_public_data.common_tags;
             account_public_data.geolocation = geolocation || account_public_data.geolocation;
 
             await this.db.execute(

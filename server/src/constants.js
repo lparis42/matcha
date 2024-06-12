@@ -66,11 +66,11 @@ const constants = {
         `username VARCHAR(20) UNIQUE CHECK (char_length(username) BETWEEN 6 AND 20 AND username ~ '^[A-Za-z0-9]+$')`,
         `first_name VARCHAR(35) CHECK (char_length(first_name) BETWEEN 2 AND 35 AND first_name ~ '^[A-Za-z]+$')`,
         `last_name VARCHAR(35) CHECK (char_length(last_name) BETWEEN 2 AND 35 AND last_name ~ '^[A-Za-z]+$')`,
-        `date_of_birth DATE CHECK (date_of_birth BETWEEN '1900-01-01' AND '2021-12-31')`,
+        `date_of_birth DATE CHECK (date_of_birth BETWEEN '1900-01-01' AND '2024-12-31')`,
         `gender VARCHAR(35) CHECK (gender IN ('Male', 'Female'))`,
         `sexual_orientation VARCHAR(35) CHECK (sexual_orientation IN ('Heterosexual', 'Bisexual', 'Homosexual', 'Other'))`,
         `biography VARCHAR(255)`,
-        `interests INT[] DEFAULT ARRAY[]::INT[]`,
+        `common_tags INT[] DEFAULT ARRAY[]::INT[]`,
         `pictures VARCHAR(255)[5] DEFAULT ARRAY[]::VARCHAR(255)[]`,
         `fame_rating INT DEFAULT 0`,
         `geolocation VARCHAR[2]` /* [latitude, longitude] */,
@@ -81,9 +81,9 @@ const constants = {
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],
       column_names: [
-        `username`, `first_name`, `last_name`, `date_of_birth`, `gender`, `sexual_orientation`, `biography`, `interests`, `pictures`, `fame_rating`, `geolocation`, `location`, `last_connection`
+        `username`, `first_name`, `last_name`, `date_of_birth`, `gender`, `sexual_orientation`, `biography`, `common_tags`, `pictures`, `fame_rating`, `geolocation`, `location`, `last_connection`
       ],
-      interests: [
+      common_tags: [
         'Technology', 'Health', 'Business', 'Entertainment', 
         'Travel', 'Education', 'Arts and Culture', 'Lifestyle', 
         'Science', 'Politics', 'Environment', 'Gastronomy', 

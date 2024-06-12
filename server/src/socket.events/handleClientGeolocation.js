@@ -1,4 +1,6 @@
 const axios = require('axios');
+const geoip = require('geoip-lite');
+
 
 async function handleClientGeolocation(socket, data, cb) {
     
@@ -8,7 +10,7 @@ async function handleClientGeolocation(socket, data, cb) {
         if (!session.account) {
             throw { client: 'Cannot update geolocation while not logged in', status: 401 };
         }
-        const { latitude, longitude } = data;
+        let { latitude, longitude } = data;
         if (latitude && typeof latitude !== 'number' || longitude && typeof longitude !== 'number') {
             throw { client: 'Invalid geolocation', status: 400 };
         }
@@ -16,18 +18,18 @@ async function handleClientGeolocation(socket, data, cb) {
         if (!latitude || !longitude) {
             // Get geolocation by IP address
             let ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
-            let response = await axios.get(`http://ip-api.com/json/${ip}`);
-            if (response.data.status === 'fail') {
-                // Get public IP address if socket IP address is private
+            let geo = geoip.lookup(ip);
+            if (!geo) {
+                // Get public IP if running locally
                 ip = (await axios.get('https://api.ipify.org?format=json')).data.ip;
-                response = await axios.get(`http://ip-api.com/json/${ip}`);
-                if (response.data.status === 'fail') {
+                geo = geoip.lookup(ip);
+                if (!geo) {
                     throw 'Geolocation not found';
                 }
             }
-            const latitude = response.data.lat;
-            const longitude = response.data.lon;
-            const address = `${response.data.country}, ${response.data.regionName}, ${response.data.city}`;
+            latitude = geo.ll[0];
+            longitude = geo.ll[1];
+            const address = `${geo.country}, ${geo.region}, ${geo.city}`;
             await this.db.execute(
                 this.db.update('users_public', { geolocation: [latitude, longitude], location: address }, `id = ${session.account}`)
             );
