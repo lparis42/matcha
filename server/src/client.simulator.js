@@ -6,13 +6,13 @@ const constants = require('./constants');
 class ClientSimulator {
     constructor() {
         // Connexion au serveur Socket.IO
-        this.clientSocket = clientIo(`https://localhost:443`, {
+        this.socket = clientIo(`https://localhost:443`, {
             autoConnect: false,
             rejectUnauthorized: false,
-            auth: { testing: true },
+            auth: { simulator: true },
         });
 
-        this.clientData = {
+        this.data = {
             username: this.randomData('username'),
             password: this.randomData('password'),
             email: this.randomData('email'),
@@ -23,31 +23,35 @@ class ClientSimulator {
             biography: this.randomData('biography'),
             common_tags: this.randomData('common_tags'),
             geolocation: this.randomData('geolocation'),
+            account: 0,
         };
     }
 
     async simulateConnection() {
         return new Promise((resolve, reject) => {
-            this.clientSocket.on('connect', () => {
-                this.clientSocket.io.opts.autoConnect = true;
-                resolve(1);
+            this.socket.on('connect', () => {
+                this.socket.io.opts.autoConnect = true;
+                this.socket.on('server:account', (data) => {
+                    this.data.account = data.account;
+                });
+                resolve();
                 console.log('ClientSimulator: Connected');
             });
-            this.clientSocket.on('connect_error', () => {
-                resolve(0);
+            this.socket.on('connect_error', () => {
+                reject();
                 console.error('ClientSimulator: Connection error');
             });
-            this.clientSocket.connect();
+            this.socket.connect();
         });
     }
 
     async simulateRegistration() {
         const data = {
-            password: this.clientData.password,
-            email: this.clientData.email,
-            username: this.clientData.username,
-            first_name: this.clientData.first_name,
-            last_name: this.clientData.last_name,
+            password: this.data.password,
+            email: this.data.email,
+            username: this.data.username,
+            first_name: this.data.first_name,
+            last_name: this.data.last_name,
 
         };
         return this.emit('client:registration', data);
@@ -55,8 +59,8 @@ class ClientSimulator {
 
     async simulateLogin() {
         const data = {
-            email: this.clientData.email,
-            password: this.clientData.password,
+            email: this.data.email,
+            password: this.data.password,
         };
         return this.emit('client:login', data);
     }
@@ -67,7 +71,7 @@ class ClientSimulator {
 
     async simulatePasswordReset() {
         const data = {
-            email: this.clientData.email,
+            email: this.data.email,
         };
         return this.emit('client:password_reset', data);
     }
@@ -110,21 +114,21 @@ class ClientSimulator {
         const file_data = await fs.promises.readFile(filePath);
         const base64Image = file_data.toString('base64');
         const data = {
-            gender: this.clientData.gender,
-            sexual_orientation: this.clientData.sexual_orientation,
-            biography: this.clientData.biography,
-            common_tags: this.clientData.common_tags,
+            gender: this.data.gender,
+            sexual_orientation: this.data.sexual_orientation,
+            biography: this.data.biography,
+            common_tags: this.data.common_tags,
             pictures: [base64Image, null, null, null, null],
         };
         return this.emit('client:edit', data);
     }
 
-    async simulateBrowsing() {
-        return this.emit('client:browsing', null);
+    async simulateBrowsing(data) {
+        return this.emit('client:browsing', data);
     }
 
-    async simulateGeolocation(latitude, longitude) {
-        return this.emit('client:geolocation', { latitude: latitude, longitude: longitude });
+    async simulateGeolocation(data) {
+        return this.emit('client:geolocation', data);
     }
 
     async simulateLikers() {
@@ -141,20 +145,19 @@ class ClientSimulator {
         return new Promise((resolve, reject) => {
             const callback = (err, message) => {
                 if (err) {
-                    //reject(0);
-                    resolve(0);
-                    //console.error(`ClientSimulator: Event ${event} failed`);
+                    reject();
+                    console.error(`ClientSimulator: Event ${event} failed`);
                 } else {
-                    resolve(1);
+                    resolve();
                     console.log(`ClientSimulator: Event ${event} successful`, message || '');
                 }
             };
 
             if (data) {
-                this.clientSocket.emit(event, data, callback);
+                this.socket.emit(event, data, callback);
 
             } else {
-                this.clientSocket.emit(event, callback);
+                this.socket.emit(event, callback);
             }
         });
     }

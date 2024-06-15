@@ -23,6 +23,15 @@ const constants = {
       password: 'pg',
       port: 5432,
     },
+    users_session: {
+      columns: [
+        `sid VARCHAR NOT NULL PRIMARY KEY`,
+        `sess JSON NOT NULL`,
+        `account INT NOT NULL DEFAULT 0`,
+        `socket_ids VARCHAR[] NOT NULL DEFAULT ARRAY[]::VARCHAR[]`,
+        `expire TIMESTAMP(6) NOT NULL`
+      ],
+    },
     users_private: {
       columns: [
         `id SERIAL PRIMARY KEY`,
@@ -73,15 +82,19 @@ const constants = {
         `common_tags INT[] DEFAULT ARRAY[]::INT[]`,
         `pictures VARCHAR(255)[5] DEFAULT ARRAY[]::VARCHAR(255)[]`,
         `fame_rating INT DEFAULT 0`,
+        `geolocation_proxy BOOLEAN DEFAULT FALSE`,
         `geolocation VARCHAR[2]` /* [latitude, longitude] */,
         `location VARCHAR(255) DEFAULT 'Unknown'`,
+        `online BOOLEAN DEFAULT FALSE`,
         `last_connection TIMESTAMP`,
-
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],
       column_names: [
-        `username`, `first_name`, `last_name`, `date_of_birth`, `gender`, `sexual_orientation`, `biography`, `common_tags`, `pictures`, `fame_rating`, `geolocation`, `location`, `last_connection`
+        `username`, `first_name`, `last_name`, `date_of_birth`,
+        `gender`, `sexual_orientation`, `biography`, `common_tags`,
+        `pictures`, `fame_rating`, `geolocation`, `location`, `online`,
+        `last_connection`
       ],
       common_tags: [
         'Technology', 'Health', 'Business', 'Entertainment', 
@@ -98,19 +111,19 @@ const constants = {
       ],
 
     },
-    users_matchs: {
+    users_match: {
       columns: [
         `id SERIAL PRIMARY KEY`,
 
         `connected BOOLEAN DEFAULT FALSE`,
-        `accounts INT[2] DEFAULT ARRAY[]::INT[2]`,
+        `accounts INT[2] UNIQUE DEFAULT ARRAY[]::INT[2]`,
         `messages VARCHAR(255)[] DEFAULT ARRAY[]::VARCHAR(255)[]`,
 
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],
       column_names: [
-        `message`
+        `connected`, `accounts`, `messages`
       ],
     },
   },

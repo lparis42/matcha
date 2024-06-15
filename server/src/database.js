@@ -15,14 +15,19 @@ class Database {
         try {
             await this.pgp.connect();
             console.log(`Database - Connected to the database '${this.pgp.$cn.database}'`);
-        } catch (err) {         
+        } catch (err) {
             throw `Database - ${err.message}`;
         }
     }
 
     create(table, columns) {
-        const columnsFormatted = columns.join(', ');
-        const query = `CREATE TABLE IF NOT EXISTS ${table} (${columnsFormatted});`;
+        let query;
+        if (columns && columns.length > 0) {
+            const columnsFormatted = columns.join(', ');
+            query = `CREATE TABLE IF NOT EXISTS ${table} (${columnsFormatted});`;
+        } else {
+            query = `CREATE TABLE IF NOT EXISTS ${table} ();`;
+        }
         return query;
     }
 
@@ -49,19 +54,37 @@ class Database {
         return query;
     }
 
-    update(table, values, condition) {
+    update(table, values, condition, option = '') {
+        if (option === 'ADD') {
+            const updates = Object.keys(values).map(key => `${key}=${key}+${this.preventInjection(values[key])}`).join(', ');
+            const query = `UPDATE ${table} SET ${updates} WHERE ${condition};`;
+            return query;
+        }
+        if (option === 'SUBTRACT') {
+            const updates = Object.keys(values).map(key => `${key}=${key}-${this.preventInjection(values[key])}`).join(', ');
+            const query = `UPDATE ${table} SET ${updates} WHERE ${condition};`;
+            return query;
+        }
+        if (option === 'ARRAY_APPEND') {
+            const updates = Object.keys(values).map(key => `${key}=ARRAY_APPEND(${key}, ${this.preventInjection(values[key])})`).join(', ');
+            const query = `UPDATE ${table} SET ${updates} WHERE ${condition};`;
+            return query;
+        }
+        if (option === 'ARRAY_REMOVE') {
+            const updates = Object.keys(values).map(key => `${key}=ARRAY_REMOVE(${key}, ${this.preventInjection(values[key])})`).join(', ');
+            const query = `UPDATE ${table} SET ${updates} WHERE ${condition};`;
+            return query;
+        }
         const updates = Object.keys(values).map(key => `${key}=${this.preventInjection(values[key])}`).join(', ');
         const query = `UPDATE ${table} SET ${updates} WHERE ${condition};`;
         return query;
     }
 
-    upsert(table, values, conflictTarget) {
+    upsert(table, values, conflictTarget, returning = '') {
         const columns = Object.keys(values).join(', ');
         const valuesFormatted = Object.values(values).map(value => this.preventInjection(value)).join(', ');
-        const updates = Object.keys(values)
-            .map(column => `${column}=EXCLUDED.${column}`)
-            .join(', ');
-        const query = `INSERT INTO ${table} (${columns}) VALUES (${valuesFormatted}) ON CONFLICT (${conflictTarget}) DO UPDATE SET ${updates};`;
+        const updates = Object.keys(values).map(column => `${column}=EXCLUDED.${column}`).join(', ');
+        const query = `INSERT INTO ${table} (${columns}) VALUES (${valuesFormatted}) ON CONFLICT (${conflictTarget}) DO UPDATE SET ${updates} ${returning};`;
         return query;
     }
 
@@ -94,8 +117,8 @@ class Database {
             return 'NULL';
         }
         if (typeof value !== 'string' && typeof value === 'object') {
-                const formattedObject = Object.entries(value).map(([key, value]) => `${this.preventInjection(value)}`).join(',');
-                return `ARRAY[${formattedObject}]`;    
+            const formattedObject = Object.entries(value).map(([key, value]) => `${this.preventInjection(value)}`).join(',');
+            return `ARRAY[${formattedObject}]`;
         }
         const formatted_value = pgp.as.value(value);
         return typeof value === 'string' ? `'${formatted_value}'` : formatted_value;

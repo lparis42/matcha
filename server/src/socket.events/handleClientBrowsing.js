@@ -3,17 +3,18 @@ const constants = require("../constants");
 async function handleClientBrowsing(socket, data, cb) {
     try {
         // Extract data
-        const session = await this.getSession(socket.handshake.sessionID);
-        if (!session.account) {
+        const session_account = await this.getSessionAccount(socket.handshake.sessionID);
+        if (!session_account) {
             throw { client: 'Account not found', status: 404 };
         }
         const { browsing_start, browsing_stop } = data;
         if (browsing_start && typeof browsing_start !== 'number' || browsing_stop && typeof browsing_stop !== 'number') {
             throw { client: 'Invalid browsing window', status: 400 };
         }
-        const fields = [`first_name`, `date_of_birth`, `gender`, `sexual_orientation`, `common_tags`, `pictures`, `fame_rating`, `geolocation`, `last_connection`];
         const account_data = (await this.db.execute(
-            this.db.select('users_public', fields, `id = ${session.account}`)
+            this.db.select('users_public',
+                [`first_name`, `date_of_birth`, `gender`, `sexual_orientation`, `common_tags`, `pictures`, `fame_rating`, `geolocation`],
+                `id = ${session_account}`)
         ))[0];
         let gender_browsing = null;
         switch (account_data.sexual_orientation) {
@@ -27,20 +28,20 @@ async function handleClientBrowsing(socket, data, cb) {
                 break;
         }
         let matches = await this.db.execute(
-            this.db.select('users_public', ['id', 'first_name', 'date_of_birth', 'common_tags', 'pictures', 'fame_rating', 'geolocation', 'location'],
-                `id != ${session.account}` + gender_browsing ? ` AND gender IN (${gender_browsing})` : ``)
+            this.db.select('users_public',
+                ['id', 'first_name', 'date_of_birth', 'common_tags', 'pictures', 'fame_rating', 'geolocation', 'location'],
+                `id != ${session_account}` + (gender_browsing ? ` AND gender IN (${gender_browsing})` : ``))
         );
-        if (!matches.length) {
-            throw { client: 'No potential matches found', status: 404 };
-        }
-
         // Calculate the distance and age difference between the account and the matches
         const matches_with_calculated_data = matches.map((match) => {
-            const distance = Math.sqrt(
-                Math.pow((geolocation[0] - match.geolocation[0]) / 111.12, 2) +
-                Math.pow((geolocation[1] - match.geolocation[1]) / 111.12, 2)
-            );
-            const age_difference = new Date(match.date_of_birth).getFullYear() - new Date(account_data.date_of_birth).getFullYear();
+            const distance = account_data.geolocation && match.geolocation ?
+                Math.sqrt(
+                    Math.pow((account_data.geolocation[0] - match.geolocation[0]) / 111.12, 2) +
+                    Math.pow((account_data.geolocation[1] - match.geolocation[1]) / 111.12, 2))
+                : 1000;
+            const age_difference = match.date_of_birth && account_data.date_of_birth ?
+                new Date(match.date_of_birth).getFullYear() - new Date(account_data.date_of_birth).getFullYear()
+                : 1000;
             return { ...match, distance, age_difference: Math.abs(age_difference) };
         });
         // Sort the matches by common tags, fame rating and age difference
@@ -81,7 +82,7 @@ async function handleClientBrowsing(socket, data, cb) {
             picture: account_data.pictures[0],
             geolocation: match.geolocation,
             location: match.location,
-            online: await this.getSessionByAccount(match.id).account ? true : false
+            online: match.online
         }));
 
         cb(null, data_to_return);

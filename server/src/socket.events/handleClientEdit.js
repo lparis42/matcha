@@ -9,8 +9,8 @@ async function handleClientEdit(socket, data, cb) {
 
     try {
         // Extract data
-        const session = await this.getSession(socket.handshake.sessionID);
-        if (!session.account) {
+        const session_account = await this.getSessionAccount(socket.handshake.sessionID);
+        if (!session_account) {
             throw { client: 'Cannot edit profile while not logged in', status: 401 };
         }
         const { first_name, last_name, email, date_of_birth, gender, sexual_orientation, biography, common_tags, pictures, geolocation } = data;
@@ -60,10 +60,10 @@ async function handleClientEdit(socket, data, cb) {
             }));
         }
         const account_public_data = (await this.db.execute(
-            this.db.select('users_public', editable_fields.filter(field => field !== 'email'), `id = '${session.account}'`)
+            this.db.select('users_public', editable_fields.filter(field => field !== 'email'), `id = '${session_account}'`)
         ))[0];
         const account_private_data = (await this.db.execute(
-            this.db.select('users_private', ['email'], `id = '${session.account}'`)
+            this.db.select('users_private', ['email'], `id = '${session_account}'`)
         ))[0];
 
         // Update 
@@ -74,7 +74,7 @@ async function handleClientEdit(socket, data, cb) {
                     if (!image) {
                         return;
                     }
-                    filenames[index] = `${session.account}_${Date.now()}_${index}.jpg`;
+                    filenames[index] = `${session_account}_${Date.now()}_${index}.jpg`;
                     const imagePath = path.join(path.resolve('..'), 'images', filenames[index]);
                     console.log(imagePath);
                     const dir = path.dirname(imagePath);
@@ -95,7 +95,7 @@ async function handleClientEdit(socket, data, cb) {
             account_public_data.geolocation = geolocation || account_public_data.geolocation;
 
             await this.db.execute(
-                this.db.update('users_public', account_public_data, `id = '${session.account}'`)
+                this.db.update('users_public', account_public_data, `id = '${session_account}'`)
             );
         }
 
@@ -103,12 +103,11 @@ async function handleClientEdit(socket, data, cb) {
             account_private_data.email = email || account_private_data.email;
 
             await this.db.execute(
-                this.db.update('users_private', account_private_data, `id = '${session.account}'`)
+                this.db.update('users_private', account_private_data, `id = '${session_account}'`)
             );
         }
 
-
-        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Edit profile for account ${session.account}`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Edit profile for account ${session_account}`);
         cb(null);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });

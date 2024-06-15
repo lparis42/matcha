@@ -1,11 +1,11 @@
 const constants = require('../constants');
 
 async function handleClientView(socket, data, cb) {
-    
+
     try {
         // Extract data
-        const session = await this.getSession(socket.handshake.sessionID);
-        if (!session.account) {
+        const session_account = await this.getSessionAccount(socket.handshake.sessionID);
+        if (!session_account) {
             throw { client: 'Cannot view profile while not logged in', status: 401 };
         }
         const { target_account } = data;
@@ -22,24 +22,29 @@ async function handleClientView(socket, data, cb) {
             this.db.select('users_private', ['viewers'], `id = '${target_account}'`)
         ))[0].viewers;
 
-        // Update target account fame rating and viewers
-        if (!target_viewers.includes(session.account)) {
-            const update_fame_rating_query = this.db.update('users_public', { fame_rating: target_public_data.fame_rating + 1 }, `id = '${target_account}'`);
-            const update_viewers_query = this.db.update('users_private', { viewers: [...target_viewers, session.account] }, `id = '${target_account}'`);
-            await this.db.execute(update_fame_rating_query + update_viewers_query);
-        }
+        // Update target account viewers and fame rating, and current account view history
+        if (target_viewers !== session_account) {
 
-        // Update current account view history
-        const view_history = (await this.db.execute(
-            this.db.select('users_private', ['view_history'], `id = '${session.account}'`)
-        ))[0].view_history;
-        const updated_view_history = [...view_history, target_account];
-        if (updated_view_history.length > 20) {
-            updated_view_history.shift();
+            // Update target account viewers and fame rating
+            if (!target_viewers.includes(session_account)) {
+                await this.db.execute(
+                    this.db.update('users_public', { fame_rating: 1 }, `id = '${target_account}'`, 'ADD') +
+                    this.db.update('users_private', { viewers: session_account }, `id = '${target_account}'`, 'ARRAY_APPEND')
+                );
+            }
+
+            // Update current account view history
+            const view_history = (await this.db.execute(
+                this.db.select('users_private', ['view_history'], `id = '${session_account}'`)
+            ))[0].view_history;
+            const updated_view_history = [...view_history, target_account];
+            if (updated_view_history.length > 20) {
+                updated_view_history.shift();
+            }
+            await this.db.execute(
+                this.db.update('users_private', { view_history: updated_view_history }, `id = '${session_account}'`)
+            );
         }
-        await this.db.execute(
-            this.db.update('users_private', { view_history: updated_view_history }, `id = '${session.account}'`)
-        );
 
         cb(null, target_public_data);
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - view_profile '${target_account}'`);

@@ -4,8 +4,8 @@ async function handleClientPasswordResetConfirmation(socket, data, cb) {
     
     try {
         // Extract data
-        const session = await this.getSession(socket.handshake.sessionID);
-        if (session.account) {
+        const session_account = await this.getSessionAccount(socket.handshake.sessionID);
+        if (session_account) {
             throw { client: 'Cannot reset password while logged in', status: 403 };
         }
         const { activation_key } = data;

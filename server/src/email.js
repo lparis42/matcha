@@ -7,7 +7,7 @@ class Email {
   }
 
   async post(recipients) {
-    return null; // this.transporter.sendMail(recipients);
+    return null; //await this.transporter.sendMail(recipients);
   }
 }
 

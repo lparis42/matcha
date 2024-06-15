@@ -3,8 +3,8 @@ async function handleClientUnlike(socket, data, cb) {
     
     try {
         // Extract data
-        const session = await this.getSession(socket.handshake.sessionID);
-        if (!session.account) {
+        const session_account = await this.getSessionAccount(socket.handshake.sessionID);
+        if (!session_account) {
             throw { client: 'Cannot unlike profile while not logged in', status: 401 };
         }
         const { target_account } = data;
@@ -22,20 +22,19 @@ async function handleClientUnlike(socket, data, cb) {
         ))[0].likers;
 
         // Check if target account is already liked
-        if (target_likers.includes(session.account)) {
+        if (target_likers.includes(session_account)) {
 
             // Update target user's fame rating and likers
-            const fame_rating = target_fame_rating - 10;
-            const likers = target_likers.filter(liker => liker !== session.account);
             await this.db.execute(
-                this.db.update('users_public', { fame_rating: fame_rating }, `id = '${target_account}'`) +
-                this.db.update('users_private', { likers: likers }, `id = '${target_account}'`)
+                this.db.update('users_public', { fame_rating: 10 }, `id = '${target_account}'`, 'SUBTRACT') +
+                this.db.update('users_private', { likers: session_account }, `id = '${target_account}'`, 'ARRAY_REMOVE')
             );
 
             // Update match status
             await this.db.execute(
-                this.db.update('users_matchs', { connected: false }, `accounts @> ARRAY[${session.account}, ${target_account}]`)
+                this.db.update('users_match', { connected: false }, `accounts @> ARRAY[${session_account}, ${target_account}]`)
             );
+
         } else {
             throw { client: 'Cannot unlike profile that was not liked', status: 400 };
         }

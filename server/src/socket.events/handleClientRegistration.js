@@ -7,8 +7,8 @@ const validator = require('validator');
 async function handleClientRegistration(socket, data, cb) {
     try {
         // Extract data
-        const session = await this.getSession(socket.handshake.sessionID);
-        if (session.account) {
+        const session_account = await this.getSessionAccount(socket.handshake.sessionID);
+        if (session_account) {
             throw { client: 'Cannot register while logged in', status: 403 };
         }
         const { first_name, last_name, email, password, username } = data;
