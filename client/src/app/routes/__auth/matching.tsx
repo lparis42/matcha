@@ -1,8 +1,8 @@
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { useState } from 'react';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
 
-const MatchingPage = () => {
+export function Component() {
     const [users, setUsers] = useState<string[]>(['User 1', 'User 2', 'User 3']);
     const [currentIdx, setCurrentIdx] = useState<number>(0);
 
@@ -18,14 +18,7 @@ const MatchingPage = () => {
         <div>
             {currentIdx < users.length ? (
                 <Card>
-                    <Card.Title>{users[currentIdx]}</Card.Title>
-                    <Card.Body>
-                        {/* Add user details or images here */}
-                    </Card.Body>
-                    <Card.Footer>
-                        <Button onClick={handleDislike}>Dislike</Button>
-                        <Button onClick={handleLike}>Like</Button>
-                    </Card.Footer>
+                    Test
                 </Card>
             ) : (
                 <p>No more users to match with.</p>
@@ -34,4 +27,3 @@ const MatchingPage = () => {
     );
 };
 
-export default MatchingPage;

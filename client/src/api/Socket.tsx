@@ -150,8 +150,7 @@ export const SocketProvider = ({ children }) => {
           last_name: 'Test',
           first_name: 'User'
         };
-      console.log('Emitting registration 2');
-
+        console.log('Emitting registration 2');
       }
       console.log('Emitting registration 3');
 
