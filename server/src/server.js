@@ -133,9 +133,9 @@ class Server {
         const socket_ids = (await this.db.execute(
           this.db.select('users_session', ['socket_ids'], `sid = '${socket.handshake.sessionID}'`)
         ))[0].socket_ids;
-        const connected_socket_ids = socket_ids.filter(socket_id => this.io.sockets.sockets[socket_id].connected);
+        const online_socket_ids = socket_ids.filter(socket_id => this.io.sockets.sockets[socket_id] && this.io.sockets.sockets[socket_id].online);
         await this.db.execute(
-          this.db.update('users_session', { socket_ids: [...connected_socket_ids, socket.id] }, `sid = '${socket.handshake.sessionID}'`)
+          this.db.update('users_session', { socket_ids: [...online_socket_ids, socket.id] }, `sid = '${socket.handshake.sessionID}'`)
         );
 
         socket.use((packet, next) => {

@@ -115,7 +115,7 @@ const constants = {
       columns: [
         `id SERIAL PRIMARY KEY`,
 
-        `connected BOOLEAN DEFAULT FALSE`,
+        `online BOOLEAN DEFAULT FALSE`,
         `accounts INT[2] UNIQUE DEFAULT ARRAY[]::INT[2]`,
         `messages VARCHAR(255)[] DEFAULT ARRAY[]::VARCHAR(255)[]`,
 
@@ -123,7 +123,7 @@ const constants = {
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],
       column_names: [
-        `connected`, `accounts`, `messages`
+        `online`, `accounts`, `messages`
       ],
     },
   },

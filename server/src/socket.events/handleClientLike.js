@@ -42,10 +42,10 @@ async function handleClientLike(socket, data, cb) {
                 // Create the match or update the existing one
                 const accounts = session_account < target_account ? [session_account, target_account] : [target_account, session_account]; // Sort the accounts to avoid duplicates
                 const match_id = (await this.db.execute(
-                    this.db.upsert('users_match', { connected: true, accounts: accounts }, 'accounts', 'RETURNING id')
+                    this.db.upsert('users_match', { online: true, accounts: accounts }, 'accounts', 'RETURNING id')
                 ))[0].id;
                 const match = (await this.db.execute(
-                    this.db.select('users_match', ['id', 'connected', 'accounts', 'messages'], `id = ${match_id}`)
+                    this.db.select('users_match', ['id', 'online', 'accounts', 'messages'], `id = ${match_id}`)
                 ))[0];
 
                 // Get the sockets of the target account to join the match room and notify the client of the match

@@ -23,12 +23,12 @@ async function handleClientChat(socket, data, cb) {
             throw { client: 'Cannot send message without at least one picture', status: 403 };
         }
         const match = (await this.db.execute(
-            this.db.select('users_match', ['id', 'connected', 'accounts', 'messages'], `accounts @> ARRAY[${session_account}, ${target_account}]`)
+            this.db.select('users_match', ['id', 'online', 'accounts', 'messages'], `accounts @> ARRAY[${session_account}, ${target_account}]`)
         ))[0];
         if (!match) {
             throw { client: 'Match not found', status: 404 };
         }
-        if (!match.connected) {
+        if (!match.online) {
             throw { client: 'Match not connected', status: 403 };
         }
 

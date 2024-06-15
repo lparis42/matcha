@@ -32,7 +32,7 @@ async function handleClientUnlike(socket, data, cb) {
 
             // Update match status
             await this.db.execute(
-                this.db.update('users_match', { connected: false }, `accounts @> ARRAY[${session_account}, ${target_account}]`)
+                this.db.update('users_match', { online: false }, `accounts @> ARRAY[${session_account}, ${target_account}]`)
             );
 
         } else {
