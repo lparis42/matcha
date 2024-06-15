@@ -1,23 +1,22 @@
-import React, {useEffect, useState} from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { profile } from "@/types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod";
 import { constants } from "../../../constants";
-import { DatePickerDemo } from "@/components/ui/datepicker";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { XCircle } from "lucide-react";
+import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "@/components/ui/multiselect";
 
 export function Component() {
 
@@ -32,7 +31,7 @@ export function Component() {
         birth_date: new Date(),
         biography: "",
         interests: [],
-        pictures: [],
+        pictures: [null, null, null, null, null],
         geolocation: {
           latitude: 0,
           longitude: 0
@@ -40,7 +39,7 @@ export function Component() {
       },
     })
     
-    const {setValue, getValues} = form
+    const {setValue, getValues, watch} = form
    
     // 2. Define a submit handler.
     function onSubmit(values: z.infer<typeof profile>) {
@@ -50,15 +49,17 @@ export function Component() {
       //edit profil
     }
 
-    const onSelectFile = e => {
+    const onSelectFile = (e) => {
       const prevFiles = getValues('pictures')
-      console.log(prevFiles)
-      if (!e.target.files || e.target.files.length === 0) {
-          setValue('pictures', [])
-          return
-      }
-      setValue('pictures', prevFiles.concat(Array.from(e.target.files)))
-      //setSelectedFiles(prevFiles => );
+      const prev = prevFiles.findIndex((file) => file === null)
+      prevFiles[prev] = e.target.files[0]
+      setValue('pictures', prevFiles)
+    }
+
+    const onDeletePicture = (index) => {
+      const prevFiles = getValues('pictures')
+      prevFiles[index] = null
+      setValue('pictures', prevFiles)
     }
 
     return (
@@ -72,6 +73,47 @@ export function Component() {
       <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
       <CardContent className="grid gap-4">
+        <div className="space-y-2">
+          <FormField
+          control={form.control}
+          name="first_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>First Name</FormLabel>
+              <FormControl>
+                <Input placeholder="john" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+          />
+          <FormField
+          control={form.control}
+          name="last_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Last Name</FormLabel>
+              <FormControl>
+                <Input placeholder="doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+          />
+        <FormField
+        control={form.control}
+        name="email"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Email</FormLabel>
+            <FormControl>
+              <Input placeholder="john@doe.com" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+        />
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <Label htmlFor="sexual_orientation">sexual orientation</Label>
@@ -185,28 +227,34 @@ export function Component() {
           />
         </div>
         <div className="space-y-1">
+        
         <FormField
             control={form.control}
             name="interests"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
               <FormLabel>Interests</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={constants.interests[0]}>
-                <FormControl>
-                  <SelectTrigger className="text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {constants.interests.map((interest) => (
-                    <SelectItem key={interest} value={interest}>
-                      {interest}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MultiSelector
+                onValuesChange={field.onChange}
+                values={field.value}
+              >
+                <MultiSelectorTrigger>
+                  <MultiSelectorInput placeholder="Select differents interests ..." />
+                </MultiSelectorTrigger>
+                <MultiSelectorContent>
+                  <MultiSelectorList>
+                    {constants.interests.map((value) => (
+                      <MultiSelectorItem key={value} value={value}>
+                        <div className="flex items-center space-x-2">
+                          <span>{value}</span>
+                        </div>
+                      </MultiSelectorItem>
+                    ))}
+                  </MultiSelectorList>
+                </MultiSelectorContent>
+              </MultiSelector>
               <FormMessage />
-              </FormItem>
+            </FormItem>
             )}
             />
         </div>
@@ -216,26 +264,34 @@ export function Component() {
         <CardDescription>Update your profile photo here. 512 x 512</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
-        <div className="flex flex-wrap gap-4">
-          {getValues('pictures').map((file, index) => {
-              console.log(file, getValues('pictures'))
+        {getValues('pictures')[0] === null && <span className="text-red-500 font-medium">Almost one image is required</span>}
+        <div className="flex flex-wrap gap-6 max-w-xl justify-center">
+          {watch('pictures').map((file, index) => {
+              if (file === null) {
+                return (
+                  <div key={index} className="rounded w-40 h-40 outline-4 outline-dashed outline-gray-400 select-none" onClick={() => {document.getElementById(`picture${index}`).click()}}>
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      <span>+</span>
+                    </div>
+                    <input id={`picture${index}`} type="file" onChange={(e) => onSelectFile(e)} style={{ display: 'none' }}/>
+                  </div>
+                )
+              }
               return (
-                <div key={index}>
-                  <img src={URL.createObjectURL(file)} alt="Preview" className="rounded w-20 h-20"/>
+                <div key={index} className="rounded w-40 h-40 outline-4 outline outline-gray-400 select-none relative">
+                  <div className="absolute -right-3 -top-3 w-5 h-5" onClick={() => onDeletePicture(index)}>
+                    <XCircle className="w-5 h-5 text-red-500" fill="#fff"/>
+                  </div>
+                  <img src={URL.createObjectURL(file)} alt="Preview" className="rounded w-40 h-40 object-cover"/>
                 </div>
               )
             }
           )}
         </div>
-          <div className="">
-            <Label htmlFor="picture"></Label>
-            <Input id="picture" type="file" onChange={onSelectFile} style={{ display: 'none' }}/>
-            <Button onClick={(e) => {e.preventDefault(); document.getElementById('picture').click()}}>Add picture</Button>
-          </div>
       </CardContent>
       <CardHeader>
         <CardTitle>Location</CardTitle>
-        <CardDescription>Where are you ?</CardDescription>
+        <CardDescription>A TERMINER EN DERNIER TEMPS</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
         <div className="grid grid-cols-2 gap-4">
