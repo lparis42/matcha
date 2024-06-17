@@ -10,15 +10,15 @@ export default defineConfig({
     }
   },
   server: {
-    proxy: {
-      '/socket.io': {
-        target: 'https://localhost:443',
-        changeOrigin: true,
-        ws: true,
-        secure: false,
-        withCredentials: true
-      },
-    },
+    // proxy: {
+    //   '/socket.io': {
+    //     target: 'https://localhost:443',
+    //     changeOrigin: true,
+    //     ws: true,
+    //     secure: false,
+    //     withCredentials: true
+    //   },
+    //},
     host: true,
   }
 })
