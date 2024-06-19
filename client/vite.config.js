@@ -19,6 +19,6 @@ export default defineConfig({
     //     withCredentials: true
     //   },
     //},
-    host: true,
+    //host: true,
   }
 })

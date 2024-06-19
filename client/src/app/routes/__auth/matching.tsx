@@ -7,52 +7,32 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 
 export function Component() {
 
+    const transition = () => {
+        document.querySelector('.transition').classList.toggle('-translate-y-full');
+    }
+
     return (
-        <div className="flex flex-row gap-6 justify-center w-screen h-screen ">
-            <div className="pt-8 flex-1 flex flex-col gap-7 max-w-lg h-screen">
-                <div className='basis-5/6 overflow-scroll no-scroll'>
-                    {/* <Card className='h-full shadow-md bg-gray-50'>
-                        <CardHeader>
-                            <CardTitle>Test</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            test
-                        </CardContent>
-                    </Card>
-                    <Card className='h-full shadow-md bg-gray-50'>
-                        <CardHeader>
-                            <CardTitle>Test</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            test
-                        </CardContent>
-                    </Card> */}
-                     <Carousel
-      opts={{
-        align: "start",
-      }}
-      orientation="vertical"
-      className="w-full max-w-xs"
-    >
-      <CarouselContent className="-mt-1 h-[200px]">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <CarouselItem key={index} className="pt-1 md:basis-1/2">
-            <div className="p-1">
-              <Card>
-                <CardContent className="flex items-center justify-center p-6">
-                  <span className="text-3xl font-semibold">{index + 1}</span>
-                </CardContent>
-              </Card>
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
-    </Carousel>
+        <div className="flex flex-row gap-6 justify-center w-screen h-screen">
+            <div className="pt-8 flex-1 flex flex-col gap-7 max-w-lg max-h-full">
+                <div className='basis-5/6 overflow-scroll no-scrollbar relative'>
+{/*  */}
+                        <Card className='transition z-10 absolute break-all'>
+                            <img src="https://placehold.co/520x520" alt="" className="" />
+                            <CardContent className="flex items-center justify-center p-6">
+                            <span className="text-3xl font-semibold">{1}</span>
+                            djzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqddjzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqddzqddjzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqddjzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqddjzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqddzqddjzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqd
+                            </CardContent>
+                        </Card>
+                        <Card className='other absolute z-0 transition break-all'>
+                            <img src="https://placehold.co/520x520" alt="" className="" />
+                            <CardContent className="flex items-center justify-center p-6">
+                            <span className="text-3xl font-semibold">{1}</span>
+                            djzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqddjzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqddzqddjzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqddjzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqddjzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqddzqddjzaejddezdzqddzqdzqdzdqqqqqqdzqdzqdzqdqzdzqzdqddzqdzqdzqdqzdzqzdqddqzddzqdzqdzqdqdzqdqzdzqzdqdqdzqd
+                            </CardContent>
+                        </Card>
                 </div>
-                <div className='flex justify-around'>
-                    <Button className='rounded-full bg-gray-400 flex items-center justify-center w-16 h-16'>
+                <div className='basis-1/6 flex justify-around'>
+                    <Button onClick={transition} className='rounded-full bg-gray-400 flex items-center justify-center w-16 h-16'>
                         <XIcon size={30} />
                     </Button>
                     <Button className='rounded-full bg-gray-400 flex items-center justify-center w-16 h-16'>
