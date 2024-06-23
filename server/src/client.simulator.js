@@ -1,12 +1,12 @@
 const clientIo = require('socket.io-client');
-const fs = require('fs');
 const path = require('path');
-const constants = require('./constants');
+const structure = require('./structure');
+const sharp = require('sharp');
 
 class ClientSimulator {
     constructor() {
         // Connexion au serveur Socket.IO
-        this.socket = clientIo(`https://localhost:443`, {
+        this.socket = clientIo(`https://localhost:444`, {
             autoConnect: false,
             rejectUnauthorized: false,
             auth: { simulator: true },
@@ -110,9 +110,24 @@ class ClientSimulator {
     }
 
     async simulateEdit() {
+        // Load the image file
         const filePath = path.join(path.resolve('..'), 'image.png');
-        const file_data = await fs.promises.readFile(filePath);
-        const base64Image = file_data.toString('base64');
+
+        // Load the image and get its metadata
+        const metadata = await sharp(filePath).metadata();
+
+        // Calculate new dimensions as 50% of the original
+        const targetHeight = metadata.height / 2;
+        const targetWidth = metadata.width / 2;
+
+        // Resize, convert to JPEG, and get the compressed image as a Buffer
+        const compressedImageBuffer = await sharp(filePath)
+            .resize({ height: targetHeight, width: targetWidth })
+            .webp({ quality: 100 })
+            .toBuffer();
+
+        // Compress the image and convert it to base64
+        const base64Image = compressedImageBuffer.toString('base64');
         const data = {
             gender: this.data.gender,
             sexual_orientation: this.data.sexual_orientation,
@@ -192,13 +207,13 @@ class ClientSimulator {
             case 'last_name':
                 return generateRandomString(2, 35, alpha);
             case 'gender':
-                return constants.database.users_public.genders[Math.floor(Math.random() * 2)];
+                return structure.database.users_public.genders[Math.floor(Math.random() * 2)];
             case 'sexual_orientation':
-                return constants.database.users_public.sexual_orientations[Math.floor(Math.random() * 4)];
+                return structure.database.users_public.sexual_orientations[Math.floor(Math.random() * 4)];
             case 'biography':
                 return generateRandomString(0, 255, allPrintableAscii);
             case 'common_tags':
-                return Array.from({ length: 5 }, () => Math.floor(Math.random() * constants.database.users_public.common_tags.length));
+                return Array.from({ length: 5 }, () => Math.floor(Math.random() * structure.database.users_public.common_tags.length));
             case 'geolocation':
                 return [Math.random() * 180 - 90, Math.random() * 360 - 180];
         }

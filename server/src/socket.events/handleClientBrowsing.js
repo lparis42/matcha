@@ -1,4 +1,4 @@
-const constants = require("../constants");
+const structure = require("../structure");
 
 async function handleClientBrowsing(socket, data, cb) {
     try {

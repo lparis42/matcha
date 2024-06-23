@@ -1,4 +1,4 @@
-const constants = require('../constants');
+const structure = require('../structure');
 
 async function handleClientView(socket, data, cb) {
 
@@ -13,7 +13,7 @@ async function handleClientView(socket, data, cb) {
             throw { client: 'Invalid target account', status: 400 };
         }
         const target_public_data = (await this.db.execute(
-            this.db.select('users_public', [...constants.database.users_public.column_names], `id = '${target_account}'`)
+            this.db.select('users_public', [...structure.database.users_public.column_names], `id = '${target_account}'`)
         ))[0];
         if (!target_public_data) {
             throw { client: `Account '${target_account}' not found`, status: 404 };

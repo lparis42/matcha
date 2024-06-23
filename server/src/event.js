@@ -1,8 +1,4 @@
 const Email = require('./email');
-const Database = require('./database');
-const constants = require('./constants');
-
-
 
 class Event {
     constructor(io, db, store) {

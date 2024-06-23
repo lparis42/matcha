@@ -1,17 +1,18 @@
 const Server = require('./server');
 const ClientSimulator = require('./client.simulator');
-const e = require('express');
-
-// Disable console.log and console.error in production
-if (process.env.NODE_ENV !== 'development') {
+const dotenv = require('dotenv');
+dotenv.config();
+if (process.env.NODE_ENV !== 'development') { // Disable console.log in production mode (NODE_ENV=production)
     console.log = function () { };
     console.error = function () { };
 }
-
-// Start the server
 const server = new Server();
 
-// For testing purposes
+
+////////////////////////////////////////
+// Client simulator ////////////////////
+////////////////////////////////////////
+
 setTimeout(async () => {
 
     // Client simulator
