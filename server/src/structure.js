@@ -1,28 +1,5 @@
-const constants = {
-  http: {
-    port: 5173,
-  },
-  https: {
-    port: 443,
-    options: {
-      key: 'server.key',
-      cert: 'server.cert',
-      passphrase: 'matcha',
-    },
-  },
-  nodemailer: {
-    host: 'mail.smtpbucket.com', // Using SMTP Bucket for testing
-    port: 8025,
-    ignoreTLS: true, // TLS is a security feature, but not needed for testing
-  },
+const structure = {
   database: {
-    connection_parameters: {
-      user: 'postgres',
-      host: 'localhost',
-      database: 'postgres',
-      password: 'pg',
-      port: 5432,
-    },
     users_session: {
       columns: [
         `sid VARCHAR NOT NULL PRIMARY KEY`,
@@ -129,4 +106,4 @@ const constants = {
   },
 };
 
-module.exports = constants;
+module.exports = structure;

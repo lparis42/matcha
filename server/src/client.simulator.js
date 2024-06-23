@@ -1,7 +1,7 @@
 const clientIo = require('socket.io-client');
 const fs = require('fs');
 const path = require('path');
-const constants = require('./constants');
+const structure = require('./structure');
 
 class ClientSimulator {
     constructor() {
@@ -192,13 +192,13 @@ class ClientSimulator {
             case 'last_name':
                 return generateRandomString(2, 35, alpha);
             case 'gender':
-                return constants.database.users_public.genders[Math.floor(Math.random() * 2)];
+                return structure.database.users_public.genders[Math.floor(Math.random() * 2)];
             case 'sexual_orientation':
-                return constants.database.users_public.sexual_orientations[Math.floor(Math.random() * 4)];
+                return structure.database.users_public.sexual_orientations[Math.floor(Math.random() * 4)];
             case 'biography':
                 return generateRandomString(0, 255, allPrintableAscii);
             case 'common_tags':
-                return Array.from({ length: 5 }, () => Math.floor(Math.random() * constants.database.users_public.common_tags.length));
+                return Array.from({ length: 5 }, () => Math.floor(Math.random() * structure.database.users_public.common_tags.length));
             case 'geolocation':
                 return [Math.random() * 180 - 90, Math.random() * 360 - 180];
         }

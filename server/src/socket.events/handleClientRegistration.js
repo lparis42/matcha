@@ -1,4 +1,4 @@
-const constants = require('../constants');
+const structure = require('../structure');
 const bcrypt = require('bcrypt');
 const e = require('express');
 const validator = require('validator');
@@ -45,7 +45,7 @@ async function handleClientRegistration(socket, data, cb) {
         }
 
         // Send the activation link by email
-        const link = `https://localhost:${constants.https.port}/confirm?activation_key=${activation_key}`;
+        const link = `https://localhost:${process.env.HTTPS_PORT}/confirm?activation_key=${activation_key}`;
         await this.email.post({
             from: 'email@server.com',
             to: email,

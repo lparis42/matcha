@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import RemixRouter from 'vite-plugin-remix-router'
+import fs from 'fs'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,14 +13,18 @@ export default defineConfig({
   },
   // For development purposes
   server: {
+    https: {
+      key: fs.readFileSync('../server/server.key'),
+      cert: fs.readFileSync('../server/server.crt'),
+      passphrase: 'KEY'
+    },
     proxy: {
       '/socket.io': {
-        target: 'https://localhost:443',
+        target: 'https://localhost:444',
         changeOrigin: true,
         ws: true,
         secure: false, // To accept self-signed certificate
       },
     },
-    host: true,
   }
 })

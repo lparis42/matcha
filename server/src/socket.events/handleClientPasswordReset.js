@@ -1,5 +1,5 @@
 const validator = require('validator');
-const constants = require('../constants');
+const structure = require('../structure');
 
 // Handler function for client password reset event
 async function handleClientPasswordReset(socket, data, cb) {
@@ -31,7 +31,7 @@ async function handleClientPasswordReset(socket, data, cb) {
         );
 
         // Send the new password by email
-        const link = `https://localhost:${constants.https.port}/confirm?activation_key=${activation_key}`;
+        const link = `https://localhost:${process.env.HTTPS_PORT}/confirm?activation_key=${activation_key}`;
         await this.email.post({
             from: 'email@server.com',
             to: email,

@@ -1,4 +1,4 @@
-const constants = require('../constants');
+const structure = require('../structure');
 const fs = require('fs')
 const validator = require('validator');
 const sharp = require('sharp');
@@ -31,16 +31,16 @@ async function handleClientEdit(socket, data, cb) {
         if (date_of_birth && (typeof date_of_birth !== 'string' || !validator.isDate(date_of_birth))) {
             throw { client: 'Invalid date of birth', status: 400 };
         }
-        if (gender && (typeof gender !== 'string' || !constants.database.users_public.genders.includes(gender))) {
+        if (gender && (typeof gender !== 'string' || !structure.database.users_public.genders.includes(gender))) {
             throw { client: 'Invalid gender', status: 400 };
         }
-        if (sexual_orientation && (typeof sexual_orientation !== 'string' || !constants.database.users_public.sexual_orientations.includes(sexual_orientation))) {
+        if (sexual_orientation && (typeof sexual_orientation !== 'string' || !structure.database.users_public.sexual_orientations.includes(sexual_orientation))) {
             throw { client: 'Invalid sexual orientation', status: 400 };
         }
         if (biography && (typeof biography !== 'string' || !validator.isLength(biography, { min: 1, max: 255 }))) {
             throw { client: 'Invalid biography', status: 400 };
         }
-        if (common_tags && (!Array.isArray(common_tags) || !common_tags.every(interest => !typeof interest !== 'number' || interest < 0 || interest >= constants.database.users_public.common_tags.length))) {
+        if (common_tags && (!Array.isArray(common_tags) || !common_tags.every(interest => !typeof interest !== 'number' || interest < 0 || interest >= structure.database.users_public.common_tags.length))) {
             throw { client: 'Invalid common_tags', status: 400 };
         }
         if (pictures) {
