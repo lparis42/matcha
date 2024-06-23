@@ -74,13 +74,13 @@ async function handleClientEdit(socket, data, cb) {
                     if (!image) {
                         return;
                     }
-                    filenames[index] = `${session_account}_${Date.now()}_${index}.jpg`;
+                    filenames[index] = `${session_account}_${Date.now()}_${index}.WebP`;
                     const imagePath = path.join(path.resolve('..'), 'images', filenames[index]);
                     console.log(imagePath);
                     const dir = path.dirname(imagePath);
                     await fs.promises.mkdir(dir, { recursive: true });
                     const imageBuffer = Buffer.from(image, 'base64');
-                    //await fs.promises.writeFile(imagePath, imageBuffer);
+                    await fs.promises.writeFile(imagePath, imageBuffer);
                 }));
                 account_public_data.pictures = filenames;
             }

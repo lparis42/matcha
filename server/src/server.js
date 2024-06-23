@@ -10,6 +10,7 @@ const sharedsession = require('express-socket.io-session');
 const cookieParser = require('cookie-parser');
 const socketIo = require('socket.io');
 const cors = require('cors');
+const { maxHeaderSize } = require('http');
 
 class Server {
 
@@ -139,12 +140,12 @@ class Server {
 
   // Configure the Socket.IO server 
   configureSocketIoServer() {
-    this.io = socketIo(this.server, { // Create a Socket.IO server 
+    this.io = socketIo(this.server, { // Create a Socket.IO server
+      maxHttpBufferSize: 1e7, // Set the maximum HTTP buffer size to 10MB
       cors: {
         origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
         methods: ['GET', 'POST'],
         credentials: true,
-        path: '/socket.io'
       }
     });
     this.io.use(sharedsession(this.sessionMiddleware, { // Use the shared session middleware for the Socket.IO server 
@@ -154,7 +155,7 @@ class Server {
       try {
         if (socket.handshake.auth.simulator) { // For testing purposes only - create a session for the simulator
           await this.event.db.execute(
-            this.event.db.insert('users_session', { sid: socket.handshake.sessionID, sess: socket.handshake.session, expire: 'NOW()' })
+            this.event.db.insert('users_session', { sid: socket.handshake.sessionID, sess: JSON.stringify(socket.handshake.session), expire: 'NOW()' })
           );
         }
         // Verify if the session has been created by express-session middleware
@@ -176,6 +177,7 @@ class Server {
             const size = Buffer.byteLength(JSON.stringify(packet), 'utf8'); // Calculate the size of the packet in bytes 
             console.log('\r\x1b[K');
             console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Sending packet of size ${size} bytes:`);
+            console.info(size);
 
             next();
           } catch (err) {
