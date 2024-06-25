@@ -52,13 +52,12 @@ let socket;
 
 await fetch('https://localhost:444', { // To get credentials when using client dev live server
   method: 'GET',
-  credentials: 'include'
+  credentials: 'include',
 }).then(() => {
   socket = io('https://localhost:444', {
-    path: '/socket.io',
     secure: true,
     reconnection: true,
-    rejectUnauthorized: false,
+    rejectUnauthorized: true,
     withCredentials: true,
   });
 }).catch(error => {

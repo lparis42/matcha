@@ -110,6 +110,7 @@ class Server {
       origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
       methods: ['GET', 'POST'],
       credentials: true,
+      secure: true,
     }));
     this.app.use(cookieParser(process.env.SESSION_MIDDLEWARE_SECRET)); // Use the cookie parser middleware for the application 
     this.app.use(this.sessionMiddleware); // Use the session middleware for the application 
@@ -118,10 +119,19 @@ class Server {
 
   // Configure the routes
   configureRoutes() {
-    // this.app.get('/', (req, res) => { // Handle the GET request for the root URL 
-    //   res.sendFile(path.join(process.cwd(), '..', 'client', 'dist', 'index.html')); // Send the index.html file to the client 
-    // });
-    // this.app.use(express.static(path.join(process.cwd(), '..', 'client', 'dist'))); // Serve the client files from the dist folder in the client directory 
+    // For testing purposes only
+    if (process.env.NODE_ENV === 'development') {
+      this.app.get('/', (req, res) => {
+        req.session.sessionID = null;
+        res.sendStatus(200); // Send a status code of 200 OK to the client
+      });
+    } else {
+      this.app.get('/', (req, res) => {
+        req.session.sessionID = null;
+        res.sendFile(path.join(process.cwd(), '..', 'client', 'dist', 'index.html'));
+      });
+      this.app.use(express.static(path.join(process.cwd(), '..', 'client', 'dist')));
+    }
     console.log(`Routes configured`);
   }
 

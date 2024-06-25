@@ -5,7 +5,7 @@ import fs from 'fs'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), RemixRouter({routesDirectory: 'src/app/routes'})],
+  plugins: [react(), RemixRouter({ routesDirectory: 'src/app/routes' })],
   resolve: {
     alias: {
       '@': '/src'
@@ -18,13 +18,5 @@ export default defineConfig({
       cert: fs.readFileSync('../server/server.crt'),
       passphrase: 'KEY'
     },
-    proxy: {
-      '/socket.io': {
-        target: 'https://localhost:444',
-        changeOrigin: true,
-        ws: true,
-        secure: false, // To accept self-signed certificate
-      },
-    },
-  }
+  },
 })
