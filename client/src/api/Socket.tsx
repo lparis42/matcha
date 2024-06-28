@@ -36,6 +36,7 @@ interface SocketValue {
   eventViewers: Function; // Replace with the actual type
   eventLikers: Function; // Replace with the actual type
   eventChat: Function; // Replace with the actual type
+  eventBrowsing: Function; // Replace with the actual type
 }
 
 const SocketContext = createContext()
@@ -230,14 +231,29 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  const eventView = useCallback(() => {
-    console.log('Emitting view profile');
-    const target_account = Number(prompt("Please enter the target account:"));
-    socket.emit('client:view', { target_account: target_account }, (err: Error, message: string) => {
+  const eventBrowsing = useCallback((callback: (err: Error | null, listProfils?: object[]) => void) => {
+    console.log('Emitting browse profile');
+    socket.emit('client:browsing', { browsing_start: 0, browsing_stop: 10 }, (err: Error, listProfils: object[]) => {
       if (err) {
         console.error('Error:', err);
       } else {
-        console.log('Success:', message);
+        console.log('Success:', listProfils);
+        callback(null, listProfils);
+      }
+    });
+  }, []);
+
+  const eventView = useCallback((target_account: number, callback: (err: Error | null, profile?: object) => void) => {
+    console.log('Emitting view profile', target_account);
+    if (typeof target_account !== 'number')
+      Number(prompt("Please enter the target account:"));
+    socket.emit('client:view', { target_account: target_account }, (err: Error, profile: object) => {
+      if (err) {
+        console.error('Error:', err);
+        callback(err);
+      } else {
+        console.log('Success:', profile);
+        callback(null, profile);
       }
     });
   }, []);
@@ -332,6 +348,7 @@ export const SocketProvider = ({ children }) => {
     eventViewers,
     eventLikers,
     eventChat,
+    eventBrowsing,
     log
   }
 
