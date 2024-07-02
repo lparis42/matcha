@@ -154,6 +154,35 @@ class ClientSimulator {
         return this.emit('client:viewers', null);
     }
 
+    async simulateMatchs() {
+        return this.emit('client:matchs', null);
+    }
+
+    async simulateResearch(data) {
+        return this.emit('client:research', data);
+    }
+
+    async simulateBlock(target_account) {
+        const data = {
+            target_account: target_account,
+        };
+        return this.emit('client:block', data);
+    }
+
+    async simulateUnblock(target_account) {
+        const data = {
+            target_account: target_account,
+        };
+        return this.emit('client:unblock', data);
+    }
+
+    async simulateReport(target_account) {
+        const data = {
+            target_account: target_account
+        };
+        return this.emit('client:report', data);
+    }
+
     // ** Tools **
 
     emit(event, data) {

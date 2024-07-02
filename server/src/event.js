@@ -12,6 +12,7 @@ class Event {
 
     configureBinds() {
         const eventHandlers = [
+            'handleClientBlock',
             'handleClientBrowsing',
             'handleClientChat',
             'handleClientEdit',
@@ -20,10 +21,14 @@ class Event {
             'handleClientLikers',
             'handleClientLogin',
             'handleClientLogout',
+            'handleClientMatchs',
             'handleClientPasswordReset',
             'handleClientPasswordResetConfirmation',
             'handleClientRegistration',
             'handleClientRegistrationConfirmation',
+            'handleClientReport',
+            'handleClientResearch',
+            'handleClientUnblock',
             'handleClientUnlike',
             'handleClientUnregistration',
             'handleClientView',
@@ -81,6 +86,7 @@ class Event {
 
             // Handle the client events
             const events = [
+                { name: 'client:block', handler: 'handleClientBlock', arguments: ['data', 'cb'] },
                 { name: 'client:browsing', handler: 'handleClientBrowsing', arguments: ['data', 'cb'] },
                 { name: 'client:chat', handler: 'handleClientChat', arguments: ['data', 'cb'] },
                 { name: 'client:edit', handler: 'handleClientEdit', arguments: ['data', 'cb'] },
@@ -89,10 +95,14 @@ class Event {
                 { name: 'client:likers', handler: 'handleClientLikers', arguments: ['cb'] },
                 { name: 'client:login', handler: 'handleClientLogin', arguments: ['data', 'cb'] },
                 { name: 'client:logout', handler: 'handleClientLogout', arguments: ['cb'] },
+                { name: 'client:matchs', handler: 'handleClientMatchs', arguments: ['cb'] },
                 { name: 'client:password_reset', handler: 'handleClientPasswordReset', arguments: ['data', 'cb'] },
                 { name: 'client:password_reset_confirmation', handler: 'handleClientPasswordResetConfirmation', arguments: ['data', 'cb'] },
                 { name: 'client:registration', handler: 'handleClientRegistration', arguments: ['data', 'cb'] },
                 { name: 'client:registration_confirmation', handler: 'handleClientRegistrationConfirmation', arguments: ['data', 'cb'] },
+                { name: 'client:report', handler: 'handleClientReport', arguments: ['data', 'cb'] },
+                { name: 'client:research', handler: 'handleClientResearch', arguments: ['data', 'cb'] },
+                { name: 'client:unblock', handler: 'handleClientUnblock', arguments: ['data', 'cb'] },
                 { name: 'client:unlike', handler: 'handleClientUnlike', arguments: ['data', 'cb'] },
                 { name: 'client:unregistration', handler: 'handleClientUnregistration', arguments: ['cb'] },
                 { name: 'client:view', handler: 'handleClientView', arguments: ['data', 'cb'] },

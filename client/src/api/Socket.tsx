@@ -56,7 +56,7 @@ await fetch('https://localhost:444', { // To get credentials when using client d
   credentials: 'include',
 }).then(() => {
   socket = io('https://localhost:444', {
-    secure: true,
+    secure: false,
     reconnection: true,
     rejectUnauthorized: true,
     withCredentials: true,

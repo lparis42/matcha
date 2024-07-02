@@ -25,6 +25,13 @@ async function handleClientLike(socket, data, cb) {
         //    throw { client: 'Cannot like without at least one picture', status: 403 };
         //}
 
+        // Check if blocked by the target account
+        if ((await this.db.execute(
+            this.db.select('users_private', ['blocked_accounts'], `id = ${target_account}`)
+        ))[0].blocked_accounts.includes(session_account)) {
+            throw { client: 'Cannot like a account that blocked you', status: 403 };
+        }
+
         // ** Check if target account is already liked
         if (!target_likers.includes(session_account)) {
 

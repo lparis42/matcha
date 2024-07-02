@@ -19,12 +19,13 @@ const structure = {
         `viewers INT[] DEFAULT ARRAY[]::INT[]`,
         `likers INT[] DEFAULT ARRAY[]::INT[]`,
         `view_history INT[] DEFAULT ARRAY[]::INT[]`,
+        `blocked_accounts INT[] DEFAULT ARRAY[]::INT[]`,
 
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
       ],
       column_names: [
-        `email`, `password`, `viewers`, `likers`, `view_history`
+        `email`, `password`, `viewers`, `likers`, `view_history`, `blocked_accounts`
       ],
     },
     users_preview: {
@@ -101,6 +102,20 @@ const structure = {
       ],
       column_names: [
         `online`, `accounts`, `messages`
+      ],
+    },
+    users_report: {
+      columns: [
+        `id SERIAL PRIMARY KEY`,
+
+        `reporter INT`,
+        `reported INT`,
+
+        `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
+        `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
+      ],
+      column_names: [
+        `reporter`, `reported`
       ],
     },
   },
