@@ -1,4 +1,4 @@
-import handleClientBrowsing from "./handleClientBrowsing";
+const { handleClientBrowsing } = require('./handleClientBrowsing');
 
 // Method to research clients by filters : age, distance, popularity, tags
 async function handleClientResearch(socket, data, cb) {
@@ -56,3 +56,4 @@ async function handleClientResearch(socket, data, cb) {
     }
 }
 
+module.exports = handleClientResearch;

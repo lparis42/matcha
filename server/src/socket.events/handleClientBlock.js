@@ -37,3 +37,5 @@ async function handleClientBlock(socket, data, cb) {
         console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Account blocking error: ${err.client || err}`);
     }
 }
+
+module.exports = handleClientBlock;
