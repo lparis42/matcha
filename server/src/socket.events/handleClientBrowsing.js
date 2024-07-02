@@ -35,7 +35,7 @@ async function handleClientBrowsing(socket, data, cb) {
         let matches = await this.db.execute(
             this.db.select('users_public',
                 ['id', 'first_name', 'date_of_birth', 'common_tags', 'pictures', 'fame_rating', 'geolocation', 'location'],
-                `id NOT IN (${blocked_accounts.join(',')})` + // Exclude blocked accounts
+                (blocked_accounts.length > 0 ? `id NOT IN (${blocked_accounts.join(',')}) AND ` : '') +
                 `id != ${session_account}` + (gender_browsing ? ` AND gender IN (${gender_browsing})` : ``))
         );
         // Calculate the distance and age difference between the account and the matches
