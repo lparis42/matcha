@@ -19,11 +19,11 @@ async function handleClientLike(socket, data, cb) {
         if (!target_likers) {
             throw { client: `Account '${target_account}' not found`, status: 404 };
         }
-        if ((await this.db.execute(
-            this.db.select('users_public', ['pictures'], `id = '${session_account}'`)
-        ))[0].pictures[0].length === 0) {
-            throw { client: 'Cannot like without at least one picture', status: 403 };
-        }
+        //if ((await this.db.execute(
+        //    this.db.select('users_public', ['pictures'], `id = '${session_account}'`)
+        //))[0].pictures[0]?.length === 0) {
+        //    throw { client: 'Cannot like without at least one picture', status: 403 };
+        //}
 
         // Check if blocked by the target account
         if ((await this.db.execute(

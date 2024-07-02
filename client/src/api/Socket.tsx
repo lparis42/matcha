@@ -23,19 +23,21 @@ interface Geolocation {
 interface SocketValue {
   socket: SocketIOClient.Socket;
   socketConnected: boolean;
-  geolocation: Geolocation; // Replace with the actual type
-  eventRegistration: Function; // Replace with the actual type
-  eventLogin: Function; // Replace with the actual type
-  eventPasswordReset: Function; // Replace with the actual type
-  eventLogout: Function; // Replace with the actual type
-  eventUnregistration: Function; // Replace with the actual type
-  eventEdit: Function; // Replace with the actual type
-  eventView: Function; // Replace with the actual type
-  eventLike: Function; // Replace with the actual type
-  eventUnLike: Function; // Replace with the actual type
-  eventViewers: Function; // Replace with the actual type
-  eventLikers: Function; // Replace with the actual type
-  eventChat: Function; // Replace with the actual type
+  geolocation: Geolocation;
+  eventRegistration: Function;
+  eventLogin: Function;
+  eventPasswordReset: Function;
+  eventLogout: Function;
+  eventUnregistration: Function;
+  eventEdit: Function;
+  eventView: Function;
+  eventLike: Function;
+  eventUnLike: Function;
+  eventViewers: Function;
+  eventLikers: Function;
+  eventChat: Function;
+  eventBrowsing: Function;
+  eventMatch: Function;
 }
 
 const SocketContext = createContext()
@@ -230,56 +232,94 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  const eventView = useCallback(() => {
-    console.log('Emitting view profile');
-    const target_account = Number(prompt("Please enter the target account:"));
-    socket.emit('client:view', { target_account: target_account }, (err: Error, message: string) => {
+  const eventBrowsing = useCallback((callback: (err: Error | null, listProfils?: object[]) => void) => {
+    console.log('Emitting browse profile');
+    socket.emit('client:browsing', { browsing_start: 0, browsing_stop: 10 }, (err: Error, listProfils: object[]) => {
       if (err) {
         console.error('Error:', err);
       } else {
-        console.log('Success:', message);
+        console.log('Success:', listProfils);
+        callback(null, listProfils);
       }
     });
   }, []);
 
-  const eventLike = useCallback(() => {
+  const eventView = useCallback((target_account: number, callback: (err: Error | null, profile?: object) => void) => {
+    console.log('Emitting view profile', target_account);
+    if (typeof target_account !== 'number')
+      target_account = Number(prompt("Please enter the target account:"));
+    socket.emit('client:view', { target_account: target_account }, (err: Error, profile: object) => {
+      if (err) {
+        console.error('Error:', err);
+        callback(err);
+      } else {
+        console.log('Success:', profile);
+        callback(null, profile);
+      }
+    });
+  }, []);
+
+  const eventLike = useCallback((target_account: number, callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting like profile');
-    const target_account = prompt("Please enter the target account:");
+    if (typeof target_account !== 'number')
+      target_account = Number(prompt("Please enter the target account:"));
     socket.emit('client:like', { target_account: target_account }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err);
       } else {
         console.log('Success:', message);
+        callback(null, message);
       }
     });
   }, []);
 
-  const eventUnLike = useCallback(() => {
+  const eventUnLike = useCallback((target_account: number, callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting unlike profile');
-    const target_account = prompt("Please enter the target account:");
+    if (typeof target_account !== 'number')
+      target_account = Number(prompt("Please enter the target account:"));
     socket.emit('client:unlike', { target_account: target_account }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err);
       } else {
         console.log('Success:', message);
+        callback(null, message);
       }
     });
   }, []);
 
-  const eventViewers = useCallback(() => {
+  const eventViewers = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting viewers');
     socket.emit('client:viewers', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err);
       } else {
         console.log('Success:', message);
+        callback(null, message);
       }
     });
   }, []);
 
-  const eventLikers = useCallback(() => {
+  const eventLikers = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting likers');
     socket.emit('client:likers', (err: Error, message: string) => {
+      if (err) {
+        console.error('Error:', err);
+        callback(err);
+      } else {
+        console.log('Success:', message);
+        callback(null, message);
+      }
+    });
+  }, []);
+
+  const eventMatch = useCallback(() => {
+    console.log('Emitting Match');
+    const target_match = prompt("Please enter the target account:");
+    const message = Math.random().toString(36).substring(3);
+    socket.emit('client:matchs', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
@@ -287,6 +327,7 @@ export const SocketProvider = ({ children }) => {
       }
     });
   }, []);
+
 
   const eventChat = useCallback(() => {
     console.log('Emitting chat');
@@ -332,6 +373,8 @@ export const SocketProvider = ({ children }) => {
     eventViewers,
     eventLikers,
     eventChat,
+    eventBrowsing,
+    eventMatch,
     log
   }
 
