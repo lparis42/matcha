@@ -103,6 +103,20 @@ const structure = {
         `online`, `accounts`, `messages`
       ],
     },
+    users_report: {
+      columns: [
+        `id SERIAL PRIMARY KEY`,
+
+        `reporter INT`,
+        `reported INT`,
+
+        `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
+        `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
+      ],
+      column_names: [
+        `reporter`, `reported`
+      ],
+    },
   },
 };
 

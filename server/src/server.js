@@ -54,6 +54,7 @@ class Server {
       this.db.execute(this.db.drop('users_preview')),
       this.db.execute(this.db.drop('users_public')),
       this.db.execute(this.db.drop('users_session')),
+      this.db.execute(this.db.drop('users_report')),
     ]);
     await Promise.all([
       this.db.execute(this.db.create('users_private', structure.database.users_private.columns)),
@@ -61,6 +62,7 @@ class Server {
       this.db.execute(this.db.create('users_public', structure.database.users_public.columns)),
       this.db.execute(this.db.create('users_match', structure.database.users_match.columns)),
       this.db.execute(this.db.create('users_session', structure.database.users_session.columns)),
+      this.db.execute(this.db.create('users_report', structure.database.users_report.columns)),
     ]);
 
     console.log(`Database configured`);
