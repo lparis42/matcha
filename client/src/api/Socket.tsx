@@ -246,7 +246,7 @@ export const SocketProvider = ({ children }) => {
   const eventView = useCallback((target_account: number, callback: (err: Error | null, profile?: object) => void) => {
     console.log('Emitting view profile', target_account);
     if (typeof target_account !== 'number')
-      Number(prompt("Please enter the target account:"));
+      target_account = Number(prompt("Please enter the target account:"));
     socket.emit('client:view', { target_account: target_account }, (err: Error, profile: object) => {
       if (err) {
         console.error('Error:', err);
@@ -258,26 +258,32 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  const eventLike = useCallback(() => {
+  const eventLike = useCallback((target_account: number, callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting like profile');
-    const target_account = prompt("Please enter the target account:");
+    if (typeof target_account !== 'number')
+      target_account = Number(prompt("Please enter the target account:"));
     socket.emit('client:like', { target_account: target_account }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err);
       } else {
         console.log('Success:', message);
+        callback(null, message);
       }
     });
   }, []);
 
-  const eventUnLike = useCallback(() => {
+  const eventUnLike = useCallback((target_account: number, callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting unlike profile');
-    const target_account = prompt("Please enter the target account:");
+    if (typeof target_account !== 'number')
+      target_account = Number(prompt("Please enter the target account:"));
     socket.emit('client:unlike', { target_account: target_account }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err);
       } else {
         console.log('Success:', message);
+        callback(null, message);
       }
     });
   }, []);

@@ -1,13 +1,10 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
-import {HeartIcon, XIcon, SettingsIcon, MessageSquareTextIcon, PowerIcon} from 'lucide-react';
+import {SettingsIcon, MessageSquareTextIcon, PowerIcon} from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { constants } from '@/constants';
-import { Badge } from '@/components/ui/badge';
 import { useSocket } from '@/api/Socket';
-import PreviewCard from '@/components/preview-card';
+import { Matchview } from '@/components/match-view';
 
 const items = [
     {
@@ -41,49 +38,10 @@ export function Component() {
         });
     }, []);
 
-    const ChildComponent = ({ activeItem }) => {
-
-        useEffect(() => {
-        }, [activeItem]);
-
-        const transition = () => {
-            const tag = document.querySelector('.transition')
-            if (tag) {
-                tag.classList.toggle('-translate-y-full');
-                const onTransitionEnd = () => {
-                    tag.removeEventListener('transitionend', onTransitionEnd);
-                    setActiveItem(activeItem + 1);
-                };
-                tag.addEventListener('transitionend', onTransitionEnd);
-            }
-        }
-
-        return (
-            <><div className='basis-5/6 overflow-scroll no-scrollbar relative'>
-                {/*{list.map((profile, index) => (<PreviewCard index={index + 1} />))}
-                <Card className='other absolute z-0 transition break-all'>
-                    <img src="https://placehold.co/520x520" alt="" className="" />
-                    <CardContent className="flex items-center justify-center p-6">
-                    </CardContent>
-                </Card>*/}
-                    <PreviewCard index={activeItem} classname={"transition z-10"}/>
-                    <PreviewCard index={activeItem + 1} classname={""}/>
-                </div>
-                
-                <div className='basis-1/6 flex justify-around'>
-                    <Button onClick={transition} className='rounded-full bg-gray-400 flex items-center justify-center w-16 h-16'>
-                        <XIcon size={30} />
-                    </Button>
-                    <Button className='rounded-full bg-gray-400 flex items-center justify-center w-16 h-16'>
-                        <HeartIcon size={30} />
-                    </Button>
-                </div></>);
-
-    }
     return (
         <div className="flex flex-row gap-6 justify-center w-screen h-screen">
             <div className="pt-8 flex-1 flex flex-col gap-7 max-w-sm max-h-full">
-                <ChildComponent activeItem={activeItem} />
+                <Matchview activeItem={activeItem} setActiveItem={setActiveItem} />
             </div>
             <div className="pt-8 flex flex-col gap-6">
                 <Button asChild className='rounded-full bg-gray-400 flex items-center justify-center w-16 h-16'>

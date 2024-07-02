@@ -6,7 +6,7 @@ import { Badge } from './ui/badge';
 import { constants } from '@/constants';
 
 
-const PreviewCard = ({index, classname}) => {
+const PreviewCard = ({index}) => {
     const { eventView } = useSocket();
     const [items, setItems] = useState<object | undefined>(undefined);
 
@@ -30,10 +30,10 @@ const PreviewCard = ({index, classname}) => {
                 setItems(profile);
             }
         });
-    }, []);
+    }, [index]);
 
     if (!items) return (
-        <Card className={'z-0 absolute break-all w-full h-full'}>
+        <Card className={`z-0 absolute break-all w-full h-full`}>
             <Carousel>
                 <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
                 <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
@@ -50,7 +50,7 @@ const PreviewCard = ({index, classname}) => {
     )
 
     return (
-        <Card className={'z-0 absolute break-all w-full h-full ' + classname}>
+        <Card className={`z-0 absolute break-all w-full h-full`}>
             <Carousel>
                 <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
                 <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
@@ -74,7 +74,7 @@ const PreviewCard = ({index, classname}) => {
                         })
                     }
                 </div>
-                <CardDescription>{items?.biography}</CardDescription>
+            <CardDescription>{items?.biography} {index}</CardDescription>
             </CardHeader>
         </Card>
     );
