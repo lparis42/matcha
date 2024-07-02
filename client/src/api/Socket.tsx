@@ -288,24 +288,28 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  const eventViewers = useCallback(() => {
+  const eventViewers = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting viewers');
     socket.emit('client:viewers', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err);
       } else {
         console.log('Success:', message);
+        callback(null, message);
       }
     });
   }, []);
 
-  const eventLikers = useCallback(() => {
+  const eventLikers = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting likers');
     socket.emit('client:likers', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err);
       } else {
         console.log('Success:', message);
+        callback(null, message);
       }
     });
   }, []);
