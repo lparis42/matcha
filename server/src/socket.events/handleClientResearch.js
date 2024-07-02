@@ -8,11 +8,12 @@ async function handleClientResearch(socket, data, cb) {
         if (!session_account) {
             throw { client: 'Cannot request research while not logged in', status: 401 };
         }
-        const { age_min, age_max, dist_min, dist_max, fame_min, fame_max, tags } = data;
+        const { age_min, age_max, dist_min, dist_max, fame_min, fame_max, tags, browsing_start, browsing_stop } = data;
         if (age_min && typeof age_min !== 'number' || age_max && typeof age_max !== 'number' ||
             dist_min && typeof dist_min !== 'number' || dist_max && typeof dist_max !== 'number' ||
             fame_min && typeof fame_min !== 'number' || fame_max && typeof fame_max !== 'number' ||
-            tags && !Array.isArray(tags) && tags.some(tag => typeof tag !== 'number')) {
+            tags && !Array.isArray(tags) && tags.some(tag => typeof tag !== 'number') ||
+            browsing_start && typeof browsing_start !== 'number' || browsing_stop && typeof browsing_stop !== 'number') {
             throw { client: 'Invalid data', status: 400 };
         }
         const browsing_data = await new Promise((resolve, reject) => {
@@ -42,11 +43,12 @@ async function handleClientResearch(socket, data, cb) {
             return (age >= age_min) && (age <= age_max) &&
                 (distance >= dist_min) && (distance <= dist_max) &&
                 (match.fame_rating >= fame_min) && (match.fame_rating <= fame_max) &&
-                (tags.every(tag => match.common_tags.includes(tag)));
+                (tags.length === 0 || tags.every(tag => match.common_tags.includes(tag)));
         });
+        const sorted_filtered_data = Object.values(filtered_data).flat().slice(browsing_start || 0, browsing_stop || matches.length);
 
         // Emit to the client the filtered data
-        cb(null, filtered_data);
+        cb(null, sorted_filtered_data);
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Request research`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
