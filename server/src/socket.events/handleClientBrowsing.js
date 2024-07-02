@@ -16,6 +16,11 @@ async function handleClientBrowsing(socket, data, cb) {
                 [`first_name`, `date_of_birth`, `gender`, `sexual_orientation`, `common_tags`, `pictures`, `fame_rating`, `geolocation`],
                 `id = ${session_account}`)
         ))[0];
+        // Get the blocked accounts of the user
+        const blocked_accounts = (await this.db.execute(
+            this.db.select('users_private', ['blocked_accounts'], `id = ${session_account}`)
+        ))[0].blocked_accounts;
+
         let gender_browsing = null;
         switch (account_data.sexual_orientation) {
             case 'Heterosexual':
@@ -30,6 +35,7 @@ async function handleClientBrowsing(socket, data, cb) {
         let matches = await this.db.execute(
             this.db.select('users_public',
                 ['id', 'first_name', 'date_of_birth', 'common_tags', 'pictures', 'fame_rating', 'geolocation', 'location'],
+                `id NOT IN (${blocked_accounts.join(',')})` + // Exclude blocked accounts
                 `id != ${session_account}` + (gender_browsing ? ` AND gender IN (${gender_browsing})` : ``))
         );
         // Calculate the distance and age difference between the account and the matches

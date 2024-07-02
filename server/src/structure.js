@@ -37,6 +37,7 @@ const structure = {
         `username VARCHAR(20) UNIQUE CHECK (char_length(username) BETWEEN 6 AND 20 AND username ~ '^[A-Za-z0-9]+$')`,
         `first_name VARCHAR(35)`,
         `last_name VARCHAR(35)`,
+        `blocked_accounts INT[] DEFAULT ARRAY[]::INT[]`,
 
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
