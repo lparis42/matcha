@@ -190,7 +190,6 @@ class Server {
             const size = Buffer.byteLength(JSON.stringify(packet), 'utf8'); // Calculate the size of the packet in bytes 
             console.log('\r\x1b[K');
             console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Sending packet of size ${size} bytes:`);
-            console.info(size);
 
             next();
           } catch (err) {

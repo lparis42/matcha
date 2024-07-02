@@ -64,6 +64,9 @@ setTimeout(async () => {
     // Browsing simulation
     console.info(`ClientSimulator - Browsing simulation`);
     await process('Browsing', clientSimulators, { browsing_start: 0, browsing_stop: 10 });
+    // Research simulation
+    console.info(`ClientSimulator - Research simulation`);
+    await process('Research', clientSimulators, { age_min: 18, age_max: 100, dist_min: 0, dist_max: 1000, fame_min: 0, fame_max: 100, tags: [], browsing_start: 0, browsing_stop: 10 });
     // View simulation
     console.info(`ClientSimulator - View simulation`);
     await processMultiple('View', clientSimulators, clientIDs);
@@ -76,9 +79,18 @@ setTimeout(async () => {
         const FilteredClientIDs = clientIDs.filter((clientID) => clientID !== clientSimulator.data.account);
         await processMultiple('Like', [clientSimulator], FilteredClientIDs);
     }));
+    // Report simulation
+    console.info(`ClientSimulator - Report simulation`);
+    await Promise.all(clientSimulators.map(async (clientSimulator, i) => {
+        const FilteredClientIDs = clientIDs.filter((clientID) => clientID !== clientSimulator.data.account);
+        await processMultiple('Report', [clientSimulator], FilteredClientIDs);
+    }));
     // Likers simulation
     console.info(`ClientSimulator - Likers simulation`);
     await process('Likers', clientSimulators);
+    // Match simulation
+    console.info(`ClientSimulator - Matchs simulation`);
+    await process('Matchs', clientSimulators);
     // Chat simulation
     console.info(`ClientSimulator - Chat simulation`);
     await Promise.all(clientSimulators.map(async (clientSimulator, i) => {
@@ -86,6 +98,18 @@ setTimeout(async () => {
         for (let i = 0; i < 5; i++) {
             await processMultiple('Chat', [clientSimulator], FilteredClientIDs);
         }
+    }));
+    // Block simulation
+    console.info(`ClientSimulator - Block simulation`);
+    await Promise.all(clientSimulators.map(async (clientSimulator, i) => {
+        const FilteredClientIDs = clientIDs.filter((clientID) => clientID !== clientSimulator.data.account);
+        await processMultiple('Block', [clientSimulator], FilteredClientIDs);
+    }));
+    // Unblock simulation
+    console.info(`ClientSimulator - Unblock simulation`);
+    await Promise.all(clientSimulators.map(async (clientSimulator, i) => {
+        const FilteredClientIDs = clientIDs.filter((clientID) => clientID !== clientSimulator.data.account);
+        await processMultiple('Unblock', [clientSimulator], FilteredClientIDs);
     }));
     // Unlike simulation
     console.info(`ClientSimulator - Unlike simulation`);

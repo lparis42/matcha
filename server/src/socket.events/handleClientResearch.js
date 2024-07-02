@@ -1,5 +1,3 @@
-const { handleClientBrowsing } = require('./handleClientBrowsing');
-
 // Method to research clients by filters : age, distance, popularity, tags
 async function handleClientResearch(socket, data, cb) {
     try {
@@ -18,34 +16,30 @@ async function handleClientResearch(socket, data, cb) {
         }
         const browsing_data = await new Promise((resolve, reject) => {
             const data = { browsing_start: 0, browsing_stop: Infinity };
-            handleClientBrowsing(socket, data, (err, response) => {
+            this.handleClientBrowsing(socket, data, (err, response) => {
                 err ? reject(err) : resolve(response)
             })
         });
-        // browsing_data returns a list of : {
-        // id: match.id,
-        // first_name: match.first_name,
-        // date_of_birth: match.date_of_birth,
-        // common_tags: match.common_tags,
-        // picture: account_data.pictures[0],
-        // geolocation: match.geolocation,
-        // location: match.location,
-        // online: match.online
-        // }
+
+        // Get current user geolocation
+        const geolocation = (await (this.db.execute(
+            this.db.select('users_public', ['geolocation'], `id = ${session_account}`)
+        )))[0].geolocation;
 
         // Filter the matches by age, distance, popularity and tags and return the result to the client 
-        const filtered_data = browsing_data.filter(match => {
-            const age = new Date().getFullYear() - new Date(match.date_of_birth).getFullYear();
-            const distance = Math.sqrt(
-                Math.pow((browsing_data.geolocation[0] - match.geolocation[0]) / 111.12, 2) +
-                Math.pow((browsing_data.geolocation[1] - match.geolocation[1]) / 111.12, 2)
-            );
+        const filtered_data = browsing_data.filter(acc => {
+            const age = acc.date_of_birth ? new Date().getFullYear() - new Date(acc.date_of_birth).getFullYear() : Infinity;
+            const distance = geolocation && acc.geolocation ? Math.sqrt(
+                Math.pow((geolocation[0] - acc.geolocation[0]) / 111.12, 2) +
+                Math.pow((geolocation[1] - acc.geolocation[1]) / 111.12, 2)
+            ) : Infinity;
             return (age >= age_min) && (age <= age_max) &&
                 (distance >= dist_min) && (distance <= dist_max) &&
-                (match.fame_rating >= fame_min) && (match.fame_rating <= fame_max) &&
-                (tags.length === 0 || tags.every(tag => match.common_tags.includes(tag)));
+                (acc.fame_rating >= fame_min) && (acc.fame_rating <= fame_max) &&
+                (tags.length === 0 || tags.every(tag => acc.common_tags.includes(tag)));
         });
-        const sorted_filtered_data = Object.values(filtered_data).flat().slice(browsing_start || 0, browsing_stop || matches.length);
+
+        const sorted_filtered_data = Object.values(filtered_data).flat().slice(browsing_start || 0, browsing_stop || filtered_data.length);
 
         // Emit to the client the filtered data
         cb(null, sorted_filtered_data);
