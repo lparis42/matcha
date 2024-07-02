@@ -23,20 +23,21 @@ interface Geolocation {
 interface SocketValue {
   socket: SocketIOClient.Socket;
   socketConnected: boolean;
-  geolocation: Geolocation; // Replace with the actual type
-  eventRegistration: Function; // Replace with the actual type
-  eventLogin: Function; // Replace with the actual type
-  eventPasswordReset: Function; // Replace with the actual type
-  eventLogout: Function; // Replace with the actual type
-  eventUnregistration: Function; // Replace with the actual type
-  eventEdit: Function; // Replace with the actual type
-  eventView: Function; // Replace with the actual type
-  eventLike: Function; // Replace with the actual type
-  eventUnLike: Function; // Replace with the actual type
-  eventViewers: Function; // Replace with the actual type
-  eventLikers: Function; // Replace with the actual type
-  eventChat: Function; // Replace with the actual type
-  eventBrowsing: Function; // Replace with the actual type
+  geolocation: Geolocation;
+  eventRegistration: Function;
+  eventLogin: Function;
+  eventPasswordReset: Function;
+  eventLogout: Function;
+  eventUnregistration: Function;
+  eventEdit: Function;
+  eventView: Function;
+  eventLike: Function;
+  eventUnLike: Function;
+  eventViewers: Function;
+  eventLikers: Function;
+  eventChat: Function;
+  eventBrowsing: Function;
+  eventMatch: Function;
 }
 
 const SocketContext = createContext()
@@ -314,6 +315,20 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
+  const eventMatch = useCallback(() => {
+    console.log('Emitting Match');
+    const target_match = prompt("Please enter the target account:");
+    const message = Math.random().toString(36).substring(3);
+    socket.emit('client:matchs', (err: Error, message: string) => {
+      if (err) {
+        console.error('Error:', err);
+      } else {
+        console.log('Success:', message);
+      }
+    });
+  }, []);
+
+
   const eventChat = useCallback(() => {
     console.log('Emitting chat');
     const target_match = prompt("Please enter the target account:");
@@ -359,6 +374,7 @@ export const SocketProvider = ({ children }) => {
     eventLikers,
     eventChat,
     eventBrowsing,
+    eventMatch,
     log
   }
 

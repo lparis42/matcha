@@ -21,10 +21,10 @@ export function Component ({
     const [users, setUsers] = React.useState([]);
     const [selectedUser, setSelectedUser] = React.useState(userData[0]);
     const [isMobile, setIsMobile] = useState(false);
-    const { eventLikers, eventView } = useSocket()
+    const { eventMatch, eventView } = useSocket()
   
     useEffect(() => {
-      eventLikers((err, data) => {
+      eventMatch((err, data) => {
         if (err) {
           console.error(err);
         } else {
