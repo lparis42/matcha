@@ -12,7 +12,7 @@ async function handleClientMatchs(socket, cb) {
         ));
 
         // Emit to the client the matchs
-        cb({ matchs });
+        cb(null, matchs);
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Request matchs`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
