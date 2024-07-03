@@ -1,3 +1,4 @@
+import { useSocket } from '@/api/Socket';
 import { Chat } from '@/components/chat';
 import { userData } from '@/components/data';
 import { Sidebar } from '@/components/sidebar';
@@ -17,10 +18,21 @@ export function Component ({
     navCollapsedSize,
   }: ChatLayoutProps) {
     const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
+    const [users, setUsers] = React.useState([]);
     const [selectedUser, setSelectedUser] = React.useState(userData[0]);
     const [isMobile, setIsMobile] = useState(false);
+    const { eventMatch, eventView } = useSocket()
   
     useEffect(() => {
+      eventMatch((err, data) => {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log(data)
+          setUsers(data);
+        }
+      });
+
       const checkScreenWidth = () => {
         setIsMobile(window.innerWidth <= 768);
       };
@@ -73,22 +85,34 @@ export function Component ({
         >
           <Sidebar
             isCollapsed={isCollapsed || isMobile}
-            links={userData.map((user) => ({
-              name: user.name,
-              messages: user.messages ?? [],
-              avatar: user.avatar,
-              variant: selectedUser.name === user.name ? "grey" : "ghost",
-            }))}
+            links={users.map((user) => {
+              
+              let info = {};
+            
+              eventView(user + 1, (err, data) => {
+                if (err) {
+                  console.error(err);
+                } else {
+                  info = data;
+                }
+              });
+
+              return {
+              name: info.username,
+              avatar: info.pictures[0],
+              variant: "ghost",
+            }})}
+            
             isMobile={isMobile}
           />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
-          <Chat
+          {/*<Chat
             messages={selectedUser.messages}
             selectedUser={selectedUser}
             isMobile={isMobile}
-          />
+          />*/}
         </ResizablePanel>
       </ResizablePanelGroup>
       </div>
