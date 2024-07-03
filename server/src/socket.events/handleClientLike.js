@@ -41,6 +41,13 @@ async function handleClientLike(socket, data, cb) {
                 this.db.update('users_private', { likers: session_account }, `id = '${target_account}'`, 'ARRAY_APPEND')
             );
 
+            // Emit the notification to the target account
+            // await this.db.execute(
+            //     this.db.select('users_session', ['sid'], `account = ${target_account}`)
+            // ).forEach(async session => {
+                
+            
+
             // ** Check if both accounts liked each other
             if ((await this.db.execute(
                 this.db.select('users_private', ['likers'], `id = '${session_account}'`)
