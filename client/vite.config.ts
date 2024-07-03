@@ -17,7 +17,6 @@ export default defineConfig({
       key: fs.readFileSync('../server/server.key'),
       cert: fs.readFileSync('../server/server.crt'),
       passphrase: 'KEY'
-    },
-    host: true,
+    }
   },
 })
