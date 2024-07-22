@@ -81,7 +81,7 @@ async function handleClientEdit(socket, data, cb) {
                     await fs.promises.mkdir(dir, { recursive: true });
                     const imageBuffer = Buffer.from(image, 'base64');
                     await fs.promises.writeFile(imagePath, imageBuffer);
-                }));c
+                }));
                 account_public_data.pictures = filenames;
             }
 
