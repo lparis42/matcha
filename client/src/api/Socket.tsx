@@ -315,15 +315,17 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  const eventMatch = useCallback(() => {
+  const eventMatch = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting Match');
-    const target_match = prompt("Please enter the target account:");
-    const message = Math.random().toString(36).substring(3);
+    // const target_match = prompt("Please enter the target account:");
+    // const message = Math.random().toString(36).substring(3);
     socket.emit('client:matchs', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err);
       } else {
         console.log('Success:', message);
+        callback(null, message);
       }
     });
   }, []);

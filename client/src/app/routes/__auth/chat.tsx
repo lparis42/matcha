@@ -27,9 +27,10 @@ export function Component ({
       eventMatch((err, data) => {
         if (err) {
           console.error(err);
+          console.log("bruh")
         } else {
-          console.log(data)
-          setUsers(data);
+          console.log(data[0].accounts)
+          setUsers(data[0].accounts);
         }
       });
 
@@ -89,7 +90,7 @@ export function Component ({
               
               let info = {};
             
-              eventView(user + 1, (err, data) => {
+              eventView(user, (err, data) => {
                 if (err) {
                   console.error(err);
                 } else {
@@ -98,21 +99,22 @@ export function Component ({
               });
 
               return {
-              name: info.username,
-              avatar: info.pictures[0],
-              variant: "ghost",
-            }})}
+                name: info.username,
+                avatar: "https://placekitten.com/200/200",
+                variant: "ghost",
+              }
+            })}
             
             isMobile={isMobile}
           />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
-          {/*<Chat
+          <Chat
             messages={selectedUser.messages}
             selectedUser={selectedUser}
             isMobile={isMobile}
-          />*/}
+          />
         </ResizablePanel>
       </ResizablePanelGroup>
       </div>
