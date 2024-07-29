@@ -42,8 +42,8 @@ setTimeout(async () => {
     console.log(`ClientSimulator - ${clientCount} clients for testing`);
 
     // Disable console.log
-    //const originalConsoleLog = console.log;
-    //console.log = function () { };
+    const originalConsoleLog = console.log;
+    console.log = function () { };
 
     // Connection simulation
     console.info(`ClientSimulator - Connection simulation`);
@@ -60,7 +60,10 @@ setTimeout(async () => {
     // Edit simulation
     console.info(`ClientSimulator - Edit simulation`);
     await process('Edit', clientSimulators);
+
+    console.log = originalConsoleLog;
     return ;
+    
     // Browsing simulation
     console.info(`ClientSimulator - Browsing simulation`);
     await process('Browsing', clientSimulators, { browsing_start: 0, browsing_stop: 10 });
