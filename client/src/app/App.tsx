@@ -19,6 +19,7 @@ const App = () => {
     eventViewers,
     eventLikers,
     eventChat,
+    eventChatHistories,
     eventBrowsing} = useSocket();
 
   return (
@@ -58,6 +59,7 @@ const App = () => {
               <Button onClick={eventViewers}>viewers</Button>
               <Button onClick={eventLikers}>likers</Button>
               <Button onClick={eventChat}>chat</Button>
+              <Button onClick={eventChatHistories}>chat Histo</Button>
             </ul>
           </div>
         </div>

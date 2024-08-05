@@ -38,6 +38,7 @@ interface SocketValue {
   eventChat: Function;
   eventBrowsing: Function;
   eventMatch: Function;
+  eventChatHistories: Function;
 }
 
 const SocketContext = createContext()
@@ -333,9 +334,20 @@ export const SocketProvider = ({ children }) => {
 
   const eventChat = useCallback(() => {
     console.log('Emitting chat');
-    const target_match = prompt("Please enter the target account:");
+    const target_match = Number(prompt("Please enter the target account:"));
     const message = Math.random().toString(36).substring(3);
-    socket.emit('client:chat', { match_id: target_match, message: message }, (err: Error, message: string) => {
+    socket.emit('client:chat', { target_account: target_match, message: message }, (err: Error, message: string) => {
+      if (err) {
+        console.error('Error:', err);
+      } else {
+        console.log('Success:', message);
+      }
+    });
+  }, []);
+
+  const eventChatHistories = useCallback(() => {
+    console.log('Emitting chat');
+    socket.emit('client:chat_histories', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
       } else {
@@ -377,6 +389,7 @@ export const SocketProvider = ({ children }) => {
     eventChat,
     eventBrowsing,
     eventMatch,
+    eventChatHistories,
     log
   }
 

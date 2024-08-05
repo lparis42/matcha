@@ -19,9 +19,9 @@ async function handleClientChat(socket, data, cb) {
         const account_data = (await this.db.execute(
             this.db.select('users_public', ['username', 'pictures'], `id = '${session_account}'`)
         ))[0];
-        if (!account_data.pictures[0]) {
-            throw { client: 'Cannot send message without at least one picture', status: 403 };
-        }
+        // if (!account_data.pictures[0]) {
+        //     throw { client: 'Cannot send message without at least one picture', status: 403 };
+        // }
         // Check if blocked by the target account
         const blocked = (await this.db.execute(
             this.db.select('users_private', ['blocked_accounts'], `id = ${target_account}`)
