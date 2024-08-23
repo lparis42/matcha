@@ -45,13 +45,13 @@ async function handleClientRegistration(socket, data, cb) {
         }
 
         // Send the activation link by email
-        const link = `https://localhost:${process.env.HTTPS_PORT}/confirm?activation_key=${activation_key}`;
-        await this.email.post({
-            from: 'email@server.com',
-            to: email,
-            subject: 'Account registration',
-            html: `Here is the link to confirm your registration: <a href="${link}">${link}</a>`
-        });
+        //const link = `https://localhost:${process.env.HTTPS_PORT}/confirm?activation_key=${activation_key}`;
+        //await this.email.post({
+        //    from: 'email@server.com',
+        //    to: email,
+        //    subject: 'Account registration',
+        //    html: `Here is the link to confirm your registration: <a href="${link}">${link}</a>`
+        //});
 
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Confirmation email sent to '${email}'`);
 

@@ -39,6 +39,7 @@ interface SocketValue {
   eventBrowsing: Function;
   eventMatch: Function;
   eventChatHistories: Function;
+  subListenChat: Function;
 }
 
 const SocketContext = createContext()
@@ -133,6 +134,8 @@ export const SocketProvider = ({ children }) => {
 
     socket.on('server:geolocation', eventGeolocation);
 
+    subListenChat(eventListenChat)
+
     setSocketConnected(true);
 
     return () => {
@@ -141,6 +144,7 @@ export const SocketProvider = ({ children }) => {
       socket.off('connect_error', eventSocketError);
 
       socket.off('server:geolocation', eventGeolocation);
+      socket.off('server:chat')
     };
   }, [eventReconnectAttempt, eventSocketDisconnect, eventSocketError, eventGeolocation]);
 
@@ -332,29 +336,47 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
 
-  const eventChat = useCallback(() => {
+  const eventChat = useCallback((target_match: number, tosent: string, callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting chat');
-    const target_match = Number(prompt("Please enter the target account:"));
-    const message = Math.random().toString(36).substring(3);
-    socket.emit('client:chat', { target_account: target_match, message: message }, (err: Error, message: string) => {
+    if (target_match === null || tosent === null)
+    {
+      target_match = Number(prompt("Please enter the target account:"));
+      tosent = Math.random().toString(36).substring(3);
+    }
+    console.log(target_match, tosent)
+    socket.emit('client:chat', { target_account: target_match, message: tosent }, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err)
       } else {
         console.log('Success:', message);
+        callback(null, message)
       }
     });
   }, []);
 
-  const eventChatHistories = useCallback(() => {
+  const eventChatHistories = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting chat');
     socket.emit('client:chat_histories', (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err);
       } else {
         console.log('Success:', message);
+        callback(null, message);
       }
     });
   }, []);
+
+  const eventListenChat = (data) => {
+      console.log("CHAT RCEIVED", data)
+  }
+
+  const subListenChat = (callback: (err: Error | null, message?: string) => void) => {
+    socket.on('server:chat', (message) => {
+        callback(null, message);
+    });
+  }
 
   //useEffect(() => {
   //  if (socketConnected) {
@@ -390,6 +412,7 @@ export const SocketProvider = ({ children }) => {
     eventBrowsing,
     eventMatch,
     eventChatHistories,
+    subListenChat,
     log
   }
 

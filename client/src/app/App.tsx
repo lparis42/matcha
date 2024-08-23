@@ -4,6 +4,7 @@ import { Button, styles } from './button';
 import { Link } from 'react-router-dom';
 
 import { useSocket } from '@/api/Socket';
+import { Nav } from '@/components/nav';
 
 const App = () => {
 
@@ -36,7 +37,7 @@ const App = () => {
         )}
         <br /><Link to="/signin"> <button>Sign In</button> </Link>
         <br /><Link to="/signup"> <button>Sign Up</button> </Link>
-        <br /><Link to="/profile"> <button>Profile</button> </Link>
+        <Nav />
       </div>
       <div style={styles.container}>
         <div style={styles.innerContainer}>

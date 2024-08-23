@@ -1,6 +1,7 @@
 import { useSocket } from '@/api/Socket';
 import { Chat } from '@/components/chat';
-import { userData } from '@/components/data';
+import { userData, Message, User } from '@/components/data';
+import PreviewCard from '@/components/preview-card';
 import { Sidebar } from '@/components/sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { cn } from '@/lib/utils';
@@ -18,22 +19,75 @@ export function Component ({
     navCollapsedSize,
   }: ChatLayoutProps) {
     const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
-    const [users, setUsers] = React.useState([]);
-    const [selectedUser, setSelectedUser] = React.useState(userData[0]);
     const [isMobile, setIsMobile] = useState(false);
-    const { eventMatch, eventView } = useSocket()
+    const [histories, setHistories] = React.useState([]);
+    const [users, setUsers] = React.useState(userData);
+    const [selectedUser, setSelectedUser] = React.useState(userData[0]);
+    const { eventChatHistories, eventChat, subListenChat } = useSocket()
+
+    function transformData(data: string[]): Message[] {
+      const transformed: Message[] = [];
   
-    useEffect(() => {
-      eventMatch((err, data) => {
+      data.forEach((item, index) => {
+          const [username, message] = item.split(':');
+          transformed.push({
+              id: index + 1,
+              avatar: `https://placehold.co/520x520`,
+              name: username,
+              message: message
+          });
+      });
+  
+      return transformed;
+    }
+
+    function sendLogic(target_account: number, message: string) {
+      eventChat(target_account, message, (err, data) => {
         if (err) {
           console.error(err);
-          console.log("bruh")
         } else {
-          console.log(data[0].accounts)
-          setUsers(data[0].accounts);
+          console.log("retour", data)
         }
-      });
+      })
+    }
 
+    function receiveLogic(message: string) {
+      if (selectedUser === null)
+        {
+          console.log('selectedUser', selectedUser)
+          return
+        }
+          
+        const test = []
+        test.push(message)
+        const transformed = transformData(test)
+        console.log("subListen", transformed)
+        setSelectedUser(selectedUser => {
+          selectedUser.messages.push(transformed[0])
+        })
+        console.log(selectedUser)
+    }
+
+    useEffect(() => {
+      eventChatHistories((err, data: any[]) => {
+          if (err) {
+            console.error(err);
+          } else {
+            setHistories(data);
+            data.map((user) => {
+              users.push({
+                id: user.account,
+                avatar: `https://placehold.co/520x520`,
+                messages: transformData(user.messages),
+                name: "b2j1tm"
+              })
+            })
+            setUsers(users)
+            setSelectedUser(users[0])
+            console.log(users[0])
+
+          }
+      })
       const checkScreenWidth = () => {
         setIsMobile(window.innerWidth <= 768);
       };
@@ -49,6 +103,16 @@ export function Component ({
         window.removeEventListener("resize", checkScreenWidth);
       };
     }, []);
+
+    useEffect(() => {
+      subListenChat((err, data) => {
+        if (err) {
+          console.error(err);
+        } else {
+          receiveLogic(data.message)
+        }
+      })
+    }, [selectedUser])
 
     return (
         <main className="flex h-[calc(100dvh)] flex-col items-center justify-center p-4 md:px-24 py-32 gap-4">
@@ -86,35 +150,27 @@ export function Component ({
         >
           <Sidebar
             isCollapsed={isCollapsed || isMobile}
-            links={users.map((user) => {
-              
-              let info = {};
-            
-              eventView(user, (err, data) => {
-                if (err) {
-                  console.error(err);
-                } else {
-                  info = data;
-                }
-              });
-
-              return {
-                name: info.username,
-                avatar: "https://placekitten.com/200/200",
-                variant: "ghost",
-              }
-            })}
+            links={users.map((user) => ({
+              name: user.name,
+              messages: [],
+              avatar: user.avatar,
+              variant: selectedUser.name === user.name ? "grey" : "ghost",
+            }))}
             
             isMobile={isMobile}
           />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
+          {selectedUser ?
           <Chat
-            messages={selectedUser.messages}
+            //messages={selectedUser.messages}
             selectedUser={selectedUser}
             isMobile={isMobile}
+            sendLogics={sendLogic}
           />
+         : <></>}
+         
         </ResizablePanel>
       </ResizablePanelGroup>
       </div>

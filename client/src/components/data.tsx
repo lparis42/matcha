@@ -14,48 +14,6 @@ export const userData = [
                 avatar: '/LoggedInUser.jpg',
                 name: 'Jakob Hoeg',
                 message: 'Hey!',
-            },
-            {
-                id : 3,
-                avatar: 'https://placehold.co/520x520',
-                name: 'Jane Doe',
-                message: 'How are you?',
-            },
-            {
-                id: 4,
-                avatar: '/LoggedInUser.jpg',
-                name: 'Jakob Hoeg',
-                message: 'I am good, you?',
-            },
-            {
-                id: 5,
-                avatar: 'https://placehold.co/520x520',
-                name: 'Jane Doe',
-                message: 'I am good too!',
-            },
-            {
-                id: 6,
-                avatar: '/LoggedInUser.jpg',
-                name: 'Jakob Hoeg',
-                message: 'That is good to hear!'
-            },
-            {
-                id: 7,
-                avatar: 'https://placehold.co/520x520',
-                name: 'Jane Doe',
-                message: 'How has your day been so far?',
-            },
-            {
-                id: 8,
-                avatar: '/LoggedInUser.jpg',
-                name: 'Jakob Hoeg',
-                message: 'It has been good. I went for a run this morning and then had a nice breakfast. How about you?',
-            },
-            {
-                id: 9,
-                avatar: 'https://placehold.co/520x520',
-                name: 'Jane Doe',
-                message: 'I had a relaxing day. Just catching up on some reading.',
             }
         ],
         name: 'Jane Doe',

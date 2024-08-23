@@ -19,6 +19,8 @@ export function ChatList({
 }: ChatListProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  console.log(messages)
+
   React.useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop =
