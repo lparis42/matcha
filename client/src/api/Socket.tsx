@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
-import io from 'socket.io-client';
+import {io, Socket} from 'socket.io-client';
 
 export type Register = {
   username: string;
@@ -21,7 +21,7 @@ interface Geolocation {
 }
 
 interface SocketValue {
-  socket: SocketIOClient.Socket;
+  socket: Socket;
   socketConnected: boolean;
   geolocation: Geolocation;
   eventRegistration: Function;
@@ -40,9 +40,10 @@ interface SocketValue {
   eventMatch: Function;
   eventChatHistories: Function;
   subListenChat: Function;
+  user: any;
 }
 
-const SocketContext = createContext()
+const SocketContext = createContext(null);
 
 export const useSocket = (): SocketValue => {
   const context = useContext(SocketContext);
@@ -52,23 +53,10 @@ export const useSocket = (): SocketValue => {
   return context;
 };
 
-let socket;
-
-await fetch('https://localhost:444', { // To get credentials when using client dev live server
-  method: 'GET',
-  credentials: 'include',
-}).then(() => {
-  socket = io('https://localhost:444', {
-    secure: false,
-    reconnection: true,
-    rejectUnauthorized: true,
-    withCredentials: true,
-  });
-}).catch(error => {
-  console.error('Error fetching:', error);
-});
-
 export const SocketProvider = ({ children }) => {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [user, setUser] = useState<any | null>(null);
+
   console.log('SocketProvider');
   const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
   const [log, setLog] = useState<boolean>(false);
@@ -77,37 +65,119 @@ export const SocketProvider = ({ children }) => {
   // const location = useLocation();
   // const navigate = useNavigate();
 
-  const eventReconnectAttempt = useCallback((attemptNumber: number) => {
-    console.log('Reconnect attempt:', attemptNumber);
-  }, [socket]);
-
-  const eventSocketDisconnect = useCallback(() => {
-    console.log('Socket disconnected');
-    setSocketConnected(false);
+  useEffect(() => {
+    fetch('https://localhost:444', { // To get credentials when using client dev live server
+      method: 'GET',
+      credentials: 'include',
+    }).then(() => {
+      setSocket(io('https://localhost:444', {
+        secure: false,
+        reconnection: true,
+        rejectUnauthorized: true,
+        withCredentials: true,
+      }));
+    }).catch(error => {
+      console.error('Error fetching:', error);
+    });
   }, []);
 
-  const eventSocketError = useCallback((error: Error) => {
-    console.error('Connection failed:', error);
-  }, [socket]);
-
-  const eventGeolocation = useCallback(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setGeolocation({ latitude, longitude });
-          socket.emit('client:geolocation', { latitude, longitude });
-          console.log('Emitting geolocation:', latitude, longitude);
-        },
-        (error) => {
-          socket.emit('client:geolocation', { latitude: null, longitude: null });
-          console.error(`Error: ${error.message}`);
-        }
-      );
-    } else {
-      alert("Geolocation is not supported by this browser.");
+  useEffect(() => {
+    console.log('SocketProvider useEffect');
+    if (socket !== null) {
+      socket.connect();
+      socket.on('connect', eventSocketConnect);
+      return () => {
+        socket.off('connect');
+      };
     }
   }, [socket]);
+
+  useEffect(() => {
+    if (user === null) {
+      return;
+    }
+
+    socket.on('server:chat', eventListenChat)
+    socket.on('server:like', (data) => {})
+    socket.on('server:unlike', (data) => {})
+    socket.on('server:view', (data) => {})
+    socket.on('server:match', (data) => {})
+
+    return () => {
+      socket.off('server:chat')
+      socket.off('server:like')
+      socket.off('server:unlike')
+      socket.off('server:view')
+      socket.off('server:match')
+    }
+  }, [user]);
+
+  //useEffect(() => {
+  //  if (socketConnected) {
+  //    eventLocationPathname();
+  //  }
+  //}, [socketConnected, eventLocationPathname]);
+
+  const eventSocketConnect = () => {
+    if (socket === null) {
+      return;
+    }
+
+    socket.on('reconnect_attempt', eventReconnectAttempt);
+    socket.on('disconnect', eventSocketDisconnect);
+    socket.on('connect_error', eventSocketError);
+
+    setSocketConnected(true);
+    console.log('Socket connected');
+
+    return () => {
+      socket.off('reconnect_attempt');
+      socket.off('disconnect');
+      socket.off('connect_error');
+      socket.off('server:chat')
+    };
+  };
+
+  const eventReconnectAttempt = (attemptNumber: number) => {
+    console.log('Reconnect attempt:', attemptNumber);
+  };
+
+  const eventSocketDisconnect = () => {
+    console.log('Socket disconnected');
+    setSocketConnected(false);
+  };
+
+  const eventSocketError = (error: Error) => {
+    console.error('Connection failed:', error);
+  };
+
+  useEffect(() => {
+    if (!socketConnected) {
+      return;
+    }
+    socket.emit('client:get_current_user', (response) => {
+      console.log(response);
+    });
+  }, [socketConnected]);
+
+  //const eventGeolocation = useCallback(() => {
+  //  if (navigator.geolocation) {
+  //    navigator.geolocation.getCurrentPosition(
+  //      (position) => {
+  //        const { latitude, longitude } = position.coords;
+  //        setGeolocation({ latitude, longitude });
+  //        socket.emit('client:geolocation', { latitude, longitude });
+  //        console.log('Emitting geolocation:', latitude, longitude);
+  //      },
+  //      (error) => {
+  //        socket.emit('client:geolocation', { latitude: null, longitude: null });
+  //        console.error(`Error: ${error.message}`);
+  //      }
+  //    );
+  //  } else {
+  //    alert("Geolocation is not supported by this browser.");
+  //  }
+  //}, [socket]);
 
   // const eventLocationPathname = useCallback(() => {
   //  if (location.pathname === '/confirm' && location.search.includes('activation_key')) {
@@ -125,30 +195,11 @@ export const SocketProvider = ({ children }) => {
   // }, [socket, location, navigate]);
 
 
-  const eventSocketConnect = useCallback(() => {
-    console.log('Socket connected');
-
-    socket.on('reconnect_attempt', eventReconnectAttempt);
-    socket.on('disconnect', eventSocketDisconnect);
-    socket.on('connect_error', eventSocketError);
-
-    socket.on('server:geolocation', eventGeolocation);
-
-    subListenChat(eventListenChat)
-
-    setSocketConnected(true);
-
-    return () => {
-      socket.off('reconnect_attempt', eventReconnectAttempt);
-      socket.off('disconnect', eventSocketDisconnect);
-      socket.off('connect_error', eventSocketError);
-
-      socket.off('server:geolocation', eventGeolocation);
-      socket.off('server:chat')
-    };
-  }, [eventReconnectAttempt, eventSocketDisconnect, eventSocketError, eventGeolocation]);
 
   const eventRegistration = useCallback((data: Register) => {
+    if (socket === null) {
+      return;
+    }
     console.log('Emitting registration', typeof data);
     if (data === undefined) {
       data = {
@@ -169,9 +220,12 @@ export const SocketProvider = ({ children }) => {
         console.log('Success:', message);
       }
     });
-  }, [username])
+  }, [username, socket])
 
   const eventLogin = useCallback((data: Login) => {
+    if (socket === null) {
+      return;
+    }
     console.log('Emitting login');
     if (!data) {
       data = { email: `${username}@client.com`, password: 'testpassword' }
@@ -181,10 +235,11 @@ export const SocketProvider = ({ children }) => {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
+        setUser(message);
         setLog(true);
       }
     });
-  }, [username]);
+  }, [username, socket]);
 
   const eventPasswordReset = useCallback(() => {
     console.log('Emitting password reset');
@@ -221,6 +276,9 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
   const eventEdit = useCallback(() => {
+    if (socket === null) {
+      return;
+    }
     console.log('Emitting edit profile');
     const userData = {
       gender: 'Male',
@@ -233,9 +291,10 @@ export const SocketProvider = ({ children }) => {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
+        setUser(message);
       }
     });
-  }, []);
+  }, [socket, user]);
 
   const eventBrowsing = useCallback((callback: (err: Error | null, listProfils?: object[]) => void) => {
     console.log('Emitting browse profile');
@@ -372,27 +431,6 @@ export const SocketProvider = ({ children }) => {
       console.log("CHAT RCEIVED", data)
   }
 
-  const subListenChat = (callback: (err: Error | null, message?: string) => void) => {
-    socket.on('server:chat', (message) => {
-        callback(null, message);
-    });
-  }
-
-  //useEffect(() => {
-  //  if (socketConnected) {
-  //    eventLocationPathname();
-  //  }
-  //}, [socketConnected, eventLocationPathname]);
-
-  useEffect(() => {
-    console.log('SocketProvider useEffect');
-    socket.connect();
-    socket.on('connect', eventSocketConnect);
-    return () => {
-      socket.off('connect', eventSocketConnect);
-    };
-  }, [eventSocketConnect]);
-
   const socketValue = {
     socket,
     socketConnected,
@@ -412,8 +450,12 @@ export const SocketProvider = ({ children }) => {
     eventBrowsing,
     eventMatch,
     eventChatHistories,
-    subListenChat,
+    //subListenChat,
     log
+  }
+
+  if (socket === null) {
+    return <div>loading...</div>
   }
 
   return (

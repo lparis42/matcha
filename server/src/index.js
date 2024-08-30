@@ -61,6 +61,7 @@ setTimeout(async () => {
     console.info(`ClientSimulator - Edit simulation`);
     await process('Edit', clientSimulators);
 
+    console.info(`Ready`);
     console.log = originalConsoleLog;
     return ;
     

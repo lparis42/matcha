@@ -17,8 +17,10 @@ import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { XCircle } from "lucide-react";
 import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "@/components/ui/multiselect";
+import { useSocket } from "@/api/Socket";
 
 export function Component() {
+    const {user} = useSocket();
 
     const form = useForm<z.infer<typeof profile>>({
       resolver: zodResolver(profile),
@@ -293,7 +295,7 @@ export function Component() {
         <CardTitle>Location</CardTitle>
         <CardDescription>A TERMINER EN DERNIER TEMPS</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col items-center gap-4">
+      {/*<CardContent className="flex flex-col items-center gap-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="latitude">Latitude</Label>
@@ -326,7 +328,7 @@ export function Component() {
             />
           </div>
         </div>
-      </CardContent>
+      </CardContent>*/}
       <CardFooter>
         <Button type="submit">Save Changes</Button>
       </CardFooter>

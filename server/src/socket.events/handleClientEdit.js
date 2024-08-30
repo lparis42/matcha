@@ -108,7 +108,12 @@ async function handleClientEdit(socket, data, cb) {
         }
 
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Edit profile for account ${session_account}`);
-        cb(null);
+
+        const user_public_info = (await this.db.execute(
+            await this.db.select('users_public',
+                ['id', 'username', 'first_name', 'last_name', 'date_of_birth', 'gender', 'sexual_orientation', 'biography', 'common_tags', 'pictures'],
+                `id = ${session_account}`)))[0];
+        cb(null, {user: user_public_info});
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
         console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Edit profile error: ${err.client || err}`);
