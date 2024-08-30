@@ -1,10 +1,22 @@
 // src/routes/hello.tsx
 
-import React from "react";
+import React, { useEffect } from "react";
 import App from "@/app/App";
+import { useSocket } from "@/api/Socket";
+import { Navigate } from "react-router-dom";
+
+const DEBUG = true
 
 export function Component() {
-  return (
-    <App />
-  )
+  const {user} = useSocket()
+
+  if (DEBUG)
+    return (
+      <App />
+    )
+
+  if (user)
+    Navigate({to: "/browse"})
+  else
+    Navigate({to: "/signin"})
 }

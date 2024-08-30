@@ -52,8 +52,11 @@ async function handleClientEdit(socket, data, cb) {
                     return;
                 }
                 try {
+                    console.log(1)
                     const imageBuffer = Buffer.from(base64Image, 'base64');
+                    console.log(2)
                     await sharp(imageBuffer).metadata();
+                    console.log(3)
                 } catch (err) {
                     throw { client: err.message, status: 400 };
                 }

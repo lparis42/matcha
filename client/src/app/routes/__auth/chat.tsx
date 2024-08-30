@@ -105,13 +105,13 @@ export function Component ({
     }, []);
 
     useEffect(() => {
-      subListenChat((err, data) => {
-        if (err) {
-          console.error(err);
-        } else {
-          receiveLogic(data.message)
-        }
-      })
+      // subListenChat((err, data) => {
+      //   if (err) {
+      //     console.error(err);
+      //   } else {
+      //     receiveLogic(data.message)
+      //   }
+      // })
     }, [selectedUser])
 
     return (

@@ -18,9 +18,45 @@ import { cn } from "@/lib/utils"
 import { XCircle } from "lucide-react";
 import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "@/components/ui/multiselect";
 import { useSocket } from "@/api/Socket";
+import imageCompression from 'browser-image-compression';
+import MapView from "@/components/map";
+import { toast } from "@/components/ui/use-toast";
+
+const convertToBase64 = (file: File) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+const options = {
+  maxSizeMB: 1,
+  maxWidthOrHeight: 1920,
+  useWebWorker: true,
+};
+
+const pictures_compress = async (file) => {
+  if (file === null) {
+    return null;
+  }
+  // Compress the image file
+  try {
+    // Compress the image file
+    const compressedFile = await imageCompression(file, options);
+
+    // Convert the compressed file to base64
+    const base64: string = await convertToBase64(compressedFile);
+    return base64;
+  }
+  catch (error) {
+    console.log(error);
+  }
+}
 
 export function Component() {
-    const {user} = useSocket();
+    const {user, eventEdit} = useSocket();
 
     const form = useForm<z.infer<typeof profile>>({
       resolver: zodResolver(profile),
@@ -35,8 +71,8 @@ export function Component() {
         interests: [],
         pictures: [null, null, null, null, null],
         geolocation: {
-          latitude: 0,
-          longitude: 0
+          lat: 48.89666602483836,
+          lng: 2.3183834552764897
         }
       },
     })
@@ -47,14 +83,32 @@ export function Component() {
     function onSubmit(values: z.infer<typeof profile>) {
       // Do something with the form values.
       // ✅ This will be type-safe and validated.
-      console.log(values)
       //edit profil
+      const data = {...values,
+        geolocation: 
+        {
+          lattitude: values.geolocation.lat,
+          longitude: values.geolocation.lng
+        }}
+      console.log(data)
+      eventEdit(data, (err, data) => {
+        if (err) {
+          console.error(err);
+        } else {
+          toast({title: "Profile updated successfully"})
+          console.log("retour", data)
+        }
+      })
     }
 
-    const onSelectFile = (e) => {
+    const onSelectFile = async (e) => {
+      const file = e.target.files[0];
+      
       const prevFiles = getValues('pictures')
       const prev = prevFiles.findIndex((file) => file === null)
-      prevFiles[prev] = e.target.files[0]
+      console.log(file)
+      prevFiles[prev] = await pictures_compress(file)
+      console.log(prevFiles[prev])
       setValue('pictures', prevFiles)
     }
 
@@ -284,7 +338,7 @@ export function Component() {
                   <div className="absolute -right-3 -top-3 w-5 h-5" onClick={() => onDeletePicture(index)}>
                     <XCircle className="w-5 h-5 text-red-500" fill="#fff"/>
                   </div>
-                  <img src={URL.createObjectURL(file)} alt="Preview" className="rounded w-40 h-40 object-cover"/>
+                  <img src={file} alt="Preview" className="rounded w-40 h-40 object-cover"/>
                 </div>
               )
             }
@@ -293,42 +347,10 @@ export function Component() {
       </CardContent>
       <CardHeader>
         <CardTitle>Location</CardTitle>
-        <CardDescription>A TERMINER EN DERNIER TEMPS</CardDescription>
       </CardHeader>
-      {/*<CardContent className="flex flex-col items-center gap-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="latitude">Latitude</Label>
-            <FormField
-            control={form.control}
-            name="geolocation.latitude"
-            render={({ field }) => (
-              <FormItem>
-              <FormControl>
-                <Input placeholder="latitude" {...field} />
-              </FormControl>
-              <FormMessage />
-              </FormItem>
-            )}
-            />
-          </div>
-          <div>
-            <Label htmlFor="longitude">Longitude</Label>
-            <FormField
-            control={form.control}
-            name="geolocation.longitude"
-            render={({ field }) => (
-              <FormItem>
-              <FormControl>
-                <Input placeholder="longitude" {...field} />
-              </FormControl>
-              <FormMessage />
-              </FormItem>
-            )}
-            />
-          </div>
-        </div>
-      </CardContent>*/}
+      <CardContent>
+        <MapView setter={setValue} default_value={[48.8964367907082, 2.318555492854633]}/>
+      </CardContent>
       <CardFooter>
         <Button type="submit">Save Changes</Button>
       </CardFooter>
@@ -339,3 +361,4 @@ export function Component() {
     </main>
       )
 }
+

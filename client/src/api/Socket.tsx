@@ -2,6 +2,19 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { useLocation, useNavigate } from 'react-router-dom';
 import {io, Socket} from 'socket.io-client';
 
+interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  username: string;
+  biography: string;
+  gender: string;
+  sexual_orientation: string;
+  common_tags: string[];
+  pictures: string[];
+  date_of_birth: Date;
+}
+
 export type Register = {
   username: string;
   password: string;
@@ -40,7 +53,7 @@ interface SocketValue {
   eventMatch: Function;
   eventChatHistories: Function;
   subListenChat: Function;
-  user: any;
+  user: User;
 }
 
 const SocketContext = createContext(null);
@@ -55,7 +68,7 @@ export const useSocket = (): SocketValue => {
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   console.log('SocketProvider');
   const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
@@ -66,11 +79,11 @@ export const SocketProvider = ({ children }) => {
   // const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('https://localhost:444', { // To get credentials when using client dev live server
+    fetch('https://localhost:2000', { // To get credentials when using client dev live server
       method: 'GET',
       credentials: 'include',
     }).then(() => {
-      setSocket(io('https://localhost:444', {
+      setSocket(io('https://localhost:2000', {
         secure: false,
         reconnection: true,
         rejectUnauthorized: true,
@@ -110,7 +123,7 @@ export const SocketProvider = ({ children }) => {
       socket.off('server:view')
       socket.off('server:match')
     }
-  }, [user]);
+  }, [user, socket]);
 
   //useEffect(() => {
   //  if (socketConnected) {
@@ -260,9 +273,10 @@ export const SocketProvider = ({ children }) => {
       } else {
         console.log('Success:', message);
         setLog(false);
+        setUser(null);
       }
     });
-  }, []);
+  }, [socket]);
 
   const eventUnregistration = useCallback(() => {
     console.log('Emitting unregistration');
@@ -275,23 +289,25 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  const eventEdit = useCallback(() => {
+  const eventEdit = useCallback((userData, callback: (err: Error | null, listProfils?: object[]) => void) => {
     if (socket === null) {
       return;
     }
     console.log('Emitting edit profile');
-    const userData = {
-      gender: 'Male',
-      sexual_orientation: 'Heterosexual',
-      biography: 'Test biography',
-      pictures: [null, null, null, null, null],
-    };
+    // const userData = {
+    //   gender: 'Male',
+    //   sexual_orientation: 'Heterosexual',
+    //   biography: 'Test biography',
+    //   pictures: [null, null, null, null, null],
+    // };
     socket.emit('client:edit', userData, (err: Error, message: string) => {
       if (err) {
         console.error('Error:', err);
+        callback(err);
       } else {
         console.log('Success:', message);
         setUser(message);
+        callback(null, message);
       }
     });
   }, [socket, user]);
@@ -321,7 +337,7 @@ export const SocketProvider = ({ children }) => {
         callback(null, profile);
       }
     });
-  }, []);
+  }, [socket]);
 
   const eventLike = useCallback((target_account: number, callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting like profile');
@@ -412,7 +428,7 @@ export const SocketProvider = ({ children }) => {
         callback(null, message)
       }
     });
-  }, []);
+  }, [socket]);
 
   const eventChatHistories = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting chat');
@@ -425,7 +441,7 @@ export const SocketProvider = ({ children }) => {
         callback(null, message);
       }
     });
-  }, []);
+  }, [socket]);
 
   const eventListenChat = (data) => {
       console.log("CHAT RCEIVED", data)

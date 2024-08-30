@@ -7,10 +7,10 @@ import { Nav } from "@/components/nav";
 
 export function Component() {
 
-  const { log } = useSocket();
+  const { user } = useSocket();
   const { toast } = useToast();
 
-  if (log) { //
+  if (user) { //
     Navigate({ to: "/signin" });
     toast({title: "You must be logged in to access this page"});
   }
