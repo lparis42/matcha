@@ -3,6 +3,7 @@ import PreviewCard from '@/components/preview-card'
 import { Filters } from '@/components/filters'
 import { SearchBar } from '@/components/search-bar'
 import { BaseCard } from '@/components/base-card'
+import BrowseList from '@/components/browse-list'
 
 export function Component() {
 
@@ -21,10 +22,7 @@ export function Component() {
         <Filters/>
 
         <div className="w-full md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(7)].map((_, i) => (
-            <PreviewCard key={i} index={i}/>
-          ))}
-          {/*<BaseCard />*/}
+          <BrowseList />
         </div>
       </div>
     </div>

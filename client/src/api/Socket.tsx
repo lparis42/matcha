@@ -312,17 +312,22 @@ export const SocketProvider = ({ children }) => {
     });
   }, [socket, user]);
 
-  const eventBrowsing = useCallback((callback: (err: Error | null, listProfils?: object[]) => void) => {
+  const eventBrowsing = useCallback(async () => {
     console.log('Emitting browse profile');
-    socket.emit('client:browsing', { browsing_start: 0, browsing_stop: 10 }, (err: Error, listProfils: object[]) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', listProfils);
-        callback(null, listProfils);
-      }
+    const data: [err: Error, listProfils: object[]] = await new Promise((resolve) => {
+      socket.emit('client:browsing', { browsing_start: 0, browsing_stop: 10 }, (err: Error, listProfils: object[]) => {
+          if (err) {
+              console.error('Error:', err);
+              resolve([err, null]);
+          } else {
+              console.log('Success:', listProfils);
+              resolve([null, listProfils]);
+          }
+      });
     });
-  }, []);
+    console.log('Data:', data);
+    return data;
+  }, [socket]);
 
   const eventView = useCallback((target_account: number, callback: (err: Error | null, profile?: object) => void) => {
     console.log('Emitting view profile', target_account);
