@@ -123,8 +123,7 @@ const structure = {
         `id SERIAL PRIMARY KEY`,
 
         `account INT`,
-        `message VARCHAR(255)`,
-        `seen BOOLEAN DEFAULT FALSE`,
+        `data JSON`,
 
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`

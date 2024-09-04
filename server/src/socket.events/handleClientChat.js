@@ -2,7 +2,7 @@ const validator = require('validator');
 
 // Method to send a message to a chat
 async function handleClientChat(socket, data, cb) {
-    
+
     try {
         // Extract data
         const session_account = await this.getSessionAccount(socket.handshake.sessionID);
@@ -44,13 +44,23 @@ async function handleClientChat(socket, data, cb) {
             this.db.update('users_match', { messages: `${account_data.username}:${message}` }, `id = '${match.id}'`, 'ARRAY_APPEND')
         );
 
-        // Emit the notification to the target account for each socket
-        (await this.db.execute(
-            this.db.select('users_session', ['socket_ids'], `account = ${target_account}`)
-        ))[0].socket_ids.forEach(async socket_id => {
-            const retrievedSocket = this.io.sockets.sockets.get(socket_id);
-            await retrievedSocket.emit('server:notification', { type: "chat", message: `${account_data.username}:${message}` });
-        });
+        // Check if the target account is online
+        if ((await this.db.execute(
+            this.db.select('users_publics', ['online'], `id = '${target_account}'`)
+        ))[0].online) {
+            // Emit the notification to the target account for each socket
+            (await this.db.execute(
+                this.db.select('users_session', ['socket_ids'], `account = ${target_account}`)
+            ))[0].socket_ids.forEach(async socket_id => {
+                const retrievedSocket = this.io.sockets.sockets.get(socket_id);
+                await retrievedSocket.emit('server:notification', { type: "chat", message: `${account_data.username}:${message}` });
+            });
+        } else {
+            // Save the notification for the target account
+            await this.db.execute(
+                this.db.insert('users_notification', { account: target_account, data: { type: "chat", message: `${account_data.username}:${message}` } })
+            );
+        }
 
         cb(null);
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Chat message sent to match ${match.id}`);
