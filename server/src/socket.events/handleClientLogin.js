@@ -64,6 +64,7 @@ async function handleClientLogin(socket, data, cb) {
             console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Approximate geolocation by IP address (${latitude}, ${longitude}): ${location}`);
         }
 
+        // Send the user public info to the client
         const user_public_info = (await this.db.execute(
             await this.db.select('users_public',
                 ['id', 'username', 'first_name', 'last_name', 'date_of_birth', 'gender', 'sexual_orientation', 'biography', 'common_tags', 'pictures'],
@@ -71,7 +72,7 @@ async function handleClientLogin(socket, data, cb) {
         console.log(user_public_info);
 
         cb(null, {user : user_public_info});
-        //cb(null);
+        
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Logged in to account '${account_data.id}'`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });

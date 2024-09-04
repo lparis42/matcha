@@ -44,8 +44,13 @@ async function handleClientChat(socket, data, cb) {
             this.db.update('users_match', { messages: `${account_data.username}:${message}` }, `id = '${match.id}'`, 'ARRAY_APPEND')
         );
 
-        // Update concerned clients with the new message
-        this.io.to(match.id).emit('server:chat', { message: `${account_data.username}:${message}` });
+        // Emit the notification to the target account for each socket
+        (await this.db.execute(
+            this.db.select('users_session', ['socket_ids'], `account = ${target_account}`)
+        ))[0].socket_ids.forEach(async socket_id => {
+            const retrievedSocket = this.io.sockets.sockets.get(socket_id);
+            await retrievedSocket.emit('server:notification', { type: "chat", message: `${account_data.username}:${message}` });
+        });
 
         cb(null);
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Chat message sent to match ${match.id}`);

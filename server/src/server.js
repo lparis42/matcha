@@ -133,6 +133,12 @@ class Server {
         res.sendFile(path.join(process.cwd(), '..', 'client', 'dist', 'index.html'));
       });
       this.app.use(express.static(path.join(process.cwd(), '..', 'client', 'dist')));
+      // Serve the images from the images directory
+      app.get('/images/:imageName', (req, res) => {
+        const imageName = req.params.imageName;
+        const imagePath = path.join(process.cwd(), '..', 'client', 'dist', 'images', imageName);
+        res.sendFile(imagePath);
+      });
     }
     console.log(`Routes configured`);
   }

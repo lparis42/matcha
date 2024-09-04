@@ -1,6 +1,6 @@
 // Method to unlike user's profile
 async function handleClientUnlike(socket, data, cb) {
-    
+
     try {
         // Extract data
         const session_account = await this.getSessionAccount(socket.handshake.sessionID);
@@ -34,6 +34,25 @@ async function handleClientUnlike(socket, data, cb) {
             await this.db.execute(
                 this.db.update('users_match', { online: false }, `accounts @> ARRAY[${session_account}, ${target_account}]`)
             );
+
+            // Get the match id
+            const match_id = (await this.db.execute(
+                this.db.select('users_match', ['id'], `accounts @> ARRAY[${session_account}, ${target_account}]`)
+            ))[0]?.id;
+
+            // Emit the notification to each socket of the target account
+            (await this.db.execute(
+                this.db.select('users_session', ['socket_ids'], `account IN (${session_account}, ${target_account})`)
+            )).forEach(async session => {
+                session.socket_ids.forEach(async socket_id => {
+                    const retrievedSocket = this.io.sockets.sockets.get(socket_id);
+                    await this.io.to(target_account).emit('server:notification', { type: "unlike", account_id: session_account });
+                    if (match_id) {
+                        retrievedSocket.leave(match_id);
+                        await this.io.to(target_account).emit('server:notification', { type: "unmatch", account_id: session_account });
+                    }
+                });
+            });
 
         } else {
             throw { client: 'Cannot unlike profile that was not liked', status: 400 };
