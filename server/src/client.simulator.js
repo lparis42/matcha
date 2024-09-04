@@ -6,7 +6,7 @@ const sharp = require('sharp');
 class ClientSimulator {
     constructor() {
         // Connexion au serveur Socket.IO
-        this.socket = clientIo(`https://localhost:2000`, {
+        this.socket = clientIo(`https://localhost:444`, {
             autoConnect: false,
             rejectUnauthorized: false,
             auth: { simulator: true },
