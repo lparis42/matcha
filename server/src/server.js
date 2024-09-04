@@ -128,11 +128,16 @@ class Server {
         res.sendStatus(200); // Send a status code of 200 OK to the client
       });
     } else {
-      this.app.get('/', (req, res) => {
-        req.session.sessionID = null;
-        res.sendFile(path.join(process.cwd(), '..', 'client', 'dist', 'index.html'));
+
+      // Serve the images from the images directory
+      app.use('/images', express.static(path.join(process.cwd(), '..', 'images')));
+      // Watch the images directory for changes
+      fs.watch(imagesPath, (eventType, filename) => {
+        if (filename) {
+          console.log(`File ${filename} has been ${eventType}`);
+        }
       });
-      this.app.use(express.static(path.join(process.cwd(), '..', 'client', 'dist')));
+
     }
     console.log(`Routes configured`);
   }

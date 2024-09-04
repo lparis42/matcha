@@ -1,6 +1,6 @@
 // Method to unlike user's profile
 async function handleClientUnlike(socket, data, cb) {
-    
+
     try {
         // Extract data
         const session_account = await this.getSessionAccount(socket.handshake.sessionID);
@@ -35,16 +35,50 @@ async function handleClientUnlike(socket, data, cb) {
                 this.db.update('users_match', { online: false }, `accounts @> ARRAY[${session_account}, ${target_account}]`)
             );
 
-        } else {
-            throw { client: 'Cannot unlike profile that was not liked', status: 400 };
-        }
+            // Get the match id
+            const match_id = (await this.db.execute(
+                this.db.select('users_match', ['id'], `accounts @> ARRAY[${session_account}, ${target_account}]`)
+            ))[0]?.id;
 
-        cb(null);
-        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Unlike ${target_account}`);
-    } catch (err) {
-        cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Unlike error: ${err.client || err}`);
+            // Check if the target account is online
+            if ((await this.db.execute(
+                this.db.select('users_publics', ['online'], `id = '${target_account}'`)
+            ))[0].online) {
+                // Emit the notification to each socket of the target account
+                (await this.db.execute(
+                    this.db.select('users_session', ['socket_ids'], `account IN (${target_account})`)
+                )).forEach(async session => {
+                    session.socket_ids.forEach(async socket_id => {
+                        const retrievedSocket = this.io.sockets.sockets.get(socket_id);
+                        await retrievedSocket.emit('server:notification', { type: "unlike", account_id: session_account });
+                        if (match_id) {
+                            retrievedSocket.leave(match_id);
+                            await retrievedSocket.emit('server:notification', { type: "unmatch", account_id: session_account });
+                        }
+                    });
+                });
+            } else {
+                // Save the notification for the target account
+                await this.db.execute(
+                    this.db.insert('users_notification', { account: target_account, data: { type: "unlike", account_id: session_account } })
+                );
+                if (match_id) {
+                    await this.db.execute(
+                        this.db.insert('users_notification', { account: target_account, data: { type: "unmatch", account_id: session_account } })
+                    );
+                }
+            }
+
+            } else {
+                throw { client: 'Cannot unlike profile that was not liked', status: 400 };
+            }
+
+            cb(null);
+            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Unlike ${target_account}`);
+        } catch (err) {
+            cb({ message: err.client || 'Internal server error', status: err.status || 500 });
+            console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Unlike error: ${err.client || err}`);
+        }
     }
-}
 
 module.exports = handleClientUnlike;

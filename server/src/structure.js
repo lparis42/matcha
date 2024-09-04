@@ -95,7 +95,7 @@ const structure = {
 
         `online BOOLEAN DEFAULT FALSE`,
         `accounts INT[2] UNIQUE DEFAULT ARRAY[]::INT[2]`,
-        `messages VARCHAR(255)[] DEFAULT ARRAY[]::VARCHAR(255)[]`,
+        `messages VARCHAR(512)[] DEFAULT ARRAY[]::VARCHAR(512)[]`,
 
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
@@ -116,6 +116,20 @@ const structure = {
       ],
       column_names: [
         `reporter`, `reported`
+      ],
+    },
+    users_notification: {
+      columns: [
+        `id SERIAL PRIMARY KEY`,
+
+        `account INT`,
+        `data JSON`,
+
+        `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
+        `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
+      ],
+      column_names: [
+        `account`, `message`, `seen`
       ],
     },
   },
