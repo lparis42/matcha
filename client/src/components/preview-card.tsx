@@ -81,15 +81,14 @@ const PreviewCard = ({index}) => {
                 <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
                 <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
                 <CarouselContent>
-                {!items?.pictures[0] &&
+                {items?.pictures?.map((picture, index) => {
+                    if (!picture)
+                        return null;
+                    return (
                     <CarouselItem key={index}>
-                        <img src={"https://placehold.co/520x520"} alt="" />
-                    </CarouselItem>}
-                {items?.pictures?.map((picture, index) => (
-                    <CarouselItem key={index}>
-                        <img src={picture} alt="" />
-                    </CarouselItem>
-                ))}
+                        <img src={`https://localhost:444/images/${picture}`} alt="" />
+                    </CarouselItem>)
+                })}
                 </CarouselContent>
             </Carousel>
             {/*<CardHeader className="flex justify-center p-6">

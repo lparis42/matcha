@@ -52,7 +52,8 @@ async function handleClientEdit(socket, data, cb) {
                     return;
                 }
                 try {
-                    const imageBuffer = Buffer.from(base64Image, 'base64');
+                    const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+                    const imageBuffer = Buffer.from(base64Data, 'base64');
                     await sharp(imageBuffer).metadata();
                 } catch (err) {
                     throw { client: err.message, status: 400 };
@@ -79,8 +80,15 @@ async function handleClientEdit(socket, data, cb) {
                     console.log(imagePath);
                     const dir = path.dirname(imagePath);
                     await fs.promises.mkdir(dir, { recursive: true });
-                    const imageBuffer = Buffer.from(image, 'base64');
-                    await fs.promises.writeFile(imagePath, imageBuffer);
+
+                    // Remove the data URL prefix for different image formats
+                    const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
+                    // Decode the base64 string to a buffer
+                    const imageBuffer = Buffer.from(base64Data, 'base64');
+                    // Create a Sharp instance from the buffer
+                    const sharpInstance = sharp(imageBuffer);
+                    // Convert the image to WebP format and save it
+                    await sharpInstance.toFormat('webp').toFile(imagePath);
                 }));
                 account_public_data.pictures = filenames;
             }

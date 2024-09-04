@@ -69,6 +69,7 @@ export const useSocket = (): SocketValue => {
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   console.log('SocketProvider');
   const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
@@ -79,11 +80,11 @@ export const SocketProvider = ({ children }) => {
   // const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('https://localhost:2000', { // To get credentials when using client dev live server
+    fetch('https://localhost:444', { // To get credentials when using client dev live server
       method: 'GET',
       credentials: 'include',
     }).then(() => {
-      setSocket(io('https://localhost:2000', {
+      setSocket(io('https://localhost:444', {
         secure: false,
         reconnection: true,
         rejectUnauthorized: true,
@@ -110,18 +111,10 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    socket.on('server:chat', eventListenChat)
-    socket.on('server:like', (data) => {})
-    socket.on('server:unlike', (data) => {})
-    socket.on('server:view', (data) => {})
-    socket.on('server:match', (data) => {})
+    socket.on('server:notification', eventNotifications);
 
     return () => {
-      socket.off('server:chat')
-      socket.off('server:like')
-      socket.off('server:unlike')
-      socket.off('server:view')
-      socket.off('server:match')
+      socket.off('server:notification')
     }
   }, [user, socket]);
 
@@ -130,6 +123,11 @@ export const SocketProvider = ({ children }) => {
   //    eventLocationPathname();
   //  }
   //}, [socketConnected, eventLocationPathname]);
+
+  const eventNotifications = (notifications: any) => {
+    console.log('Notifications:', notifications);
+    setNotifications(prev => [...prev, notifications]);
+  };
 
   const eventSocketConnect = () => {
     if (socket === null) {
@@ -357,7 +355,7 @@ export const SocketProvider = ({ children }) => {
         callback(null, message);
       }
     });
-  }, []);
+  }, [socket]);
 
   const eventUnLike = useCallback((target_account: number, callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting unlike profile');
