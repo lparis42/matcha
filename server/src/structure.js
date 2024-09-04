@@ -95,7 +95,7 @@ const structure = {
 
         `online BOOLEAN DEFAULT FALSE`,
         `accounts INT[2] UNIQUE DEFAULT ARRAY[]::INT[2]`,
-        `messages TEXT(1000)[] DEFAULT ARRAY[]::VARCHAR(1000)[]`,
+        `messages VARCHAR(512)[] DEFAULT ARRAY[]::VARCHAR(512)[]`,
 
         `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
         `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
