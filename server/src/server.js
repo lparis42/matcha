@@ -130,7 +130,7 @@ class Server {
     } else {
 
       // Serve the images from the images directory
-      app.use('/images', express.static(path.join(process.cwd(), '..', 'images'));
+      app.use('/images', express.static(path.join(process.cwd(), '..', 'images')));
       // Watch the images directory for changes
       fs.watch(imagesPath, (eventType, filename) => {
         if (filename) {
