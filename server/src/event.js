@@ -37,7 +37,6 @@ class Event {
         ];
 
         eventHandlers.forEach(handler => {
-            console.log(handler)
             this[handler] = require(`./socket.events/${handler}`).bind(this);
         });
     }
