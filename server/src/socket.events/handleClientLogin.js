@@ -27,7 +27,7 @@ async function handleClientLogin(socket, data, cb) {
             throw { client: `Email '${email}' not found`, status: 404 };
         }
 
-        // Update the session with the account id
+        // Check if the password is valid
         const is_password_valid = await bcrypt.compare(password, account_data.password);
         if (!is_password_valid) {
             throw { client: 'Invalid password', status: 401 };
@@ -35,6 +35,9 @@ async function handleClientLogin(socket, data, cb) {
 
         // Log in the account
         await this.setSessionAccount(socket.handshake.sessionID, account_data.id);
+
+        // Emit to all the sockets of the session
+        this.io.to(socket.handshake.sessionID).emit('server:account', { account: account_data.id });
 
         // Join all match rooms of the current session account and notify the other clients of the connection
         (await this.db.execute(
@@ -44,8 +47,26 @@ async function handleClientLogin(socket, data, cb) {
             socket.join(room.id);
         });
 
-        // Emit to all the sockets of the session the account data id
-        this.io.to(socket.handshake.sessionID).emit('server:account', { account: account_data.id });
+        // Emit to all the sockets of the session
+        (await this.db.execute(
+            this.db.select('users_session', ['socket_ids'], `account IN (${session_account}`)
+        ))[0].socket_ids.forEach(async socket_id => {
+            const retrievedSocket = this.io.sockets.sockets.get(socket_id);
+            await retrievedSocket.emit('server:online', { account: account_data.id });
+        });
+
+        // Emit all notifications
+        const notifications = await this.db.execute(
+            this.db.select('users_notifications', ['data'], `account = ${session_account}`)
+        );
+        notifications.forEach(notification => {
+            socket.emit('server:notification', notification.data);
+        });
+        // Delete all notifications
+        await this.db.execute(
+            this.db.delete('users_notifications', `account = ${session_account}`)
+        );
+
 
         // Get geolocation proxy boolean
         const geolocation_proxy = (await this.db.execute(
@@ -71,8 +92,8 @@ async function handleClientLogin(socket, data, cb) {
                 `id = ${account_data.id}`)))[0];
         console.log(user_public_info);
 
-        cb(null, {user : user_public_info});
-        
+        cb(null, { user: user_public_info });
+
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Logged in to account '${account_data.id}'`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });

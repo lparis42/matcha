@@ -42,6 +42,7 @@ class Event {
     }
 
     handleClientConnection() {
+        
         this.io.on('connection', async (socket) => {
 
             // Join the room of the current session
@@ -61,6 +62,18 @@ class Event {
                     this.io.to(room.id).emit('server:online', { account: session_account });
                     socket.join(room.id);
                 });
+
+                // Emit all notifications to the client if logged in
+                const notifications = await this.db.execute(
+                    this.db.select('users_notifications', ['data'], `account = ${session_account}`)
+                );
+                notifications.forEach(notification => {
+                    socket.emit('server:notification', notification.data);
+                });
+                // Delete all notifications
+                await this.db.execute(
+                    this.db.delete('users_notifications', `account = ${session_account}`)
+                );
 
                 // Get geolocation proxy boolean
                 const geolocation_proxy = (await this.db.execute(
