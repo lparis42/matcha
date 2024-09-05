@@ -15,12 +15,12 @@ class Email {
     // });
 
     this.initializeTransporter().then(async () => {
-      await this.post({
-        from: process.env.GMAIL_USER,
-        to: process.env.GMAIL_USER,
-        subject: 'Test email',
-        text: 'Test email'
-      });
+      // await this.post({
+      //   from: process.env.GMAIL_USER,
+      //   to: process.env.GMAIL_USER,
+      //   subject: 'Test email',
+      //   text: 'Test email'
+      // });
     });
   }
 

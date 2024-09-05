@@ -11,6 +11,7 @@ const cookieParser = require('cookie-parser');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const { maxHeaderSize } = require('http');
+const { reloadData } = require('geoip-lite');
 
 class Server {
 
@@ -28,10 +29,10 @@ class Server {
     this.configureStore();
     this.configureSessionMiddleware();
     this.configureApplication();
-    this.configureRoutes();
     this.configureHTTPSServer();
     this.configureSocketIoServer();
     this.configureSocketIoEvent();
+    this.configureRoutes();
     this.server.listen(port, () => {
       console.log(`Listening on port ${port}`);
     });
@@ -127,20 +128,30 @@ class Server {
     if (process.env.NODE_ENV === 'development') {
       this.app.get('/', (req, res) => {
         req.session.sessionID = null;
-        res.sendStatus(200); // Send a status code of 200 OK to the client
+        res.sendStatus(200);
       });
-    } else {
-
-      // Serve the images from the images directory
-      app.use('/images', express.static(path.join(process.cwd(), '..', 'images')));
-      // Watch the images directory for changes
-      fs.watch(imagesPath, (eventType, filename) => {
-        if (filename) {
-          console.log(`File ${filename} has been ${eventType}`);
-        }
-      });
-
     }
+
+    // Serve the images from the images directory
+    const imagesPath = path.join(process.cwd(), '..', 'images');
+    this.app.use('/images', express.static(imagesPath));
+    // Watch the images directory for changes
+    fs.watch(imagesPath, (eventType, filename) => {
+      if (filename) {
+        console.log(`File ${filename} has been ${eventType}`);
+      }
+    });
+
+    // this.app.get('/confirm', async (req, res) => {
+    //   const activation_key = req.query.activation_key;
+    //   // Find the socket by session ID
+    //   const sessionID = req.sessionID;
+    //   const socket = Array.from(this.io.sockets.sockets.values()).find(s => s.handshake.sessionID === sessionID);
+    //   // Confirm registration for testing purposes
+    //   this.event.handleClientRegistrationConfirmation(socket, { activation_key }, () => { });
+    //   res.redirect('https://localhost:5173');
+    // });
+
     console.log(`Routes configured`);
   }
 
