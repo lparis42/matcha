@@ -47,26 +47,19 @@ async function handleClientLogin(socket, data, cb) {
             socket.join(room.id);
         });
 
-        // Emit to all the sockets of the session
-        (await this.db.execute(
-            this.db.select('users_session', ['socket_ids'], `account IN (${session_account}`)
-        ))[0].socket_ids.forEach(async socket_id => {
-            const retrievedSocket = this.io.sockets.sockets.get(socket_id);
-            await retrievedSocket.emit('server:online', { account: account_data.id });
-        });
-
-        // Emit all notifications
+        // Get offline notifications
         const notifications = await this.db.execute(
-            this.db.select('users_notifications', ['data'], `account = ${session_account}`)
+            this.db.select('users_notification', ['data'], `account = ${session_account}`)
         );
-        notifications.forEach(notification => {
-            socket.emit('server:notification', notification.data);
-        });
-        // Delete all notifications
-        await this.db.execute(
-            this.db.delete('users_notifications', `account = ${session_account}`)
-        );
-
+        if (notifications.length > 0) {
+            notifications.forEach(notification => {
+                socket.emit('server:notification', notification.data);
+            });
+            // Clear
+            await this.db.execute(
+                this.db.delete('users_notification', `account = ${session_account}`)
+            );
+        }
 
         // Get geolocation proxy boolean
         const geolocation_proxy = (await this.db.execute(
@@ -91,7 +84,7 @@ async function handleClientLogin(socket, data, cb) {
                 ['id', 'username', 'first_name', 'last_name', 'date_of_birth', 'gender', 'sexual_orientation', 'biography', 'common_tags', 'pictures'],
                 `id = ${account_data.id}`)))[0];
         console.log(user_public_info);
-
+        console.log('5');
         cb(null, { user: user_public_info });
 
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Logged in to account '${account_data.id}'`);
