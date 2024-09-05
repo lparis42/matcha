@@ -55,7 +55,7 @@ async function handleClientLike(socket, data, cb) {
             } else {
                 // Save the notification for the target account
                 await this.db.execute(
-                    this.db.insert('users_notification', { account: target_account, data: { type: "like", account_id: session_account } })
+                    this.db.insert('users_notification', { account: target_account, data: JSON.stringify({ type: "like", account_id: session_account }) })
                 );
             }
 
@@ -94,7 +94,7 @@ async function handleClientLike(socket, data, cb) {
                 } else {
                     // Save the notification for the target account
                     await this.db.execute(
-                        this.db.insert('users_notification', { account: target_account, data: { type: "match", account_ids: accounts } })
+                        this.db.insert('users_notification', { account: target_account, data: JSON.stringify({ type: "match", account_ids: accounts }) })
                     );
                 }
 
