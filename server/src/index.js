@@ -8,6 +8,7 @@ if (process.env.NODE_ENV !== 'development') { // Disable console.log in producti
 }
 const server = new Server();
 
+return;
 ////////////////////////////////////////
 // Client simulator ////////////////////
 ////////////////////////////////////////
@@ -63,8 +64,8 @@ setTimeout(async () => {
 
     console.info(`Ready`);
     console.log = originalConsoleLog;
-    return ;
-    
+    return;
+
     // Browsing simulation
     console.info(`ClientSimulator - Browsing simulation`);
     await process('Browsing', clientSimulators, { browsing_start: 0, browsing_stop: 10 });
