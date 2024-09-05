@@ -60,11 +60,11 @@ async function handleClientUnlike(socket, data, cb) {
             } else {
                 // Save the notification for the target account
                 await this.db.execute(
-                    this.db.insert('users_notification', { account: target_account, data: { type: "unlike", account_id: session_account } })
+                    this.db.insert('users_notification', { account: target_account, data: JSON.stringify({ type: "unlike", account_id: session_account }) })
                 );
                 if (match_id) {
                     await this.db.execute(
-                        this.db.insert('users_notification', { account: target_account, data: { type: "unmatch", account_id: session_account } })
+                        this.db.insert('users_notification', { account: target_account, data: JSON.stringify({ type: "unmatch", account_id: session_account }) })
                     );
                 }
             }

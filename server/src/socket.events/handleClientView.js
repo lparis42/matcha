@@ -32,13 +32,23 @@ async function handleClientView(socket, data, cb) {
                     this.db.update('users_private', { viewers: session_account }, `id = '${target_account}'`, 'ARRAY_APPEND')
                 );
 
-                // Emit the notification to the target account for each socket
-                (await this.db.execute(
-                    this.db.select('users_session', ['socket_ids'], `account = ${target_account}`)
-                ))[0].socket_ids.forEach(async socket_id => {
-                    const retrievedSocket = this.io.sockets.sockets.get(socket_id);
-                    await retrievedSocket.emit('server:notification', { type: "view", account_id: session_account });
-                });
+                // Check if the target account is online
+                if ((await this.db.execute(
+                    this.db.select('users_public', ['online'], `id = '${target_account}'`)
+                ))[0].online) {
+                    // Emit the notification to the target account for each socket
+                    (await this.db.execute(
+                        this.db.select('users_session', ['socket_ids'], `account = ${target_account}`)
+                    ))[0].socket_ids.forEach(async socket_id => {
+                        const retrievedSocket = this.io.sockets.sockets.get(socket_id);
+                        await retrievedSocket.emit('server:notification', { type: "view", account_id: session_account });
+                    });
+                } else {
+                    // Save the notification for the target account
+                    await this.db.execute(
+                        this.db.insert('users_notification', { account: target_account, data: JSON.stringify({ type: "view", account_id: session_account }) })
+                    );
+                }
             }
 
             // Update current account view history

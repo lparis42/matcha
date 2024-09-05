@@ -58,7 +58,7 @@ async function handleClientChat(socket, data, cb) {
         } else {
             // Save the notification for the target account
             await this.db.execute(
-                this.db.insert('users_notification', { account: target_account, data: { type: "chat", message: `${account_data.username}:${message}` } })
+                this.db.insert('users_notification', { account: target_account, data: JSON.stringify({ type: "chat", message: `${account_data.username}:${message}` }) })
             );
         }
 
