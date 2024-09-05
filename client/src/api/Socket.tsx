@@ -82,11 +82,11 @@ export const SocketProvider = ({ children }) => {
   // const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('https://localhost:444', { // To get credentials when using client dev live server
+    fetch('https://localhost:2000', { // To get credentials when using client dev live server
       method: 'GET',
       credentials: 'include',
     }).then(() => {
-      setSocket(io('https://localhost:444', {
+      setSocket(io('https://localhost:2000', {
         secure: false,
         reconnection: true,
         rejectUnauthorized: true,
@@ -217,7 +217,7 @@ export const SocketProvider = ({ children }) => {
     if (socket === null) {
       return;
     }
-    console.log('Emitting registration', typeof data);
+    console.log('Emitting registration');
     if (data === undefined) {
       data = {
         username: username,
@@ -226,9 +226,7 @@ export const SocketProvider = ({ children }) => {
         last_name: 'Test',
         first_name: 'User'
       };
-      console.log('Emitting registration 2');
     }
-    console.log('Emitting registration 3');
 
     socket.emit('client:registration', data, (err: Error, message: string) => {
       if (err) {

@@ -86,7 +86,7 @@ const PreviewCard = ({index}) => {
                         return null;
                     return (
                     <CarouselItem key={index}>
-                        <img src={`https://localhost:444/images/${picture}`} alt="" />
+                        <img src={`https://localhost:2000/images/${picture}`} alt="" />
                     </CarouselItem>)
                 })}
                 </CarouselContent>
