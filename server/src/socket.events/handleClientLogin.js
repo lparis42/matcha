@@ -36,6 +36,9 @@ async function handleClientLogin(socket, data, cb) {
         // Log in the account
         await this.setSessionAccount(socket.handshake.sessionID, account_data.id);
 
+        // Emit to all the sockets of the session
+        this.io.to(socket.handshake.sessionID).emit('server:account', { account: account_data.id });
+
         // Join all match rooms of the current session account and notify the other clients of the connection
         (await this.db.execute(
             this.db.select('users_match', ['id'], `accounts @> ARRAY[${account_data.id}]`)
