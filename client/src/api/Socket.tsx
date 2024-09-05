@@ -374,7 +374,7 @@ export const SocketProvider = ({ children }) => {
         callback(null, message);
       }
     });
-  }, []);
+  }, [socket]);
 
   const eventViewers = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting viewers');

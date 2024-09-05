@@ -46,7 +46,7 @@ async function handleClientChat(socket, data, cb) {
 
         // Check if the target account is online
         if ((await this.db.execute(
-            this.db.select('users_publics', ['online'], `id = '${target_account}'`)
+            this.db.select('users_public', ['online'], `id = '${target_account}'`)
         ))[0].online) {
             // Emit the notification to the target account for each socket
             (await this.db.execute(
