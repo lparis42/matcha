@@ -54,6 +54,8 @@ interface SocketValue {
   eventChatHistories: Function;
   subListenChat: Function;
   user: User;
+  notifications: any[];
+  clearNotifications: Function;
 }
 
 const SocketContext = createContext(null);
@@ -128,6 +130,10 @@ export const SocketProvider = ({ children }) => {
     console.log('Notifications:', notifications);
     setNotifications(prev => [...prev, notifications]);
   };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+  }
 
   const eventSocketConnect = () => {
     if (socket === null) {
@@ -470,6 +476,8 @@ export const SocketProvider = ({ children }) => {
     eventMatch,
     eventChatHistories,
     //subListenChat,
+    notifications,
+    clearNotifications,
     log
   }
 
