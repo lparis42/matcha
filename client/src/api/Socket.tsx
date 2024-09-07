@@ -108,18 +108,6 @@ export const SocketProvider = ({ children }) => {
     }
   }, [socket]);
 
-  useEffect(() => {
-    if (user === null) {
-      return;
-    }
-
-    socket.on('server:notification', eventNotifications);
-
-    return () => {
-      socket.off('server:notification')
-    }
-  }, [user, socket]);
-
   //useEffect(() => {
   //  if (socketConnected) {
   //    eventLocationPathname();
@@ -140,6 +128,7 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
+    socket.on('server:notification', eventNotifications);
     socket.on('reconnect_attempt', eventReconnectAttempt);
     socket.on('disconnect', eventSocketDisconnect);
     socket.on('connect_error', eventSocketError);
@@ -148,10 +137,11 @@ export const SocketProvider = ({ children }) => {
     console.log('Socket connected');
 
     return () => {
+      socket.off('server:notification')
       socket.off('reconnect_attempt');
       socket.off('disconnect');
       socket.off('connect_error');
-      socket.off('server:chat')
+      socket.off('server:chat');
     };
   };
 
