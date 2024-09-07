@@ -36,13 +36,12 @@ async function handleClientView(socket, data, cb) {
                 if ((await this.db.execute(
                     this.db.select('users_public', ['online'], `id = '${target_account}'`)
                 ))[0].online) {
-                    // Emit the notification to the target account for each socket
-                    (await this.db.execute(
-                        this.db.select('users_session', ['socket_ids'], `account = ${target_account}`)
-                    ))[0].socket_ids.forEach(async socket_id => {
-                        const retrievedSocket = this.io.sockets.sockets.get(socket_id);
-                        await retrievedSocket.emit('server:notification', { type: "view", account_id: session_account });
-                    });
+                    // Get the session ID of the target account
+                    const target_session_id = (await this.db.execute(
+                        this.db.select('users_session', ['sid'], `account = ${target_account}`)
+                    ))[0].sid;
+                    // Emit the notification to each socket of the target account
+                    this.io.to(target_session_id).emit('server:notification', { type: "view", account_id: session_account });
                 } else {
                     // Save the notification for the target account
                     await this.db.execute(

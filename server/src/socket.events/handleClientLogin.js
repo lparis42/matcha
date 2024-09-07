@@ -10,6 +10,7 @@ async function handleClientLogin(socket, data, cb) {
     try {
         // Extract data
         const session_account = await this.getSessionAccount(socket.handshake.sessionID);
+
         if (session_account) {
             throw { client: 'Already logged in', status: 403 };
         }
@@ -49,15 +50,18 @@ async function handleClientLogin(socket, data, cb) {
 
         // Get offline notifications
         const notifications = await this.db.execute(
-            this.db.select('users_notification', ['data'], `account = ${session_account}`)
+            this.db.select('users_notification', ['data'], `account = ${account_data.id}`)
         );
+        // If there are notifications
         if (notifications.length > 0) {
+            // For each notification
             notifications.forEach(notification => {
-                socket.emit('server:notification', notification.data);
+                // Emit to each socket of the session
+                this.io.to(socket.handshake.sessionID).emit('server:notification', notification.data);
             });
-            // Clear
+            // Clear the notifications
             await this.db.execute(
-                this.db.delete('users_notification', `account = ${session_account}`)
+                this.db.delete('users_notification', `account = ${account_data.id}`)
             );
         }
 
@@ -78,14 +82,8 @@ async function handleClientLogin(socket, data, cb) {
             console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Approximate geolocation by IP address (${latitude}, ${longitude}): ${location}`);
         }
 
-        // Send the user public info to the client
-        const user_public_info = (await this.db.execute(
-            await this.db.select('users_public',
-                ['id', 'username', 'first_name', 'last_name', 'date_of_birth', 'gender', 'sexual_orientation', 'biography', 'common_tags', 'pictures'],
-                `id = ${account_data.id}`)))[0];
-        console.log(user_public_info);
-        console.log('5');
-        cb(null, { user: user_public_info });
+        // View own profile at login
+        await this.handleClientView(socket, { account: account_data.id }, cb);
 
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Logged in to account '${account_data.id}'`);
     } catch (err) {

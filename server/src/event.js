@@ -48,57 +48,71 @@ class Event {
             // Join the room of the current session
             socket.join(socket.handshake.sessionID);
 
+            // Log the connection
+            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Connected`);
+
             // Get the session data from the store and update the online status in the database if logged in 
             const session_account = await this.getSessionAccount(socket.handshake.sessionID);
             if (session_account) {
-                await this.db.execute(
-                    this.db.update('users_public', { online: true }, `id = ${session_account}`)
-                );
+                // Get the account data
+                if ((await this.db.execute(
+                    this.db.select('users_public', ['online'], `id = ${session_account}`)
+                ))[0].online) {
 
-                // Join all match rooms of the current session account and notify the other clients of the connection
-                (await this.db.execute(
-                    this.db.select('users_match', ['id'], `accounts @> ARRAY[${session_account}]`)
-                ))?.forEach(room => {
-                    this.io.to(room.id).emit('server:online', { account: session_account });
-                    socket.join(room.id);
-                });
+                    // Emit to the socket of the session
+                    socket.emit('server:account', { account: account_data.id });
 
-                // Get offline notifications
-                const notifications = await this.db.execute(
-                    this.db.select('users_notification', ['data'], `account = ${session_account}`)
-                );
-                if (notifications.length > 0) {
-                    notifications.forEach(notification => {
-                        socket.emit('server:notification', notification.data);
+                    // Join all match rooms of the current session account and notify the other clients of the connection
+                    (await this.db.execute(
+                        this.db.select('users_match', ['id'], `accounts @> ARRAY[${account_data.id}]`)
+                    ))?.forEach(room => {
+                        this.io.to(room.id).emit('server:online', { account: account_data.id });
+                        socket.join(room.id);
                     });
-                    // Clear
-                    await this.db.execute(
-                        this.db.delete('users_notification', `account = ${session_account}`)
-                    );
-                }
 
-                // Get geolocation proxy boolean
-                const geolocation_proxy = (await this.db.execute(
-                    this.db.select('users_public', ['geolocation_proxy'], `id = ${session_account}`)
-                ))[0].geolocation_proxy;
-                if (geolocation_proxy) {
-                    // Get geolocation and location by IP address and update the user's data
-                    const { latitude, longitude, location } = await getGeolocationAndLocationByIP(socket.handshake.headers['x-forwarded-for'] || socket.handshake.address);
-                    if (latitude && longitude && location) {
+                    // Get offline notifications
+                    const notifications = await this.db.execute(
+                        this.db.select('users_notification', ['data'], `account = ${account_data.id}`)
+                    );
+                    // If there are notifications
+                    if (notifications.length > 0) {
+                        // For each notification
+                        notifications.forEach(notification => {
+                            // Emit to each socket of the session
+                            socket.emit('server:notification', notification.data);
+                        });
+                        // Clear the notifications
                         await this.db.execute(
-                            this.db.update('users_public', { geolocation: [latitude, longitude], location: location }, `id = ${session_account}`)
-                        )
+                            this.db.delete('users_notification', `account = ${account_data.id}`)
+                        );
                     }
-                    // Request geolocation
-                    socket.emit('server:geolocation');
+
+                    // Get geolocation proxy boolean
+                    const geolocation_proxy = (await this.db.execute(
+                        this.db.select('users_public', ['geolocation_proxy'], `id = ${account_data.id}`)
+                    ))[0].geolocation_proxy;
+                    if (geolocation_proxy) {
+                        // Get geolocation and location by IP address and update the user's data
+                        const { latitude, longitude, location } = await getGeolocationAndLocationByIP(socket.handshake.headers['x-forwarded-for'] || socket.handshake.address);
+                        if (latitude && longitude && location) {
+                            await this.db.execute(
+                                this.db.update('users_public', { geolocation: [latitude, longitude], location: location }, `id = ${account_data.id}`)
+                            )
+                        }
+                        // Request geolocation
+                        socket.emit('server:geolocation');
+                        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Approximate geolocation by IP address (${latitude}, ${longitude}): ${location}`);
+                    }
+
+                    // View own profile at login
+                    await this.handleClientView(socket, { account: account_data.id }, (err, result) => {
+                        if (!err) {
+                            console.error("An error occurred:", err);
+                        }
+                    });
+
                 }
             }
-
-            // Emit the account ID to the client if logged in
-            socket.emit('server:account', { account: session_account });
-
-            // Log the connection
-            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Connected`);
 
             // Handle the client events
             const events = [
@@ -150,12 +164,17 @@ class Event {
                 // Get the session data from the store and update the online status in the database if logged in
                 const session_account = await this.getSessionAccount(socket.handshake.sessionID);
                 if (session_account) {
-                    await this.db.execute(
-                        this.db.update('users_public', { online: false, last_connection: 'NOW()' }, `id = ${session_account}`)
-                    );
+                    // If there is no more socket of the session
+                    if (!this.io.sockets.adapter.rooms.get(socket.handshake.sessionID)) {
+                        // Update the online status in the database
+                        await this.db.execute(
+                            this.db.update('users_public', { online: false, last_connection: 'NOW()' }, `id = ${session_account}`)
+                        );
+                    }
 
-                    // Leave all match rooms and notify the other clients of the disconnection 
+                    // Leave all match rooms and notify the other clients of the disconnection
                     Object.keys(socket.rooms)?.forEach(room => {
+                        socket.leave(room);
                         this.io.to(room).emit('serveur:offline', { account: session_account });
                     });
                 }

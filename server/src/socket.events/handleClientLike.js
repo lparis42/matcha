@@ -45,13 +45,12 @@ async function handleClientLike(socket, data, cb) {
             if ((await this.db.execute(
                 this.db.select('users_publics', ['online'], `id = '${target_account}'`)
             ))[0].online) {
-                // Emit the notification to the target account for each socket
-                (await this.db.execute(
-                    this.db.select('users_session', ['socket_ids'], `account = ${target_account}`)
-                ))[0].socket_ids.forEach(async socket_id => {
-                    const retrievedSocket = io.sockets.sockets.get(socket_id);
-                    await retrievedSocket.emit('server:notification', { type: "like", account_id: session_account });
-                });
+                // Get the session ID of the target account
+                const target_session_id = (await this.db.execute(
+                    this.db.select('users_session', ['sid'], `account = ${target_account}`)
+                ))[0].sid;
+                // Emit the notification to each socket of the target account
+                this.io.to(target_session_id).emit('server:notification', { type: "like", account_id: session_account });
             } else {
                 // Save the notification for the target account
                 await this.db.execute(
@@ -70,27 +69,33 @@ async function handleClientLike(socket, data, cb) {
                     this.db.upsert('users_match', { online: true, accounts: accounts }, 'accounts', 'RETURNING id')
                 ))[0].id;
 
-                // Join the match and emit the notification to each socket of the session account
+                // Join the match for each socket of the session account
                 (await this.db.execute(
                     this.db.select('users_session', ['socket_ids'], `account IN (${session_account}`)
                 ))[0].socket_ids.forEach(async socket_id => {
                     const retrievedSocket = this.io.sockets.sockets.get(socket_id);
                     retrievedSocket.join(match_id);
-                    retrievedSocket.emit('server:notification', { type: "match", account_ids: accounts });
                 });
+                // Emit the notification to each socket of the session account
+                this.io.to(socket.handshake.sessionID).emit('server:notification', { type: "match", account_ids: accounts });
 
                 // Check if the target account is online
                 if ((await this.db.execute(
                     this.db.select('users_publics', ['online'], `id = '${target_account}'`)
                 ))[0].online) {
-                    // Join the match and emit the notification to each socket of the target account
+                    // Join the match for each socket of the target account
                     (await this.db.execute(
                         this.db.select('users_session', ['socket_ids'], `account IN (${target_account}`)
                     ))[0].socket_ids.forEach(async socket_id => {
                         const retrievedSocket = this.io.sockets.sockets.get(socket_id);
                         retrievedSocket.join(match_id);
-                        retrievedSocket.emit('server:notification', { type: "match", account_ids: accounts });
                     });
+                    // Get the session ID of the target account
+                    const target_session_id = (await this.db.execute(
+                        this.db.select('users_session', ['sid'], `account = ${target_account}`)
+                    ))[0].sid;
+                    // Emit the notification to each socket of the target account
+                    this.io.to(target_session_id).emit('server:notification', { type: "match", account_ids: accounts });
                 } else {
                     // Save the notification for the target account
                     await this.db.execute(
