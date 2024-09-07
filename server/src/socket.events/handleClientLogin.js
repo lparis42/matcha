@@ -83,7 +83,9 @@ async function handleClientLogin(socket, data, cb) {
         }
 
         // View own profile at login
-        await this.handleClientView(socket, { account: account_data.id }, cb);
+        //await this.handleClientView(socket, { account: account_data.id }, cb);
+
+        cb(null);
 
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Logged in to account '${account_data.id}'`);
     } catch (err) {
