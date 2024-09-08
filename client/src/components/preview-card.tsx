@@ -8,7 +8,7 @@ import { BriefcaseIcon, GraduationCapIcon, HeartIcon, MapPinIcon, XIcon } from '
 import { Button } from './ui/button';
 
 interface ProfileCardProps {
-    profile: {
+        id: number;
         gender: string;
         sexual_orientation: string;
         first_name: string;
@@ -18,17 +18,28 @@ interface ProfileCardProps {
         biography: string;
         interests: string[];
         pictures: string[];
-    }
+        location: string;
+        fame_rating: number;
   }
 
-const PreviewCard = ({index}) => {
-    const { eventView } = useSocket();
-    const [items, setItems] = useState<object | undefined>(undefined);
+const PreviewCard = ({items}: ProfileCardProps) => {
+    const { eventLike } = useSocket();
+    //const [items, setItems] = useState<ProfileCardProps | undefined>(undefined);
     const [isExpanded, setIsExpanded] = useState(false)
 
     const toggleCard = () => {
       setIsExpanded(!isExpanded)
       console.log("toggle")
+    }
+
+    const handleClick = (index: number) => {
+        eventLike(index, (err, res) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(res);
+            }
+        });
     }
 
     //{
@@ -43,15 +54,10 @@ const PreviewCard = ({index}) => {
     //    pictures: ["https://placehold.co/520x520", "https://placehold.co/520x520", "https://placehold.co/520x520", "https://placehold.co/520x520", "https://placehold.co/520x520"]
     //}
 
-    useEffect(() => {
-        eventView(index, (err, profile) => {
-            if (err) {
-                console.log(err);
-            } else {
-                setItems(profile);
-            }
-        });
-    }, [index]);
+    //useEffect(() => {
+
+    //    setItems(DATA[index]);
+    //}, [index]);
 
     if (!items) return (
         <Card className='overflow-hidden'>
@@ -73,7 +79,7 @@ const PreviewCard = ({index}) => {
 
     return (
         <Card className={`overflow-hidden cursor-pointer transition-all duration-300 ease-in-out ${
-            isExpanded ? 'sm:col-span-2 sm:row-span-2 scale-105' : 'hover:scale-102'
+            isExpanded ? 'scale-110 z-10' : 'hover:scale-105 z-0'
           }`}
           onClick={toggleCard}
           aria-expanded={isExpanded}>
@@ -85,8 +91,8 @@ const PreviewCard = ({index}) => {
                     if (!picture)
                         return null;
                     return (
-                    <CarouselItem key={index}>
-                        <img src={`https://localhost:2000/images/${picture}`} alt="" />
+                    <CarouselItem key={index} className=''>
+                        <img src={`https://localhost:2000/images/${picture}`} alt="" className='object-cover aspect-square'/>
                     </CarouselItem>)
                 })}
                 </CarouselContent>
@@ -107,21 +113,31 @@ const PreviewCard = ({index}) => {
                 <h3 className="font-semibold text-lg mb-2">{items?.first_name}<br></br> {items?.last_name}</h3>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                   <MapPinIcon className="mr-2 h-4 w-4" />
-                  New York, NY
+                  {items?.location}
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                   <BriefcaseIcon className="mr-2 h-4 w-4" />
-                  Software Engineer
+                  {items?.age} years
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <GraduationCapIcon className="mr-2 h-4 w-4" />
-                  Bachelor's in Computer Science
+                  {items?.fame_rating} / 10
+                </div>
+                <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
+                    {items?.common_tags?.map((interest, index) => {
+                        return (
+                            <Badge key={index}>
+                                {interest}
+                            </Badge>
+                        )
+                        })
+                    }
                 </div>
                 {isExpanded && (
                 <div className="mt-4">
                     <p className="text-sm text-gray-600 mb-4">{items?.biography}</p>
                     <div className="flex justify-between items-center">
-                    <Button className="flex-grow mr-2">
+                    <Button className="flex-grow mr-2" onClick={(e) => { e.stopPropagation(); handleClick(items?.id); }}>
                         <HeartIcon className="mr-2 h-4 w-4" /> Connect
                     </Button>
                     <Button variant="outline" onClick={(e) => { e.stopPropagation(); toggleCard(); }}>

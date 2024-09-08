@@ -132,6 +132,7 @@ export const SocketProvider = ({ children }) => {
     socket.on('reconnect_attempt', eventReconnectAttempt);
     socket.on('disconnect', eventSocketDisconnect);
     socket.on('connect_error', eventSocketError);
+    socket.on('server:account', eventAccount);
 
     setSocketConnected(true);
     console.log('Socket connected');
@@ -158,6 +159,13 @@ export const SocketProvider = ({ children }) => {
     console.error('Connection failed:', error);
   };
 
+  const eventAccount = (message) => {
+    console.log('Account:', message);
+    eventView(message.account, (err, profile: User) => {
+      setUser(profile);
+    });
+  }
+
   useEffect(() => {
     if (!socketConnected) {
       return;
@@ -167,24 +175,24 @@ export const SocketProvider = ({ children }) => {
     });
   }, [socketConnected]);
 
-  //const eventGeolocation = useCallback(() => {
-  //  if (navigator.geolocation) {
-  //    navigator.geolocation.getCurrentPosition(
-  //      (position) => {
-  //        const { latitude, longitude } = position.coords;
-  //        setGeolocation({ latitude, longitude });
-  //        socket.emit('client:geolocation', { latitude, longitude });
-  //        console.log('Emitting geolocation:', latitude, longitude);
-  //      },
-  //      (error) => {
-  //        socket.emit('client:geolocation', { latitude: null, longitude: null });
-  //        console.error(`Error: ${error.message}`);
-  //      }
-  //    );
-  //  } else {
-  //    alert("Geolocation is not supported by this browser.");
-  //  }
-  //}, [socket]);
+  const eventGeolocation = useCallback(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setGeolocation({ latitude, longitude });
+          socket.emit('client:geolocation', { latitude, longitude });
+          console.log('Emitting geolocation:', latitude, longitude);
+        },
+        (error) => {
+          socket.emit('client:geolocation', { latitude: null, longitude: null });
+          console.error(`Error: ${error.message}`);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  }, [socket]);
 
   // const eventLocationPathname = useCallback(() => {
   //  if (location.pathname === '/confirm' && location.search.includes('activation_key')) {
@@ -240,7 +248,6 @@ export const SocketProvider = ({ children }) => {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
-        setUser(message);
         setLog(true);
       }
     });
@@ -281,7 +288,7 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  const eventEdit = useCallback((userData, callback: (err: Error | null, listProfils?: object[]) => void) => {
+  const eventEdit = useCallback((userData, callback: (err: Error | null, profile: User) => void) => {
     if (socket === null) {
       return;
     }
@@ -292,10 +299,10 @@ export const SocketProvider = ({ children }) => {
     //   biography: 'Test biography',
     //   pictures: [null, null, null, null, null],
     // };
-    socket.emit('client:edit', userData, (err: Error, message: string) => {
+    socket.emit('client:edit', userData, (err: Error, message: User) => {
       if (err) {
-        console.error('Error:', err);
-        callback(err);
+        console.error('Error:', err); 
+        callback(err, null);
       } else {
         console.log('Success:', message);
         setUser(message);
