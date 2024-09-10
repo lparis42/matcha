@@ -55,6 +55,11 @@ class Event {
             const session_account = await this.getSessionAccount(socket.handshake.sessionID);
             if (session_account) {
 
+                // Set online status to true
+                await this.db.execute(
+                    this.db.update('users_public', { online: true }, `id = ${account_data.id}`)
+                );
+
                 // Emit to the socket of the session
                 socket.emit('server:account', { account: account_data.id });
 
@@ -99,13 +104,6 @@ class Event {
                     socket.emit('server:geolocation');
                     console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Approximate geolocation by IP address (${latitude}, ${longitude}): ${location}`);
                 }
-
-                // View own profile at login
-                await this.handleClientView(socket, { account: account_data.id }, (err, result) => {
-                    if (!err) {
-                        console.error("An error occurred:", err);
-                    }
-                });
 
             }
 
@@ -159,8 +157,13 @@ class Event {
                 // Get the session data from the store and update the online status in the database if logged in
                 const session_account = await this.getSessionAccount(socket.handshake.sessionID);
                 if (session_account) {
+
                     // If there is no more socket of the session
                     if (!this.io.sockets.adapter.rooms.get(socket.handshake.sessionID)) {
+                        // Set online status to false
+                        await this.db.execute(
+                            this.db.update('users_public', { online: false }, `id = ${session_account}`)
+                        );
                         // Update the online status in the database
                         await this.db.execute(
                             this.db.update('users_public', { online: false, last_connection: 'NOW()' }, `id = ${session_account}`)
