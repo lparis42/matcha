@@ -384,7 +384,7 @@ export const SocketProvider = ({ children }) => {
         callback(null, message);
       }
     });
-  }, []);
+  }, [socket]);
 
   const eventLikers = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting likers');

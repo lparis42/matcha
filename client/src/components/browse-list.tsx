@@ -6,88 +6,53 @@ import { useEffect, useState } from "react";
 const DATA = [
     {
         "id": 0,
-        "username": "hxkvdy",
         "first_name": "User",
-        "last_name": "hxkvdy",
         "date_of_birth": "1990-01-01",
-        "gender": "Male",
-        "sexual_orientation": "Heterosexual",
-        "biography": "This is a test biography for hxkvdy.",
         "common_tags": ['Technology', 'Health', 'Business', 'Entertainment'],
         "pictures": ["1_1725024336803_0.WebP"],
-        "fame_rating": 1,
         "geolocation": [40.7128, -74.0060],
         "location": "New York, USA",
-        "online": false,
-        "last_connection": "2024-09-07T17:45:36.622Z"
+        "online": false
     },
     {
         "id": 0,
-        "username": "abc123",
         "first_name": "User",
-        "last_name": "abc123",
         "date_of_birth": "1985-05-15",
-        "gender": "Female",
-        "sexual_orientation": "Homosexual",
-        "biography": "This is a test biography for abc123.",
         "common_tags": ['Technology', 'Health', 'Business'],
         "pictures": ["1_1725024336803_0.WebP"],
-        "fame_rating": 1,
         "geolocation": [34.0522, -118.2437],
         "location": "Los Angeles, USA",
         "online": false,
-        "last_connection": "2024-09-07T17:45:36.622Z"
     },
     {
         "id": 0,
-        "username": "def456",
         "first_name": "User",
-        "last_name": "def456",
         "date_of_birth": "1992-07-20",
-        "gender": "Non-binary",
-        "sexual_orientation": "Bisexual",
-        "biography": "This is a test biography for def456.",
         "common_tags": ['Business', 'Entertainment', 'Travel'],
         "pictures": ["1_1725024336803_0.WebP"],
-        "fame_rating": 1,
         "geolocation": [51.5074, -0.1278],
         "location": "London, UK",
         "online": false,
-        "last_connection": "2024-09-07T17:45:36.622Z"
     },
     {
         "id": 0,
-        "username": "ghi789",
         "first_name": "User",
-        "last_name": "ghi789",
         "date_of_birth": "1988-11-30",
-        "gender": "Male",
-        "sexual_orientation": "Asexual",
-        "biography": "This is a test biography for ghi789.",
         "common_tags": ['Technology', 'Health', 'Travel'],
         "pictures": ["1_1725024336803_0.WebP"],
-        "fame_rating": 1,
         "geolocation": [48.8566, 2.3522],
         "location": "Paris, France",
         "online": false,
-        "last_connection": "2024-09-07T17:45:36.622Z"
     },
     {
         "id": 0,
-        "username": "jkl012",
         "first_name": "User",
-        "last_name": "jkl012",
         "date_of_birth": "1995-03-25",
-        "gender": "Female",
-        "sexual_orientation": "Pansexual",
-        "biography": "This is a test biography for jkl012.",
         "common_tags": ['Religion', 'Law'],
         "pictures": ["1_1725024336803_0.WebP"],
-        "fame_rating": 1,
         "geolocation": [35.6895, 139.6917],
         "location": "Tokyo, Japan",
         "online": false,
-        "last_connection": "2024-09-07T17:45:36.622Z"
     }
 ]
 
@@ -123,7 +88,7 @@ export default function BrowseList({ filters, sortOption }: BrowseListProps) {
 
     useEffect(() => {
         async function fetchProfiles() {
-            // const [err, profiles] = await eventBrowsing();
+            const [err, profiles] = await eventBrowsing();
             //setError(err);
             //const data = [];
             //[0, 1, 2, 3, 4].forEach((index) => {
