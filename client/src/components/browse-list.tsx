@@ -14,7 +14,7 @@ const DATA = [
         "sexual_orientation": "Heterosexual",
         "biography": "This is a test biography for hxkvdy.",
         "common_tags": ['Technology', 'Health', 'Business', 'Entertainment'],
-        "pictures": ["1_1722959364213_0.WebP"],
+        "pictures": ["1_1725024336803_0.WebP"],
         "fame_rating": 1,
         "geolocation": [40.7128, -74.0060],
         "location": "New York, USA",
@@ -31,7 +31,7 @@ const DATA = [
         "sexual_orientation": "Homosexual",
         "biography": "This is a test biography for abc123.",
         "common_tags": ['Technology', 'Health', 'Business'],
-        "pictures": ["1_1722959364213_0.WebP"],
+        "pictures": ["1_1725024336803_0.WebP"],
         "fame_rating": 1,
         "geolocation": [34.0522, -118.2437],
         "location": "Los Angeles, USA",
@@ -48,7 +48,7 @@ const DATA = [
         "sexual_orientation": "Bisexual",
         "biography": "This is a test biography for def456.",
         "common_tags": ['Business', 'Entertainment', 'Travel'],
-        "pictures": ["1_1722959364213_0.WebP"],
+        "pictures": ["1_1725024336803_0.WebP"],
         "fame_rating": 1,
         "geolocation": [51.5074, -0.1278],
         "location": "London, UK",
@@ -65,7 +65,7 @@ const DATA = [
         "sexual_orientation": "Asexual",
         "biography": "This is a test biography for ghi789.",
         "common_tags": ['Technology', 'Health', 'Travel'],
-        "pictures": ["1_1722959364213_0.WebP"],
+        "pictures": ["1_1725024336803_0.WebP"],
         "fame_rating": 1,
         "geolocation": [48.8566, 2.3522],
         "location": "Paris, France",
@@ -82,7 +82,7 @@ const DATA = [
         "sexual_orientation": "Pansexual",
         "biography": "This is a test biography for jkl012.",
         "common_tags": ['Religion', 'Law'],
-        "pictures": ["1_1722959364213_0.WebP"],
+        "pictures": ["1_1725024336803_0.WebP"],
         "fame_rating": 1,
         "geolocation": [35.6895, 139.6917],
         "location": "Tokyo, Japan",
@@ -123,7 +123,7 @@ export default function BrowseList({ filters, sortOption }: BrowseListProps) {
 
     useEffect(() => {
         async function fetchProfiles() {
-            //const [err, profiles] = await eventBrowsing();
+            // const [err, profiles] = await eventBrowsing();
             //setError(err);
             //const data = [];
             //[0, 1, 2, 3, 4].forEach((index) => {

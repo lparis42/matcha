@@ -12,8 +12,7 @@ export function Nav() {
   const navItems = [
     {name: 'Browse', href: '/browse'},
     {name: 'Chat', href: '/chat'},
-    {name: 'Profile', href: '/profile'},
-    {name: 'Matchings', href: '/matching'},
+    {name: 'Profile', href: '/profile'}
   ]
 
   return (

@@ -18,7 +18,7 @@ const DATA = [
       "sexual_orientation": "Heterosexual",
       "biography": "This is a test biography for hxkvdy.",
       "common_tags": ['Technology', 'Health', 'Business', 'Entertainment'],
-      "pictures": ["1_1722959364213_0.WebP"],
+      "pictures": ["1_1725024336803_0.WebP"],
       "fame_rating": 1,
       "geolocation": [40.7128, -74.0060],
       "location": "New York, USA",
