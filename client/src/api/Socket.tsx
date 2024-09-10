@@ -314,7 +314,7 @@ export const SocketProvider = ({ children }) => {
   const eventBrowsing = useCallback(async () => {
     console.log('Emitting browse profile');
     const data: [err: Error, listProfils: object[]] = await new Promise((resolve) => {
-      socket.emit('client:browsing', { browsing_start: 0, browsing_stop: 10 }, (err: Error, listProfils: object[]) => {
+      socket.emit('client:browsing', { browsing_start: 0, browsing_stop: 10, sort: "fame_rating" }, (err: Error, listProfils: object[]) => {
           if (err) {
               console.error('Error:', err);
               resolve([err, null]);
