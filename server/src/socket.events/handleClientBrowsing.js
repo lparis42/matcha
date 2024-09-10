@@ -59,8 +59,8 @@ async function handleClientBrowsing(socket, data, cb) {
             const sorting = (a, b) => {
 
                 if (sort === 'common_tags') {
-                    const a_common_tags = a.common_tags.filter(tag => account_data.common_tags.includes(tag));
-                    const b_common_tags = b.common_tags.filter(tag => account_data.common_tags.includes(tag));
+                    const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
+                    const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
                     if (a_common_tags.length !== b_common_tags.length) {
                         return b_common_tags.length - a_common_tags.length;
                     }
@@ -79,8 +79,8 @@ async function handleClientBrowsing(socket, data, cb) {
                     if (a_fame_difference !== b_fame_difference) {
                         return a_fame_difference - b_fame_difference;
                     }
-                    const a_common_tags = a.common_tags.filter(tag => account_data.common_tags.includes(tag));
-                    const b_common_tags = b.common_tags.filter(tag => account_data.common_tags.includes(tag));
+                    const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
+                    const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
                     if (a_common_tags.length !== b_common_tags.length) {
                         return b_common_tags.length - a_common_tags.length;
                     }
@@ -92,8 +92,8 @@ async function handleClientBrowsing(socket, data, cb) {
                     if (a.distance !== b.distance) {
                         return a.distance - b.distance;
                     }
-                    const a_common_tags = a.common_tags.filter(tag => account_data.common_tags.includes(tag));
-                    const b_common_tags = b.common_tags.filter(tag => account_data.common_tags.includes(tag));
+                    const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
+                    const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
                     if (a_common_tags.length !== b_common_tags.length) {
                         return b_common_tags.length - a_common_tags.length;
                     }
@@ -107,8 +107,8 @@ async function handleClientBrowsing(socket, data, cb) {
                     if (a.age_difference !== b.age_difference) {
                         return a.age_difference - b.age_difference;
                     }
-                    const a_common_tags = a.common_tags.filter(tag => account_data.common_tags.includes(tag));
-                    const b_common_tags = b.common_tags.filter(tag => account_data.common_tags.includes(tag));
+                    const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
+                    const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
                     if (a_common_tags.length !== b_common_tags.length) {
                         return b_common_tags.length - a_common_tags.length;
                     }
