@@ -48,6 +48,11 @@ async function handleClientLogin(socket, data, cb) {
             socket.join(room.id);
         });
 
+        // Set online status to true
+        await this.db.execute(
+            this.db.update('users_public', { online: true }, `id = ${account_data.id}`)
+        );
+
         // Get offline notifications
         const notifications = await this.db.execute(
             this.db.select('users_notification', ['data'], `account = ${account_data.id}`)
