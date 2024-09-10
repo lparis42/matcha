@@ -18,7 +18,7 @@ async function handleClientResearch(socket, data, cb) {
             throw { client: 'Invalid sort', status: 400 };
         }
         const browsing_data = await new Promise((resolve, reject) => {
-            const data = { browsing_start: 0, browsing_stop: Infinity, sort: 'common_tags', filter: '' };
+            const data = { browsing_start: 0, browsing_stop: Infinity, sort: 'common_tags'};
             this.handleClientBrowsing(socket, data, (err, response) => {
                 err ? reject(err) : resolve(response)
             })
