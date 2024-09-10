@@ -18,3 +18,4 @@ routing
 
 other
 - gestion no data and error
+- logout button
