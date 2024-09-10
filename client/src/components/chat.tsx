@@ -9,9 +9,10 @@ interface ChatProps {
   selectedUser: UserData;
   isMobile: boolean;
   sendLogics: Function;
+  toggleViewProfile: Function;
 }
 
-export function Chat({ selectedUser, isMobile, sendLogics }: ChatProps) {
+export function Chat({ selectedUser, isMobile, sendLogics, toggleViewProfile }: ChatProps) {
 
   const [messagesState, setMessages] = React.useState<Message[]>(selectedUser.messages ?? []);
 
@@ -28,7 +29,7 @@ export function Chat({ selectedUser, isMobile, sendLogics }: ChatProps) {
   return (
     <div className="flex flex-col justify-between w-full h-full">
       <ChatTopbar selectedUser={selectedUser} />
-      <Button variant="secondary">
+      <Button variant="secondary" onClick={() => toggleViewProfile()}>
         <h1>View profile</h1>
       </Button>
       <ChatList

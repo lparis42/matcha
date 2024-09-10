@@ -2,8 +2,8 @@
 
 browser
 - finir profile card
-- sorting
-- filtre
+- sorting ✅
+- filtre ✅
 - advance research
 
 chat
