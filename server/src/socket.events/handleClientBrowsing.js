@@ -145,7 +145,7 @@ async function handleClientBrowsing(socket, data, cb) {
             first_name: match.first_name,
             date_of_birth: match.date_of_birth,
             common_tags: match.common_tags,
-            picture: account_data.pictures[0],
+            picture: match.pictures[0],
             geolocation: match.geolocation,
             location: match.location,
             online: match.online
