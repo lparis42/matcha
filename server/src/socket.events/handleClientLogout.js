@@ -20,6 +20,11 @@ async function handleClientLogout(socket, cb) {
             }
         });
 
+        // Set online status to false
+        await this.db.execute(
+            this.db.update('users_public', { online: false }, `id = ${session_account}`)
+        );
+
         // Emit the logout event to all the sockets of the session
         this.io.to(socket.handshake.sessionID).emit('server:account', { account: 0 });
 
