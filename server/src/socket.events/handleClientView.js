@@ -23,7 +23,7 @@ async function handleClientView(socket, data, cb) {
         ))[0].viewers;
 
         // Update target account viewers and fame rating, and current account view history
-        if (target_viewers !== session_account) {
+        if (target_account !== session_account) {
 
             // Update target account viewers and fame rating
             if (!target_viewers.includes(session_account)) {
