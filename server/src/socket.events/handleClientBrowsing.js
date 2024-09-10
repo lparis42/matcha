@@ -7,12 +7,12 @@ async function handleClientBrowsing(socket, data, cb) {
         if (!session_account) {
             throw { client: 'Account not found', status: 404 };
         }
-        const { browsing_start, browsing_stop, filter } = data;
+        const { browsing_start, browsing_stop, sort } = data;
         if (browsing_start && typeof browsing_start !== 'number' || browsing_stop && typeof browsing_stop !== 'number') {
             throw { client: 'Invalid browsing window', status: 400 };
         }
-        if (filter && typeof filter !== 'string' && filter !== 'common_tags' && filter !== 'fame_rating' && filter !== 'distance' && filter !== 'age_difference') {
-            throw { client: 'Invalid filter', status: 400 };
+        if (!sort || typeof sort !== 'string' || sort !== 'common_tags' && sort !== 'fame_rating' && sort !== 'distance' && sort !== 'age_difference') {
+            throw { client: 'Invalid sort', status: 400 };
         }
         const account_data = (await this.db.execute(
             this.db.select('users_public',
@@ -56,9 +56,9 @@ async function handleClientBrowsing(socket, data, cb) {
         // Sort the matches by common tags, fame rating, location and age difference
         const sorted_matches = matches_with_calculated_data.sort((a, b) => {
             
-            const filters = (a, b) => {
+            const sorting = (a, b) => {
 
-                if (filter === 'common_tags') {
+                if (sort === 'common_tags') {
                     const a_common_tags = a.common_tags.filter(tag => account_data.common_tags.includes(tag));
                     const b_common_tags = b.common_tags.filter(tag => account_data.common_tags.includes(tag));
                     if (a_common_tags.length !== b_common_tags.length) {
@@ -73,7 +73,7 @@ async function handleClientBrowsing(socket, data, cb) {
                         return a.age_difference - b.age_difference;
                     }
                     return a.distance - b.distance;
-                } else if (filter === 'fame_rating') {
+                } else if (sort === 'fame_rating') {
                     const a_fame_difference = Math.abs(a.fame_rating - account_data.fame_rating);
                     const b_fame_difference = Math.abs(b.fame_rating - account_data.fame_rating);
                     if (a_fame_difference !== b_fame_difference) {
@@ -88,7 +88,7 @@ async function handleClientBrowsing(socket, data, cb) {
                         return a.age_difference - b.age_difference;
                     }
                     return a.distance - b.distance;
-                } else if (filter === 'distance') {
+                } else if (sort === 'distance') {
                     if (a.distance !== b.distance) {
                         return a.distance - b.distance;
                     }
@@ -103,7 +103,7 @@ async function handleClientBrowsing(socket, data, cb) {
                         return a_fame_difference - b_fame_difference;
                     }
                     return a.age_difference - b.age_difference;
-                } else if (filter === 'age_difference') {
+                } else if (sort === 'age_difference') {
                     if (a.age_difference !== b.age_difference) {
                         return a.age_difference - b.age_difference;
                     }
@@ -121,7 +121,7 @@ async function handleClientBrowsing(socket, data, cb) {
                 }
             };
 
-            return filters(a, b);
+            return sorting(a, b);
         });
         // Group the matches by distance and age difference
         const matches_grouped_by_distance_and_age = {
