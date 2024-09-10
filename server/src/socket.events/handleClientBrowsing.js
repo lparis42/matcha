@@ -37,7 +37,7 @@ async function handleClientBrowsing(socket, data, cb) {
         }
         let matches = await this.db.execute(
             this.db.select('users_public',
-                ['id', 'first_name', 'date_of_birth', 'common_tags', 'pictures', 'fame_rating', 'geolocation', 'location'],
+                ['id', 'first_name', 'date_of_birth', 'common_tags', 'pictures', 'fame_rating', 'geolocation', 'location', 'online', 'pictures'],
                 (blocked_accounts.length > 0 ? `id NOT IN (${blocked_accounts.join(',')}) AND ` : '') +
                 `id != ${session_account}` + (gender_browsing ? ` AND gender IN (${gender_browsing})` : ``))
         );
@@ -140,7 +140,7 @@ async function handleClientBrowsing(socket, data, cb) {
         });
         const sorted_matches_final = Object.values(matches_grouped_by_distance_and_age).flat().slice(browsing_start || 0, browsing_stop || matches.length);
         // Data to return
-        const data_to_return = sorted_matches_final.map(async match => ({
+        const data_to_return = sorted_matches_final.map(match => ({
             id: match.id,
             first_name: match.first_name,
             date_of_birth: match.date_of_birth,
