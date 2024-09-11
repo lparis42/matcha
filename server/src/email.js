@@ -48,6 +48,7 @@ class Email {
   }
 
   async post(recipients) {
+    return;
     try {
       const info = await this.transporter.sendMail(recipients);
       console.log('Email sent: (' + info.response + ') to ' + recipients.to);
