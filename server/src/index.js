@@ -14,7 +14,7 @@ const server = new Server();
 setTimeout(async () => {
 
     // Client simulator
-    const clientCount = 3;
+    const clientCount = 1;
     if (!clientCount) {
         return console.error('ClientSimulator - Invalid client count');
     }

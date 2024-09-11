@@ -10,8 +10,6 @@ const sharedsession = require('express-socket.io-session');
 const cookieParser = require('cookie-parser');
 const socketIo = require('socket.io');
 const cors = require('cors');
-const { maxHeaderSize } = require('http');
-const { reloadData } = require('geoip-lite');
 
 class Server {
 
@@ -83,9 +81,9 @@ class Server {
       port: process.env.DATABASE_PORT,
     };
     const pool = new Pool(options);
-    this.store = new pgSession({ // Create a new PostgreSQL session store 
-      pool: pool, // Use the connection parameters for the PostgreSQL database 
-      tableName: 'users_session' // Use the users_session table for the session store 
+    this.store = new pgSession({
+      pool: pool,
+      tableName: 'users_session'
     });
     console.log(`Store configured`);
   }
@@ -110,15 +108,15 @@ class Server {
 
   // Configure the application
   configureApplication() {
-    this.app = express(); // Create an express application 
-    this.app.use(cors({ // Use the CORS middleware for the application 
-      origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
-      methods: ['GET', 'POST'],
-      credentials: true,
-      secure: true,
-    }));
-    this.app.use(cookieParser(process.env.SESSION_MIDDLEWARE_SECRET)); // Use the cookie parser middleware for the application 
-    this.app.use(this.sessionMiddleware); // Use the session middleware for the application 
+    this.app = express();
+    // this.app.use(cors({ // Use the CORS middleware for the application
+    //   origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
+    //   methods: ['GET'],
+    //   credentials: true, // Allow credentials
+    //   secure: true, // Allow secure connections
+    // }));
+    this.app.use(cookieParser(process.env.SESSION_MIDDLEWARE_SECRET)); // Use the cookie parser middleware for the application
+    this.app.use(this.sessionMiddleware); // Use the session middleware for the application
     console.log(`Application configured`);
   }
 
@@ -135,22 +133,6 @@ class Server {
     // Serve the images from the images directory
     const imagesPath = path.join(process.cwd(), '..', 'images');
     this.app.use('/images', express.static(imagesPath));
-    // Watch the images directory for changes
-    fs.watch(imagesPath, (eventType, filename) => {
-      if (filename) {
-        console.log(`File ${filename} has been ${eventType}`);
-      }
-    });
-
-    // this.app.get('/confirm', async (req, res) => {
-    //   const activation_key = req.query.activation_key;
-    //   // Find the socket by session ID
-    //   const sessionID = req.sessionID;
-    //   const socket = Array.from(this.io.sockets.sockets.values()).find(s => s.handshake.sessionID === sessionID);
-    //   // Confirm registration for testing purposes
-    //   this.event.handleClientRegistrationConfirmation(socket, { activation_key }, () => { });
-    //   res.redirect('https://localhost:5173');
-    // });
 
     console.log(`Routes configured`);
   }
@@ -171,20 +153,24 @@ class Server {
   // Configure the Socket.IO server 
   configureSocketIoServer() {
     this.io = socketIo(this.server, { // Create a Socket.IO server
-      maxHttpBufferSize: 1e7, // Set the maximum HTTP buffer size to 10MB
+      maxHttpBufferSize: 1e6, // Set the maximum HTTP buffer size to 1MB
       cors: {
         origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
-        methods: ['GET', 'POST'],
+        methods: ['GET'],
         credentials: true,
-        secure: true,
       }
     });
-    this.io.use(sharedsession(this.sessionMiddleware, { // Use the shared session middleware for the Socket.IO server 
+    
+    // Use the shared session middleware for the Socket.IO server
+    this.io.use(sharedsession(this.sessionMiddleware, {
       autoSave: true // Automatically save the session 
     }));
-    this.io.use(async (socket, next) => { // Use the socket middleware for the Socket.IO server 
+
+    // Use the socket middleware for the Socket.IO server
+    this.io.use(async (socket, next) => {
       try {
-        if (socket.handshake.auth.simulator) { // For testing purposes only - create a session for the simulator
+        // For testing purposes only - create a session for the simulator
+        if (socket.handshake.auth.simulator) {
           await this.event.db.execute(
             this.event.db.insert('users_session', { sid: socket.handshake.sessionID, sess: JSON.stringify(socket.handshake.session), expire: 'NOW()' })
           );
@@ -203,12 +189,21 @@ class Server {
         await this.db.execute(
           this.db.update('users_session', { socket_ids: [...online_socket_ids, socket.id] }, `sid = '${socket.handshake.sessionID}'`)
         );
-        socket.use((packet, next) => { // Use the packet middleware for the socket 
-          try {
-            const size = Buffer.byteLength(JSON.stringify(packet), 'utf8'); // Calculate the size of the packet in bytes 
-            console.log('\r\x1b[K');
-            console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Sending packet of size ${size} bytes:`);
 
+        // Use the packet middleware for the Socket.IO server
+        socket.use((packet, next) => {
+          try {
+            const emit_list = [
+              // Events from Socket.IO
+              'connect', 'connect_error', 'disconnect', 'disconnecting', 'newListener', 'removeListener',
+              // Events from the server
+              'block', 'browsing', 'chat', 'chat_histories', 'edit', 'geolocation', 'like', 'likers',
+              'login', 'logout', 'matchs', 'password_reset', 'password_reset_confirmation', 'registration',
+              'registration_confirmation', 'report', 'research', 'unblock', 'unlike', 'unregistration', 'view', 'viewers',
+            ];
+            if (!packet[0].startsWith('client:') || !emit_list.includes(packet[0].slice(7))) { // Check if the packet is valid
+              throw 'Invalid emit: ' + packet[0];
+            }
             next();
           } catch (err) {
             next(err);

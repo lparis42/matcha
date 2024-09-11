@@ -64,10 +64,10 @@ async function handleClientView(socket, data, cb) {
         }
 
         cb(null, target_public_data);
-        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - view_profile '${target_account}'`);
+        console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Viewed profile of account '${target_account}'`);
     } catch (err) {
         cb({ message: err.client || 'Internal server error', status: err.status || 500 });
-        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - view_profile_error: ${err.client || err}`);
+        console.error(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - View error: ${err.client || err}`);
     }
 }
 
