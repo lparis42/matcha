@@ -78,80 +78,82 @@ const PreviewCard = ({items}: ProfileCardProps) => {
     )
 
     return (
-        <Card className={`overflow-hidden cursor-pointer transition-all duration-300 ease-in-out ${
+        <Card className={`overflow-hidden cursor-pointer transition-all duration-300 ease-in-out flex flex-col h-full ${
             isExpanded ? 'scale-110 z-10' : 'hover:scale-105 z-0'
           }`}
           onClick={toggleCard}
           aria-expanded={isExpanded}>
-            <Carousel>
-                <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
-                <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
-                <CarouselContent>
-                {items?.pictures?.map((picture, index) => {
-                    if (!picture)
-                        return null;
-                    return (
-                    <CarouselItem key={index} className=''>
-                        <img src={`https://localhost:2000/images/${picture}`} alt="" className='object-cover aspect-square'/>
-                    </CarouselItem>)
-                })}
-                </CarouselContent>
-            </Carousel>
-            {/*<CardHeader className="flex justify-center p-6">
-                <div className='flex gap-2'>
-                    {items?.interests?.map((interest, index) => {
+            <CardHeader className="p-0">
+                <Carousel>
+                    <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
+                    <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
+                    <CarouselContent>
+                    {items?.pictures?.map((picture, index) => {
+                        if (!picture)
+                            return null;
                         return (
-                            <Badge key={index}>
-                                {interest}
-                            </Badge>
-                        )
-                        })
-                    }
-                </div>
-            </CardHeader>*/}
-            <CardContent className="p-4">
-                <h3 className="font-semibold text-lg mb-2">{items?.first_name}<br></br> {items?.last_name}</h3>
-                <div className="flex items-center text-sm text-gray-500 mb-2">
-                  <MapPinIcon className="mr-2 h-4 w-4" />
-                  {items?.location}
-                </div>
-                <div className="flex items-center text-sm text-gray-500 mb-2">
-                  <BriefcaseIcon className="mr-2 h-4 w-4" />
-                  {items?.age} years
-                </div>
-                <div className="flex items-center text-sm text-gray-500 mb-4">
-                  <GraduationCapIcon className="mr-2 h-4 w-4" />
-                  {items?.fame_rating} / 10
-                </div>
-                <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
-                    {items?.common_tags?.map((interest, index) => {
-                        return (
-                            <Badge key={index}>
-                                {interest}
-                            </Badge>
-                        )
-                        })
-                    }
-                </div>
-                {isExpanded && (
-                <div className="mt-4">
-                    <p className="text-sm text-gray-600 mb-4">{items?.biography}</p>
-                    <div className="flex justify-between items-center">
-                    <Button className="flex-grow mr-2" onClick={(e) => { e.stopPropagation(); handleClick(items?.id); }}>
-                        <HeartIcon className="mr-2 h-4 w-4" /> Connect
-                    </Button>
-                    <Button variant="outline" onClick={(e) => { e.stopPropagation(); toggleCard(); }}>
-                        <XIcon className="h-4 w-4" />
-                        <span className="sr-only">Close</span>
-                    </Button>
+                        <CarouselItem key={index} className=''>
+                            <img src={`https://localhost:2000/images/${picture}`} alt="" className='object-cover aspect-square'/>
+                        </CarouselItem>)
+                    })}
+                    </CarouselContent>
+                </Carousel>
+            </CardHeader>
+            <CardContent className="p-4 flex-grow flex flex-col">
+                <div className=''>
+                    <h3 className="font-semibold text-lg mb-2">{items?.first_name}</h3>
+                    {items?.online ?
+                        <h2 className="text-sm mb-2 text-green-600">Online</h2>
+                        : <h2 className="text-sm mb-2 text-red-600">Offline</h2>}
+                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                    <MapPinIcon className="mr-2 h-4 w-4" />
+                    {items?.location}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                    <BriefcaseIcon className="mr-2 h-4 w-4" />
+                    {items?.age} years
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <GraduationCapIcon className="mr-2 h-4 w-4" />
+                    {items?.fame_rating} / 10
+                    </div>
+                    <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
+                        {items?.common_tags?.map((interest, index) => {
+                            if (!isExpanded && index > 4)
+                                return null;
+                            return (
+                                <Badge key={index}>
+                                    {interest}
+                                </Badge>
+                            )
+                            })
+                        }
+                        {!isExpanded && items?.common_tags?.length > 4 && (
+                            <Badge>...</Badge>
+                        )}
                     </div>
                 </div>
-                )}
-                {!isExpanded && (
-                <Button className="w-full">
-                    <HeartIcon className="mr-2 h-4 w-4" /> Connect
-                </Button>
-                )}
+                <div className='mt-auto'>
+                    {isExpanded && (
+                    <div className="mt-4">
+                        <p className="text-sm text-gray-600 mb-4">{items?.biography}</p>
+                        <div className="flex justify-between items-center">
+                        <Button className="flex-grow mr-2" onClick={(e) => { e.stopPropagation(); handleClick(items?.id); }}>
+                            <HeartIcon className="mr-2 h-4 w-4" /> Connect
+                        </Button>
+                        <Button variant="outline" onClick={(e) => { e.stopPropagation(); toggleCard(); }}>
+                            <XIcon className="h-4 w-4" />
+                            <span className="sr-only">Close</span>
+                        </Button>
+                        </div>
+                    </div>
+                    )}
+                    {!isExpanded && (
+                    <Button className="w-full">
+                        <HeartIcon className="mr-2 h-4 w-4" /> Connect
+                    </Button>
+                    )}
+                </div>
               </CardContent>
         </Card>
     );
