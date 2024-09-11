@@ -1,11 +1,31 @@
 import { useSocket } from '@/api/Socket';
 import { Chat } from '@/components/chat';
+import ChatProfileCard from '@/components/chat-profile-card';
 import { userData, Message, User } from '@/components/data';
-import PreviewCard from '@/components/preview-card';
 import { Sidebar } from '@/components/sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { cn } from '@/lib/utils';
 import React, { useEffect, useState } from 'react';
+
+const DATA = [
+    {
+      "id": 0,
+      "username": "hxkvdy",
+      "first_name": "User",
+      "last_name": "hxkvdy",
+      "date_of_birth": "1990-01-01",
+      "gender": "Male",
+      "sexual_orientation": "Heterosexual",
+      "biography": "This is a test biography for hxkvdy.",
+      "common_tags": ['Technology', 'Health', 'Business', 'Entertainment'],
+      "pictures": ["1_1725024336803_0.WebP"],
+      "fame_rating": 1,
+      "geolocation": [40.7128, -74.0060],
+      "location": "New York, USA",
+      "online": false,
+      "last_connection": "2024-09-07T17:45:36.622Z"
+  },
+]
 
 interface ChatLayoutProps {
     defaultLayout: number[] | undefined;
@@ -24,6 +44,7 @@ export function Component ({
     const [users, setUsers] = React.useState(userData);
     const [selectedUser, setSelectedUser] = React.useState(userData[0]);
     const { eventChatHistories, eventChat, subListenChat } = useSocket()
+    const [ifViewProfile, setIfViewProfile] = useState(false)
 
     function transformData(data: string[]): Message[] {
       const transformed: Message[] = [];
@@ -115,7 +136,7 @@ export function Component ({
     }, [selectedUser])
 
     return (
-        <main className="flex h-[calc(100dvh)] flex-col items-center justify-center p-4 md:px-24 py-32 gap-4">
+        <main className="flex h-[calc(100dvh)] flex-col items-center justify-center lg:p-4 md:px-24 lg:py-32 gap-4 sm:p-0 sm:py-0">
             <div className="z-10 border rounded-lg max-w-5xl w-full h-full text-sm lg:flex">
         <ResizablePanelGroup
         direction="horizontal"
@@ -168,10 +189,14 @@ export function Component ({
             selectedUser={selectedUser}
             isMobile={isMobile}
             sendLogics={sendLogic}
+            toggleViewProfile={() => setIfViewProfile(!ifViewProfile)}
           />
          : <></>}
          
         </ResizablePanel>
+        {ifViewProfile && <ResizablePanel defaultSize={defaultLayout[1]} minSize={20} maxSize={30}>
+            <ChatProfileCard items={DATA[0]}/>
+        </ResizablePanel>}
       </ResizablePanelGroup>
       </div>
       </main>

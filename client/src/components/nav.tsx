@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { MenuIcon, XIcon, BellIcon } from 'lucide-react'
+import NotifButton from "./notif-button";
 
 export function Nav() {
   const [isOpen, setIsOpen] = useState(false)
@@ -11,8 +12,7 @@ export function Nav() {
   const navItems = [
     {name: 'Browse', href: '/browse'},
     {name: 'Chat', href: '/chat'},
-    {name: 'Profile', href: '/profile'},
-    {name: 'Matchings', href: '/matching'},
+    {name: 'Profile', href: '/profile'}
   ]
 
   return (
@@ -33,19 +33,7 @@ export function Nav() {
             </div>
           </div>
           <div className="hidden sm:flex sm:items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative"
-              aria-label={`${notificationCount} unread notifications`}
-            >
-              <BellIcon className="h-5 w-5" />
-              {notificationCount > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-                  {notificationCount}
-                </span>
-              )}
-            </Button>
+            <NotifButton />
           </div>
           <div className="flex items-center sm:hidden">
             <Button
@@ -82,19 +70,7 @@ export function Nav() {
               {item.name}
             </a>
           ))}
-          <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-                aria-label={`${notificationCount} unread notifications`}
-              >
-                <BellIcon className="h-5 w-5" />
-                {notificationCount > 0 && (
-                  <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-                    {notificationCount}
-                  </span>
-                )}
-              </Button>
+          <NotifButton />
         </div>
       </div>
       

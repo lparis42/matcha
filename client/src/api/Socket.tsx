@@ -54,6 +54,8 @@ interface SocketValue {
   eventChatHistories: Function;
   subListenChat: Function;
   user: User;
+  notifications: any[];
+  clearNotifications: Function;
 }
 
 const SocketContext = createContext(null);
@@ -69,6 +71,7 @@ export const useSocket = (): SocketValue => {
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   console.log('SocketProvider');
   const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
@@ -105,49 +108,41 @@ export const SocketProvider = ({ children }) => {
     }
   }, [socket]);
 
-  useEffect(() => {
-    if (user === null) {
-      return;
-    }
-
-    socket.on('server:chat', eventListenChat)
-    socket.on('server:like', (data) => {})
-    socket.on('server:unlike', (data) => {})
-    socket.on('server:view', (data) => {})
-    socket.on('server:match', (data) => {})
-
-    return () => {
-      socket.off('server:chat')
-      socket.off('server:like')
-      socket.off('server:unlike')
-      socket.off('server:view')
-      socket.off('server:match')
-    }
-  }, [user, socket]);
-
   //useEffect(() => {
   //  if (socketConnected) {
   //    eventLocationPathname();
   //  }
   //}, [socketConnected, eventLocationPathname]);
 
+  const eventNotifications = (notifications: any) => {
+    console.log('Notifications:', notifications);
+    setNotifications(prev => [...prev, notifications]);
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+  }
+
   const eventSocketConnect = () => {
     if (socket === null) {
       return;
     }
 
+    socket.on('server:notification', eventNotifications);
     socket.on('reconnect_attempt', eventReconnectAttempt);
     socket.on('disconnect', eventSocketDisconnect);
     socket.on('connect_error', eventSocketError);
+    socket.on('server:account', eventAccount);
 
     setSocketConnected(true);
     console.log('Socket connected');
 
     return () => {
+      socket.off('server:notification')
       socket.off('reconnect_attempt');
       socket.off('disconnect');
       socket.off('connect_error');
-      socket.off('server:chat')
+      socket.off('server:chat');
     };
   };
 
@@ -164,6 +159,13 @@ export const SocketProvider = ({ children }) => {
     console.error('Connection failed:', error);
   };
 
+  const eventAccount = (message) => {
+    console.log('Account:', message);
+    eventView(message.account, (err, profile: User) => {
+      setUser(profile);
+    });
+  }
+
   useEffect(() => {
     if (!socketConnected) {
       return;
@@ -173,24 +175,24 @@ export const SocketProvider = ({ children }) => {
     });
   }, [socketConnected]);
 
-  //const eventGeolocation = useCallback(() => {
-  //  if (navigator.geolocation) {
-  //    navigator.geolocation.getCurrentPosition(
-  //      (position) => {
-  //        const { latitude, longitude } = position.coords;
-  //        setGeolocation({ latitude, longitude });
-  //        socket.emit('client:geolocation', { latitude, longitude });
-  //        console.log('Emitting geolocation:', latitude, longitude);
-  //      },
-  //      (error) => {
-  //        socket.emit('client:geolocation', { latitude: null, longitude: null });
-  //        console.error(`Error: ${error.message}`);
-  //      }
-  //    );
-  //  } else {
-  //    alert("Geolocation is not supported by this browser.");
-  //  }
-  //}, [socket]);
+  const eventGeolocation = useCallback(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setGeolocation({ latitude, longitude });
+          socket.emit('client:geolocation', { latitude, longitude });
+          console.log('Emitting geolocation:', latitude, longitude);
+        },
+        (error) => {
+          socket.emit('client:geolocation', { latitude: null, longitude: null });
+          console.error(`Error: ${error.message}`);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  }, [socket]);
 
   // const eventLocationPathname = useCallback(() => {
   //  if (location.pathname === '/confirm' && location.search.includes('activation_key')) {
@@ -213,7 +215,7 @@ export const SocketProvider = ({ children }) => {
     if (socket === null) {
       return;
     }
-    console.log('Emitting registration', typeof data);
+    console.log('Emitting registration');
     if (data === undefined) {
       data = {
         username: username,
@@ -222,9 +224,7 @@ export const SocketProvider = ({ children }) => {
         last_name: 'Test',
         first_name: 'User'
       };
-      console.log('Emitting registration 2');
     }
-    console.log('Emitting registration 3');
 
     socket.emit('client:registration', data, (err: Error, message: string) => {
       if (err) {
@@ -248,7 +248,6 @@ export const SocketProvider = ({ children }) => {
         console.error('Error:', err);
       } else {
         console.log('Success:', message);
-        setUser(message);
         setLog(true);
       }
     });
@@ -289,7 +288,7 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  const eventEdit = useCallback((userData, callback: (err: Error | null, listProfils?: object[]) => void) => {
+  const eventEdit = useCallback((userData, callback: (err: Error | null, profile: User) => void) => {
     if (socket === null) {
       return;
     }
@@ -300,10 +299,10 @@ export const SocketProvider = ({ children }) => {
     //   biography: 'Test biography',
     //   pictures: [null, null, null, null, null],
     // };
-    socket.emit('client:edit', userData, (err: Error, message: string) => {
+    socket.emit('client:edit', userData, (err: Error, message: User) => {
       if (err) {
-        console.error('Error:', err);
-        callback(err);
+        console.error('Error:', err); 
+        callback(err, null);
       } else {
         console.log('Success:', message);
         setUser(message);
@@ -312,17 +311,22 @@ export const SocketProvider = ({ children }) => {
     });
   }, [socket, user]);
 
-  const eventBrowsing = useCallback((callback: (err: Error | null, listProfils?: object[]) => void) => {
+  const eventBrowsing = useCallback(async () => {
     console.log('Emitting browse profile');
-    socket.emit('client:browsing', { browsing_start: 0, browsing_stop: 10 }, (err: Error, listProfils: object[]) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', listProfils);
-        callback(null, listProfils);
-      }
+    const data: [err: Error, listProfils: object[]] = await new Promise((resolve) => {
+      socket.emit('client:browsing', { browsing_start: 0, browsing_stop: 10, sort: "fame_rating" }, (err: Error, listProfils: object[]) => {
+          if (err) {
+              console.error('Error:', err);
+              resolve([err, null]);
+          } else {
+              console.log('Success:', listProfils);
+              resolve([null, listProfils]);
+          }
+      });
     });
-  }, []);
+    console.log('Data:', data);
+    return data;
+  }, [socket]);
 
   const eventView = useCallback((target_account: number, callback: (err: Error | null, profile?: object) => void) => {
     console.log('Emitting view profile', target_account);
@@ -352,7 +356,7 @@ export const SocketProvider = ({ children }) => {
         callback(null, message);
       }
     });
-  }, []);
+  }, [socket]);
 
   const eventUnLike = useCallback((target_account: number, callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting unlike profile');
@@ -367,7 +371,7 @@ export const SocketProvider = ({ children }) => {
         callback(null, message);
       }
     });
-  }, []);
+  }, [socket]);
 
   const eventViewers = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting viewers');
@@ -380,7 +384,7 @@ export const SocketProvider = ({ children }) => {
         callback(null, message);
       }
     });
-  }, []);
+  }, [socket]);
 
   const eventLikers = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting likers');
@@ -467,6 +471,8 @@ export const SocketProvider = ({ children }) => {
     eventMatch,
     eventChatHistories,
     //subListenChat,
+    notifications,
+    clearNotifications,
     log
   }
 

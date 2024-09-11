@@ -1,28 +1,27 @@
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import InterestsSelector from "./interests-selector"
+import { Checkbox } from "./ui/checkbox"
 
-export function Filters () {
+interface FiltersProps {
+    onFiltersChange: (filters: { ageRange: number[], kmRange: number[], interests: string[], isSuggested: boolean }) => void;
+}
 
-    const [ageRange, setAgeRange] = useState([18, 50])
+export default function Filters ({ onFiltersChange }: FiltersProps) {
+
+    const [ageRange, setAgeRange] = useState([18, 80])
+    const [kmRange, setKmRange] = useState([5])
+    const [interests, setInterests] = useState<string[]>([])
+    const [isSuggested, setIsSuggested] = useState(true)
+
+    useEffect(() => {
+        onFiltersChange({ ageRange, kmRange, interests, isSuggested });
+    }, [ageRange, kmRange, interests, isSuggested, onFiltersChange]);
 
     return (
         <div className="w-full md:w-1/4 space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Select>
-                <SelectTrigger id="gender">
-                    <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="non-binary">Non-binary</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-                </Select>
-            </div>
 
             <div className="space-y-2">
                 <Label>Age Range</Label>
@@ -41,32 +40,31 @@ export function Filters () {
 
             <div className="space-y-2">
                 <Label htmlFor="location">Location</Label>
-                <Select>
-                <SelectTrigger id="location">
-                    <SelectValue placeholder="Select location" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="new-york">New York</SelectItem>
-                    <SelectItem value="los-angeles">Los Angeles</SelectItem>
-                    <SelectItem value="chicago">Chicago</SelectItem>
-                    <SelectItem value="houston">Houston</SelectItem>
-                </SelectContent>
-                </Select>
+                <Slider
+                min={0}
+                max={100}
+                step={1}
+                value={kmRange}
+                onValueChange={setKmRange}
+                />
+                <div className="flex justify-between text-sm text-gray-500">
+                <span>{kmRange[0]} km</span>
+                </div>
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="interests">Interests</Label>
-                <Select>
-                <SelectTrigger id="interests">
-                    <SelectValue placeholder="Select interests" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="sports">Sports</SelectItem>
-                    <SelectItem value="music">Music</SelectItem>
-                    <SelectItem value="travel">Travel</SelectItem>
-                    <SelectItem value="food">Food</SelectItem>
-                </SelectContent>
-                </Select>
+                <Label htmlFor="location">Interests</Label>
+                <InterestsSelector onInterestsChange={setInterests}/>
+            </div>
+
+            <div className="space-y-2 flex items-center space-x-2">
+                <Checkbox aria-label='Suggested list' checked={isSuggested} onCheckedChange={() => {setIsSuggested(!isSuggested)}} />
+                <Label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                    Suggest list
+                </Label>
             </div>
         </div>
     )

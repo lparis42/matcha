@@ -22,15 +22,9 @@ interface ProfileCardProps {
         fame_rating: number;
   }
 
-const PreviewCard = ({items}: ProfileCardProps) => {
+const ChatProfileCard = ({items}: ProfileCardProps) => {
     const { eventLike } = useSocket();
     //const [items, setItems] = useState<ProfileCardProps | undefined>(undefined);
-    const [isExpanded, setIsExpanded] = useState(false)
-
-    const toggleCard = () => {
-      setIsExpanded(!isExpanded)
-      console.log("toggle")
-    }
 
     const handleClick = (index: number) => {
         eventLike(index, (err, res) => {
@@ -78,11 +72,7 @@ const PreviewCard = ({items}: ProfileCardProps) => {
     )
 
     return (
-        <Card className={`overflow-hidden cursor-pointer transition-all duration-300 ease-in-out ${
-            isExpanded ? 'scale-110 z-10' : 'hover:scale-105 z-0'
-          }`}
-          onClick={toggleCard}
-          aria-expanded={isExpanded}>
+        <div className={`overflow-hidden cursor-pointer transition-all duration-300 ease-in-out`}>
             <Carousel>
                 <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
                 <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
@@ -97,18 +87,6 @@ const PreviewCard = ({items}: ProfileCardProps) => {
                 })}
                 </CarouselContent>
             </Carousel>
-            {/*<CardHeader className="flex justify-center p-6">
-                <div className='flex gap-2'>
-                    {items?.interests?.map((interest, index) => {
-                        return (
-                            <Badge key={index}>
-                                {interest}
-                            </Badge>
-                        )
-                        })
-                    }
-                </div>
-            </CardHeader>*/}
             <CardContent className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{items?.first_name}<br></br> {items?.last_name}</h3>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
@@ -133,28 +111,21 @@ const PreviewCard = ({items}: ProfileCardProps) => {
                         })
                     }
                 </div>
-                {isExpanded && (
                 <div className="mt-4">
                     <p className="text-sm text-gray-600 mb-4">{items?.biography}</p>
                     <div className="flex justify-between items-center">
                     <Button className="flex-grow mr-2" onClick={(e) => { e.stopPropagation(); handleClick(items?.id); }}>
                         <HeartIcon className="mr-2 h-4 w-4" /> Connect
                     </Button>
-                    <Button variant="outline" onClick={(e) => { e.stopPropagation(); toggleCard(); }}>
+                    <Button variant="outline" onClick={(e) => { e.stopPropagation(); }}>
                         <XIcon className="h-4 w-4" />
                         <span className="sr-only">Close</span>
                     </Button>
                     </div>
                 </div>
-                )}
-                {!isExpanded && (
-                <Button className="w-full">
-                    <HeartIcon className="mr-2 h-4 w-4" /> Connect
-                </Button>
-                )}
               </CardContent>
-        </Card>
+        </div>
     );
 };
 
-export default PreviewCard;
+export default ChatProfileCard;

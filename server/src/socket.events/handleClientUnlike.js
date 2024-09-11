@@ -42,7 +42,7 @@ async function handleClientUnlike(socket, data, cb) {
 
             // Check if the target account is online
             if ((await this.db.execute(
-                this.db.select('users_publics', ['online'], `id = '${target_account}'`)
+                this.db.select('users_public', ['online'], `id = '${target_account}'`)
             ))[0].online) {
                 // Get the session ID of the target account
                 const target_session_id = (await this.db.execute(
