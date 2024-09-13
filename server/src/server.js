@@ -109,12 +109,14 @@ class Server {
   // Configure the application
   configureApplication() {
     this.app = express();
-    // this.app.use(cors({ // Use the CORS middleware for the application
-    //   origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
-    //   methods: ['GET'],
-    //   credentials: true, // Allow credentials
-    //   secure: true, // Allow secure connections
-    // }));
+
+    this.app.use(cors({ // Use the CORS middleware for the application
+      origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
+      methods: ['GET'],
+      credentials: true, // Allow credentials
+      secure: true, // Allow secure connections
+    }));
+
     this.app.use(cookieParser(process.env.SESSION_MIDDLEWARE_SECRET)); // Use the cookie parser middleware for the application
     this.app.use(this.sessionMiddleware); // Use the session middleware for the application
     console.log(`Application configured`);
@@ -158,9 +160,10 @@ class Server {
         origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
         methods: ['GET'],
         credentials: true,
+        secure: true,
       }
     });
-    
+
     // Use the shared session middleware for the Socket.IO server
     this.io.use(sharedsession(this.sessionMiddleware, {
       autoSave: true // Automatically save the session 
