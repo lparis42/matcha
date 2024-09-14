@@ -1,11 +1,12 @@
 import { useSocket } from "@/api/Socket"
 import PreviewCard from "./preview-card"
 import { useEffect, useState } from "react";
+import ItemProfile from "./item-profile";
 
 
 const DATA = [
     {
-        "id": 0,
+        "id": 1,
         "first_name": "User",
         "date_of_birth": "1990-01-01",
         "common_tags": ['Technology', 'Health', 'Business', 'Entertainment'],
@@ -15,7 +16,7 @@ const DATA = [
         "online": true
     },
     {
-        "id": 0,
+        "id": 2,
         "first_name": "User",
         "date_of_birth": "1985-05-15",
         "common_tags": ['Technology', 'Health', 'Business'],
@@ -25,7 +26,7 @@ const DATA = [
         "online": false,
     },
     {
-        "id": 0,
+        "id": 3,
         "first_name": "User",
         "date_of_birth": "1992-07-20",
         "common_tags": ['Business', 'Entertainment', 'Travel'],
@@ -35,7 +36,7 @@ const DATA = [
         "online": false,
     },
     {
-        "id": 0,
+        "id": 4,
         "first_name": "User",
         "date_of_birth": "1988-11-30",
         "common_tags": ['Technology', 'Health', 'Travel'],
@@ -45,7 +46,7 @@ const DATA = [
         "online": false,
     },
     {
-        "id": 0,
+        "id": 5,
         "first_name": "User",
         "date_of_birth": "1995-03-25",
         "common_tags": ['Religion', 'Law'],
@@ -101,7 +102,7 @@ export default function BrowseList({ filters, sortOption }: BrowseListProps) {
             //    });
             //});
             // Calculate age for each profile
-            const profilesWithAge = DATA.map(profile => ({
+            const profilesWithAge = profiles.map(profile => ({
                 ...profile,
                 age: calculateAge(profile.date_of_birth)
             }));
@@ -119,7 +120,7 @@ export default function BrowseList({ filters, sortOption }: BrowseListProps) {
     return (
         <>
         {listProfils.map((item: any, index: number) => (
-            <PreviewCard key={index} items={item} />
+            <ItemProfile key={index} items={item} />
         ))}
         </>
     )

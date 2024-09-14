@@ -6,8 +6,10 @@ import { Badge } from './ui/badge';
 import { constants } from '@/constants';
 import { BriefcaseIcon, GraduationCapIcon, HeartIcon, MapPinIcon, XIcon } from 'lucide-react';
 import { Button } from './ui/button';
+import ViewCard from './view-card';
 
 interface ProfileCardProps {
+    items: {
         id: number;
         gender: string;
         sexual_orientation: string;
@@ -20,44 +22,10 @@ interface ProfileCardProps {
         pictures: string[];
         location: string;
         fame_rating: number;
+    }
   }
 
-const PreviewCard = ({items}: ProfileCardProps) => {
-    const { eventLike } = useSocket();
-    //const [items, setItems] = useState<ProfileCardProps | undefined>(undefined);
-    const [isExpanded, setIsExpanded] = useState(false)
-
-    const toggleCard = () => {
-      setIsExpanded(!isExpanded)
-      console.log("toggle")
-    }
-
-    const handleClick = (index: number) => {
-        eventLike(index, (err, res) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(res);
-            }
-        });
-    }
-
-    //{
-    //    gender: constants.genders[0],
-    //    sexual_orientation: constants.sexual_orientations[0],
-    //    first_name: "pierre",
-    //    last_name: "semsari",
-    //    email: "",
-    //    birth_date: new Date(),
-    //    biography: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    //    interests: [ "sport", "music", "cinema", "travel", "cooking"],
-    //    pictures: ["https://placehold.co/520x520", "https://placehold.co/520x520", "https://placehold.co/520x520", "https://placehold.co/520x520", "https://placehold.co/520x520"]
-    //}
-
-    //useEffect(() => {
-
-    //    setItems(DATA[index]);
-    //}, [index]);
+const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpend: (index: number) => void;}) => {
 
     if (!items) return (
         <Card className='overflow-hidden'>
@@ -65,7 +33,7 @@ const PreviewCard = ({items}: ProfileCardProps) => {
                 <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
                 <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
                 <CarouselContent>
-                    {[...Array(7)].map((_, index) => (
+                    {[...Array(1)].map((_, index) => (
                         <CarouselItem key={index}>
                         <img src={"https://placehold.co/520x520"} alt="" />
                     </CarouselItem>))}
@@ -78,11 +46,7 @@ const PreviewCard = ({items}: ProfileCardProps) => {
     )
 
     return (
-        <Card className={`overflow-hidden cursor-pointer transition-all duration-300 ease-in-out flex flex-col h-full ${
-            isExpanded ? 'scale-110 z-10' : 'hover:scale-105 z-0'
-          }`}
-          onClick={toggleCard}
-          aria-expanded={isExpanded}>
+        <Card className={`overflow-hidden cursor-pointer transition-all duration-300 ease-in-out flex flex-col h-full hover:scale-105 z-0`}>
             <CardHeader className="p-0">
                 <Carousel>
                     <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
@@ -115,44 +79,28 @@ const PreviewCard = ({items}: ProfileCardProps) => {
                     </div>
                     <div className="flex items-center text-sm text-gray-500 mb-4">
                     <GraduationCapIcon className="mr-2 h-4 w-4" />
-                    {items?.fame_rating} / 10
+                    {items?.fame_rating}
                     </div>
                     <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
                         {items?.common_tags?.map((interest, index) => {
-                            if (!isExpanded && index > 4)
+                            if (index > 4)
                                 return null;
                             return (
                                 <Badge key={index}>
-                                    {interest}
+                                    {constants.interests[interest]}
                                 </Badge>
                             )
                             })
                         }
-                        {!isExpanded && items?.common_tags?.length > 4 && (
+                        {items?.common_tags?.length > 4 && (
                             <Badge>...</Badge>
                         )}
                     </div>
                 </div>
                 <div className='mt-auto'>
-                    {isExpanded && (
-                    <div className="mt-4">
-                        <p className="text-sm text-gray-600 mb-4">{items?.biography}</p>
-                        <div className="flex justify-between items-center">
-                        <Button className="flex-grow mr-2" onClick={(e) => { e.stopPropagation(); handleClick(items?.id); }}>
-                            <HeartIcon className="mr-2 h-4 w-4" /> Connect
-                        </Button>
-                        <Button variant="outline" onClick={(e) => { e.stopPropagation(); toggleCard(); }}>
-                            <XIcon className="h-4 w-4" />
-                            <span className="sr-only">Close</span>
-                        </Button>
-                        </div>
-                    </div>
-                    )}
-                    {!isExpanded && (
-                    <Button className="w-full">
-                        <HeartIcon className="mr-2 h-4 w-4" /> Connect
+                    <Button className="w-full" onClick={()=> {handleExpend(items.id)}}>
+                        <HeartIcon className="mr-2 h-4 w-4" /> View
                     </Button>
-                    )}
                 </div>
               </CardContent>
         </Card>

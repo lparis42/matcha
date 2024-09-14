@@ -1,7 +1,7 @@
 # TODO List
 
 browser
-- finir profile card
+- finir profile card ✅
 - sorting ✅
 - filtre ✅
 - advance research
@@ -9,8 +9,8 @@ browser
 chat
 - refaire data
 - profil card info ✅
-- profil card action button
-- chat design finish
+- profil card action button ✅
+- chat design finish ✅
 
 routing
 - signup confirmation 
@@ -19,6 +19,6 @@ routing
 
 other
 - gestion no data and error
-- logout button
+- logout button ✅
 - page likers viewers
 - responsive
