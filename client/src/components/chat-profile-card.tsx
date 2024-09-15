@@ -23,11 +23,11 @@ interface ProfileCardProps {
   }
 
 const ChatProfileCard = ({items}: ProfileCardProps) => {
-    const { eventLike } = useSocket();
+    const { eventUnLike, eventReport, eventBlock } = useSocket();
     //const [items, setItems] = useState<ProfileCardProps | undefined>(undefined);
 
-    const handleClick = (index: number) => {
-        eventLike(index, (err, res) => {
+    const handleUnLike = (index: number) => {
+        eventUnLike(index, (err, res) => {
             if (err) {
                 console.log(err);
             } else {
@@ -36,25 +36,28 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
         });
     }
 
-    //{
-    //    gender: constants.genders[0],
-    //    sexual_orientation: constants.sexual_orientations[0],
-    //    first_name: "pierre",
-    //    last_name: "semsari",
-    //    email: "",
-    //    birth_date: new Date(),
-    //    biography: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    //    interests: [ "sport", "music", "cinema", "travel", "cooking"],
-    //    pictures: ["https://placehold.co/520x520", "https://placehold.co/520x520", "https://placehold.co/520x520", "https://placehold.co/520x520", "https://placehold.co/520x520"]
-    //}
+    const handleReport = (index: number) => {
+        eventReport(index, (err, res) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(res);
+            }
+        });
+    }
 
-    //useEffect(() => {
-
-    //    setItems(DATA[index]);
-    //}, [index]);
+    const handleBlock = (index: number) => {
+        eventBlock(index, (err, res) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(res);
+            }
+        });
+    }
 
     if (!items) return (
-        <Card className='overflow-hidden'>
+        <Card className=''>
             <Carousel>
                 <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
                 <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
@@ -72,7 +75,7 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
     )
 
     return (
-        <div className={`overflow-hidden cursor-pointer transition-all duration-300 ease-in-out`}>
+        <div className={`cursor-pointer transition-all duration-300 ease-in-out`}>
             <Carousel>
                 <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
                 <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
@@ -88,24 +91,24 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
                 </CarouselContent>
             </Carousel>
             <CardContent className="p-4">
-                <h3 className="font-semibold text-lg mb-2">{items?.first_name}<br></br> {items?.last_name}</h3>
+            <h3 className="font-semibold text-lg mb-2">{items?.first_name}<br></br> {items?.last_name}</h3>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                   <MapPinIcon className="mr-2 h-4 w-4" />
                   {items?.location}
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                   <BriefcaseIcon className="mr-2 h-4 w-4" />
-                  {items?.age} years
+                  {calculateAge(items?.date_of_birth)} years
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <GraduationCapIcon className="mr-2 h-4 w-4" />
-                  {items?.fame_rating} / 10
+                  {items?.fame_rating}
                 </div>
                 <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
                     {items?.common_tags?.map((interest, index) => {
                         return (
                             <Badge key={index}>
-                                {interest}
+                                {constants.interests[interest]}
                             </Badge>
                         )
                         })
@@ -113,14 +116,20 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
                 </div>
                 <div className="mt-4">
                     <p className="text-sm text-gray-600 mb-4">{items?.biography}</p>
-                    <div className="flex justify-between items-center">
-                    <Button className="flex-grow mr-2" onClick={(e) => { e.stopPropagation(); handleClick(items?.id); }}>
-                        <HeartIcon className="mr-2 h-4 w-4" /> Connect
-                    </Button>
-                    <Button variant="outline" onClick={(e) => { e.stopPropagation(); }}>
-                        <XIcon className="h-4 w-4" />
-                        <span className="sr-only">Close</span>
-                    </Button>
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                        <Button className="flex-grow mr-2 bg-red-600" onClick={(e) => { e.stopPropagation(); handleUnLike(items?.id); }}>
+                            <HeartIcon className="mr-2 h-4 w-4" /> Unlike
+                        </Button>
+                        <Button className="flex-grow mr-2 bg-gray-500" onClick={(e) => { e.stopPropagation(); handleReport(items?.id); }}>
+                            <HeartIcon className="mr-2 h-4 w-4" /> Report as fake
+                        </Button>
+                        <Button className="flex-grow mr-2 bg-slate-900" onClick={(e) => { e.stopPropagation(); handleBlock(items?.id); }}>
+                            <HeartIcon className="mr-2 h-4 w-4" /> Block
+                        </Button>
+                        <Button variant="outline" onClick={(e) => { e.stopPropagation(); }}>
+                            <XIcon className="h-4 w-4" />
+                            <span className="sr-only">Close</span>
+                        </Button>
                     </div>
                 </div>
               </CardContent>
@@ -129,3 +138,14 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
 };
 
 export default ChatProfileCard;
+
+function calculateAge(birthDate: Date): number {
+    const convertDate = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - convertDate.getFullYear();
+    const monthDifference = today.getMonth() - convertDate.getMonth();
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < convertDate.getDate())) {
+      age--;
+    }
+    return age;
+  }

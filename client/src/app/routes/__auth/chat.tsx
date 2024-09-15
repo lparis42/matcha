@@ -17,8 +17,8 @@ const DATA = [
       "gender": "Male",
       "sexual_orientation": "Heterosexual",
       "biography": "This is a test biography for hxkvdy.",
-      "common_tags": ['Technology', 'Health', 'Business', 'Entertainment'],
-      "pictures": ["1_1725024336803_0.WebP"],
+      "common_tags": [1, 2, 4],
+      "pictures": ["1_1722959364213_0.WebP"],
       "fame_rating": 1,
       "geolocation": [40.7128, -74.0060],
       "location": "New York, USA",
@@ -194,9 +194,11 @@ export function Component ({
          : <></>}
          
         </ResizablePanel>
-        {ifViewProfile && <ResizablePanel defaultSize={defaultLayout[1]} minSize={20} maxSize={30}>
+        {ifViewProfile &&
+          <ResizablePanel defaultSize={defaultLayout[1]} minSize={20} maxSize={30} style={{overflow: 'scroll'}}>
             <ChatProfileCard items={DATA[0]}/>
-        </ResizablePanel>}
+          </ResizablePanel>
+        }
       </ResizablePanelGroup>
       </div>
       </main>

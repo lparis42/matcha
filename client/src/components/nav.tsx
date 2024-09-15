@@ -7,13 +7,18 @@ import NotifButton from "./notif-button";
 
 export function Nav() {
   const [isOpen, setIsOpen] = useState(false)
-  const [notificationCount, setNotificationCount] = useState(3) // Example count
 
   const navItems = [
     {name: 'Browse', href: '/browse'},
     {name: 'Chat', href: '/chat'},
-    {name: 'Profile', href: '/profile'}
+    {name: 'Profile', href: '/profile'},
+    {name: 'History', href: '/history'},
   ]
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    window.location.reload()
+  }
 
   return (
     <nav className="bg-background border-b">
@@ -32,7 +37,8 @@ export function Nav() {
               ))}
             </div>
           </div>
-          <div className="hidden sm:flex sm:items-center">
+          <div className="hidden sm:flex sm:items-center gap-3">
+            <Button className="h-6 bg-red-500" onClick={handleLogout}>Logout</Button>
             <NotifButton />
           </div>
           <div className="flex items-center sm:hidden">
