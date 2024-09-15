@@ -14,7 +14,7 @@ const server = new Server();
 setTimeout(async () => {
 
     // Client simulator
-    const clientCount = 1;
+    const clientCount = 10;
     if (!clientCount) {
         return console.error('ClientSimulator - Invalid client count');
     }
@@ -60,6 +60,9 @@ setTimeout(async () => {
     // Edit simulation
     console.info(`ClientSimulator - Edit simulation`);
     await process('Edit', clientSimulators);
+
+    console.info(`ClientSimulator - Logout simulation`);
+    await process('Logout', clientSimulators);
 
     console.info(`Ready`);
     console.log = originalConsoleLog;

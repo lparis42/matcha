@@ -20,5 +20,5 @@ routing
 other
 - gestion no data and error
 - logout button ✅
-- page likers viewers
+- page likers viewers (history)
 - responsive

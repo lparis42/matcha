@@ -41,8 +41,8 @@ export function Component ({
     const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
     const [isMobile, setIsMobile] = useState(false);
     const [histories, setHistories] = React.useState([]);
-    const [users, setUsers] = React.useState(userData);
-    const [selectedUser, setSelectedUser] = React.useState(userData[0]);
+    const [users, setUsers] = React.useState([]);
+    const [selectedUser, setSelectedUser] = React.useState(null);
     const { eventChatHistories, eventChat, subListenChat } = useSocket()
     const [ifViewProfile, setIfViewProfile] = useState(false)
 
@@ -97,10 +97,10 @@ export function Component ({
             setHistories(data);
             data.map((user) => {
               users.push({
-                id: user.account,
+                id: user.accounts[0],
                 avatar: `https://placehold.co/520x520`,
                 messages: transformData(user.messages),
-                name: "b2j1tm"
+                name: "name"
               })
             })
             setUsers(users)
@@ -169,17 +169,16 @@ export function Component ({
             isCollapsed && "min-w-[50px] md:min-w-[70px] transition-all duration-300 ease-in-out"
           )}
         >
-          <Sidebar
-            isCollapsed={isCollapsed || isMobile}
-            links={users.map((user) => ({
-              name: user.name,
-              messages: [],
-              avatar: user.avatar,
-              variant: selectedUser.name === user.name ? "grey" : "ghost",
-            }))}
-            
-            isMobile={isMobile}
-          />
+            <Sidebar
+              isCollapsed={isCollapsed || isMobile}
+              links={users.map((user) => ({
+                name: user.name,
+                messages: [],
+                avatar: user.avatar,
+                variant: selectedUser.name === user.name ? "grey" : "ghost",
+              }))}
+              isMobile={isMobile}
+            />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
@@ -196,7 +195,7 @@ export function Component ({
         </ResizablePanel>
         {ifViewProfile &&
           <ResizablePanel defaultSize={defaultLayout[1]} minSize={20} maxSize={30} style={{overflow: 'scroll'}}>
-            <ChatProfileCard items={DATA[0]}/>
+            <ChatProfileCard id={selectedUser.id}/>
           </ResizablePanel>
         }
       </ResizablePanelGroup>

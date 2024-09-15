@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Carousel, CarouselPrevious, CarouselNext, CarouselContent, CarouselItem } from './ui/carousel';
 import { Badge } from './ui/badge';
 import { constants } from '@/constants';
-import { BriefcaseIcon, GraduationCapIcon, HeartIcon, MapPinIcon, XIcon } from 'lucide-react';
+import { EyeIcon, GaugeIcon, MapPinIcon, UserIcon } from 'lucide-react';
 import { Button } from './ui/button';
 import ViewCard from './view-card';
 
@@ -74,11 +74,11 @@ const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpe
                     {items?.location}
                     </div>
                     <div className="flex items-center text-sm text-gray-500 mb-2">
-                    <BriefcaseIcon className="mr-2 h-4 w-4" />
+                    <UserIcon className="mr-2 h-4 w-4" />
                     {items?.age} years
                     </div>
                     <div className="flex items-center text-sm text-gray-500 mb-4">
-                    <GraduationCapIcon className="mr-2 h-4 w-4" />
+                    <GaugeIcon className="mr-2 h-4 w-4" />
                     {items?.fame_rating}
                     </div>
                     <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
@@ -99,7 +99,7 @@ const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpe
                 </div>
                 <div className='mt-auto'>
                     <Button className="w-full" onClick={()=> {handleExpend(items.id)}}>
-                        <HeartIcon className="mr-2 h-4 w-4" /> View
+                        <EyeIcon className="mr-2 h-4 w-4" /> View
                     </Button>
                 </div>
               </CardContent>

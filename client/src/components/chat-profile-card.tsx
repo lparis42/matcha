@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Carousel, CarouselPrevious, CarouselNext, CarouselContent, CarouselItem } from './ui/carousel';
 import { Badge } from './ui/badge';
 import { constants } from '@/constants';
-import { BriefcaseIcon, GraduationCapIcon, HeartIcon, MapPinIcon, XIcon } from 'lucide-react';
+import { CircleOffIcon, GaugeIcon, GhostIcon, HeartCrackIcon, MapPinIcon, UserIcon } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface ProfileCardProps {
@@ -22,9 +22,17 @@ interface ProfileCardProps {
         fame_rating: number;
   }
 
-const ChatProfileCard = ({items}: ProfileCardProps) => {
-    const { eventUnLike, eventReport, eventBlock } = useSocket();
-    //const [items, setItems] = useState<ProfileCardProps | undefined>(undefined);
+const ChatProfileCard = ({id}: {id: number}) => {
+    const { eventUnLike, eventReport, eventBlock, eventView } = useSocket();
+    const [items, setItems] = useState<ProfileCardProps | undefined>(undefined);
+
+    useEffect(() => {
+        async function fetchProfile() {
+            const [err, profile] = await eventView(id);
+            setItems(profile);
+        }
+        fetchProfile();
+    }, []);
 
     const handleUnLike = (index: number) => {
         eventUnLike(index, (err, res) => {
@@ -36,24 +44,16 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
         });
     }
 
-    const handleReport = (index: number) => {
-        eventReport(index, (err, res) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(res);
-            }
-        });
+    const handleReport = async (index: number) => {
+        const [err, res] = eventReport(index);
+        if (res)
+            console.log("report", res);
     }
 
     const handleBlock = (index: number) => {
-        eventBlock(index, (err, res) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(res);
-            }
-        });
+        const [err, res] = eventBlock(index);
+        if (res)
+            console.log("block", res);
     }
 
     if (!items) return (
@@ -97,11 +97,11 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
                   {items?.location}
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
-                  <BriefcaseIcon className="mr-2 h-4 w-4" />
+                  <UserIcon className="mr-2 h-4 w-4" />
                   {calculateAge(items?.date_of_birth)} years
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-4">
-                  <GraduationCapIcon className="mr-2 h-4 w-4" />
+                  <GaugeIcon className="mr-2 h-4 w-4" />
                   {items?.fame_rating}
                 </div>
                 <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
@@ -118,17 +118,13 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
                     <p className="text-sm text-gray-600 mb-4">{items?.biography}</p>
                     <div className="flex justify-between items-center flex-wrap gap-2">
                         <Button className="flex-grow mr-2 bg-red-600" onClick={(e) => { e.stopPropagation(); handleUnLike(items?.id); }}>
-                            <HeartIcon className="mr-2 h-4 w-4" /> Unlike
+                            <HeartCrackIcon className="mr-2 h-4 w-4" /> Unlike
                         </Button>
                         <Button className="flex-grow mr-2 bg-gray-500" onClick={(e) => { e.stopPropagation(); handleReport(items?.id); }}>
-                            <HeartIcon className="mr-2 h-4 w-4" /> Report as fake
+                            <GhostIcon className="mr-2 h-4 w-4" /> Report as fake
                         </Button>
                         <Button className="flex-grow mr-2 bg-slate-900" onClick={(e) => { e.stopPropagation(); handleBlock(items?.id); }}>
-                            <HeartIcon className="mr-2 h-4 w-4" /> Block
-                        </Button>
-                        <Button variant="outline" onClick={(e) => { e.stopPropagation(); }}>
-                            <XIcon className="h-4 w-4" />
-                            <span className="sr-only">Close</span>
+                            <CircleOffIcon className="mr-2 h-4 w-4" /> Block
                         </Button>
                     </div>
                 </div>
