@@ -10,11 +10,11 @@ browser
 - gestion multi view
 
 chat
-- chat store system
+- chat store system ✅
 - profil card info ✅
 - profil card action button ✅
 - chat design finish ✅
-- gestion block report et unlike
+- gestion block report et unlike ✅
 
 routing
 - signup confirmation 
@@ -22,6 +22,7 @@ routing
 - signin to profil
 
 other
+- popup to everything
 - gestion no data and error
 - logout button ✅
 - page likers viewers (history)
