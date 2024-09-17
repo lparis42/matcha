@@ -10,7 +10,7 @@ export function Component() {
   const { user } = useSocket();
   const { toast } = useToast();
 
-  if (user) { //
+  if (!user) { //DEVELOPEMENT: change to !user
     Navigate({ to: "/signin" });
     toast({title: "You must be logged in to access this page"});
   }

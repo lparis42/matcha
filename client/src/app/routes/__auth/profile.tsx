@@ -63,18 +63,18 @@ const interests_to_int = (interests) => {
 
 export function Component() {
     const {user, eventEdit} = useSocket();
-
+    console.log(user)
     const form = useForm<z.infer<typeof profile>>({
       resolver: zodResolver(profile),
       defaultValues: {
-        gender: constants.genders[0],
-        sexual_orientation: constants.sexual_orientations[0],
-        first_name: "",
-        last_name: "",
+        gender: user.gender || constants.genders[0],
+        sexual_orientation: user.sexual_orientation || constants.sexual_orientations[0],
+        first_name: user.first_name,
+        last_name: user.last_name,
         email: "",
         date_of_birth: new Date(),
-        biography: "",
-        common_tags: [],
+        biography: user.biography || "",
+        common_tags: user.common_tags || [],
         pictures: [null, null, null, null, null],
         geolocation: {
           lat: 48.89666602483836,

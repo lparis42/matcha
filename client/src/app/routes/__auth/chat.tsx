@@ -42,7 +42,7 @@ export function Component ({
     const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
     const [isMobile, setIsMobile] = useState(false);
     const [selectedUser, setSelectedUser] = React.useState(null);
-    const { eventChatHistories, eventChat, eventView } = useSocket()
+    const { eventChatHistories, eventChat, eventView, user } = useSocket()
     const [ifViewProfile, setIfViewProfile] = useState(false)
 
     const {usersstored, setUsersstored, addMessage} = useChatStore();
@@ -69,9 +69,9 @@ export function Component ({
       if (!err)
         addMessage(target_account, {
           id: selectedUser.messages.length,
-          avatar: `https://placehold.co/520x520`,
+          avatar: user.pictures[0] ? `https://localhost:2000/images/${user.pictures[0]}` : '',
           message: message,
-          name: ""
+          name: user.username
         })
     }
 

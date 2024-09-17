@@ -384,31 +384,37 @@ export const SocketProvider = ({ children }) => {
     return data;
   }, [socket]);
 
-  const eventViewers = useCallback((callback: (err: Error | null, message?: string) => void) => {
+  const eventViewers = useCallback(async () => {
     console.log('Emitting viewers');
-    socket.emit('client:viewers', (err: Error, message: string) => {
-      if (err) {
-        sendtoast({ title: err.message });
-        callback(err);
-      } else {
-        console.log('Success:', message);
-        callback(null, message);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:viewers', (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [socket]);
 
-  const eventLikers = useCallback((callback: (err: Error | null, message?: string) => void) => {
+  const eventLikers = useCallback(async () => {
     console.log('Emitting likers');
-    socket.emit('client:likers', (err: Error, message: string) => {
-      if (err) {
-        sendtoast({ title: err.message });
-        callback(err);
-      } else {
-        console.log('Success:', message);
-        callback(null, message);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:likers', (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
-  }, []);
+    return data;
+  }, [socket]);
 
   const eventMatch = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting Match');
@@ -524,12 +530,11 @@ export const SocketProvider = ({ children }) => {
     eventBrowsing,
     eventMatch,
     eventChatHistories,
-    //subListenChat,
     notifications,
     clearNotifications,
     eventBlock,
     eventReport,
-    log
+    user,
   }
 
   if (socket === null) {
