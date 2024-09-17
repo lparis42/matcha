@@ -28,7 +28,7 @@ async function handleClientEdit(socket, data, cb) {
         if (email && (typeof email !== 'string' || !validator.isEmail(email))) {
             throw { client: 'Invalid email', status: 400 };
         }
-        if (date_of_birth && (typeof date_of_birth !== 'string' || !validator.isDate(date_of_birth))) {
+        if (date_of_birth && (typeof date_of_birth !== 'string' || !validator.isISO8601(date_of_birth))) {
             throw { client: 'Invalid date of birth', status: 400 };
         }
         if (gender && (typeof gender !== 'string' || !structure.database.users_public.genders.includes(gender))) {

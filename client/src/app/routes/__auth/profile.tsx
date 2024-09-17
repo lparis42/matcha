@@ -72,7 +72,7 @@ export function Component() {
         first_name: "",
         last_name: "",
         email: "",
-        birth_date: new Date(),
+        date_of_birth: new Date(),
         biography: "",
         common_tags: [],
         pictures: [null, null, null, null, null],
@@ -234,7 +234,7 @@ export function Component() {
         <div>
           <FormField
             control={form.control}
-            name="birth_date"
+            name="date_of_birth"
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Date of birth</FormLabel>
