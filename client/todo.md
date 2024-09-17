@@ -1,16 +1,20 @@
 # TODO List
+profile
+- default is profile
 
 browser
 - finir profile card ✅
 - sorting ✅
 - filtre ✅
 - advance research
+- gestion multi view
 
 chat
-- refaire data
+- chat store system
 - profil card info ✅
 - profil card action button ✅
 - chat design finish ✅
+- gestion block report et unlike
 
 routing
 - signup confirmation 

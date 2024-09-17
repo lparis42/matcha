@@ -5,6 +5,7 @@ import { userData, Message, User } from '@/components/data';
 import { Sidebar } from '@/components/sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { cn } from '@/lib/utils';
+import useChatStore from '@/store';
 import React, { useEffect, useState } from 'react';
 
 const DATA = [
@@ -43,8 +44,10 @@ export function Component ({
     const [histories, setHistories] = React.useState([]);
     const [users, setUsers] = React.useState([]);
     const [selectedUser, setSelectedUser] = React.useState(null);
-    const { eventChatHistories, eventChat, subListenChat } = useSocket()
+    const { eventChatHistories, eventChat, subListenChat, eventView } = useSocket()
     const [ifViewProfile, setIfViewProfile] = useState(false)
+
+    const {usersstored, setUsersstored} = useChatStore();
 
     function transformData(data: string[]): Message[] {
       const transformed: Message[] = [];
@@ -62,14 +65,9 @@ export function Component ({
       return transformed;
     }
 
-    function sendLogic(target_account: number, message: string) {
-      eventChat(target_account, message, (err, data) => {
-        if (err) {
-          console.error(err);
-        } else {
-          console.log("retour", data)
-        }
-      })
+    async function sendLogic(target_account: number, message: string) {
+      const [err, data] = await eventChat(target_account, message)
+      return data;
     }
 
     function receiveLogic(message: string) {
@@ -91,22 +89,33 @@ export function Component ({
 
     useEffect(() => {
       eventChatHistories((err, data: any[]) => {
+
+          const set_users = async () => {
+            await Promise.all(
+              data.map(async (user) => {
+                const [err, profile] = await eventView(user.account)
+                if (profile) {
+                  users.push({
+                    id: user.account,
+                    avatar: `https://localhost:2000/images/${profile.pictures[0]}`,
+                    messages: transformData(user.messages),
+                    name: profile.username,
+                    ...profile
+                  })
+                }
+              })
+            );
+            setUsers(users)
+            setUsersstored(users)
+            setSelectedUser(users[0])
+            console.log(users)
+          }
+
           if (err) {
             console.error(err);
           } else {
             setHistories(data);
-            data.map((user) => {
-              users.push({
-                id: user.accounts[0],
-                avatar: `https://placehold.co/520x520`,
-                messages: transformData(user.messages),
-                name: "name"
-              })
-            })
-            setUsers(users)
-            setSelectedUser(users[0])
-            console.log(users[0])
-
+            set_users()
           }
       })
       const checkScreenWidth = () => {
@@ -191,11 +200,10 @@ export function Component ({
             toggleViewProfile={() => setIfViewProfile(!ifViewProfile)}
           />
          : <></>}
-         
         </ResizablePanel>
         {ifViewProfile &&
           <ResizablePanel defaultSize={defaultLayout[1]} minSize={20} maxSize={30} style={{overflow: 'scroll'}}>
-            <ChatProfileCard id={selectedUser.id}/>
+            <ChatProfileCard items={selectedUser}/>
           </ResizablePanel>
         }
       </ResizablePanelGroup>

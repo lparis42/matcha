@@ -22,17 +22,8 @@ interface ProfileCardProps {
         fame_rating: number;
   }
 
-const ChatProfileCard = ({id}: {id: number}) => {
+const ChatProfileCard = ({items}: ProfileCardProps) => {
     const { eventUnLike, eventReport, eventBlock, eventView } = useSocket();
-    const [items, setItems] = useState<ProfileCardProps | undefined>(undefined);
-
-    useEffect(() => {
-        async function fetchProfile() {
-            const [err, profile] = await eventView(id);
-            setItems(profile);
-        }
-        fetchProfile();
-    }, []);
 
     const handleUnLike = (index: number) => {
         eventUnLike(index, (err, res) => {

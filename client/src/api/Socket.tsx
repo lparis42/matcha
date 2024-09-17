@@ -313,7 +313,7 @@ export const SocketProvider = ({ children }) => {
     });
   }, [socket, user]);
 
-  const eventBrowsing = useCallback(async (browsing_start: number = 0, browsing_stop: number = 10, sort: string = "fame_rating") => {
+  const eventBrowsing = useCallback(async (browsing_start: number = 0, browsing_stop: number = 20, sort: string = "fame_rating") => {
     console.log('Emitting browse profile');
     const data: [err: Error, listProfils: object[]] = await new Promise((resolve) => {
       socket.emit('client:browsing', { browsing_start, browsing_stop, sort }, (err: Error, listProfils: object[]) => {
@@ -426,7 +426,7 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
 
-  const eventChat = useCallback((target_match: number, tosent: string, callback: (err: Error | null, message?: string) => void) => {
+  const eventChat = useCallback(async (target_match: number, tosent: string) => {
     console.log('Emitting chat');
     if (target_match === null || tosent === null)
     {
@@ -434,15 +434,18 @@ export const SocketProvider = ({ children }) => {
       tosent = Math.random().toString(36).substring(3);
     }
     console.log(target_match, tosent)
-    socket.emit('client:chat', { target_account: target_match, message: tosent }, (err: Error, message: string) => {
-      if (err) {
-        sendtoast({ title: err.message });
-        callback(err)
-      } else {
-        console.log('Success:', message);
-        callback(null, message)
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:chat', { target_account: target_match, message: tosent }, (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [socket]);
 
   const eventChatHistories = useCallback((callback: (err: Error | null, message?: string) => void) => {

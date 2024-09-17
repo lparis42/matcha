@@ -10,34 +10,58 @@ interface Message {
 
 interface User {
   id: number;
+  gender: string;
+  sexual_orientation: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  birth_date: Date;
+  biography: string;
+  interests: string[];
+  pictures: string[];
+  location: string;
+  fame_rating: number;
   avatar: string;
   messages: Message[];
   name: string;
 }
 
-interface SocketStore {
-  users: User[];
+interface ChatStore {
+  usersstored: User[];
+
+  setUsersstored: (users: User[]) => void;
   addUser: (user: User) => void;
   addMessage: (userId: number, message: Message) => void;
+
+  removeUser: (userId: number) => void;
 }
 
-const useSocketStore = create(
-  persist<SocketStore>(
+const useChatStore = create(
+  persist<ChatStore>(
     (set, get) => ({
-      users: [],
+      usersstored: [],
 
+
+      setUsersstored: (users: User[]) => {
+        set({ usersstored : users });
+      },
       addUser: (user: User) => {
         set((state) => ({
-          users: [...state.users, user],
+          usersstored: [...state.usersstored, user],
         }));
       },
       addMessage: (userId: number, message: Message) => {
         set((state) => ({
-          users: state.users.map((user) =>
+          usersstored: state.usersstored.map((user) =>
             user.id === userId
               ? { ...user, messages: [...user.messages, message] }
               : user
           ),
+        }));
+      },
+      removeUser: (userId: number) => {
+        set((state) => ({
+          usersstored: state.usersstored.filter((user) => user.id !== userId),
         }));
       },
   }),
@@ -48,4 +72,4 @@ const useSocketStore = create(
 
 ));
 
-export default useSocketStore;
+export default useChatStore;

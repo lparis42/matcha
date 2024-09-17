@@ -10,7 +10,7 @@ async function handleClientChatHistories(socket, cb) {
         
         // Find all matches of the session account
         const matches = await this.db.execute(
-            this.db.select('users_match', ['accounts', 'messages'], `accounts @> ARRAY[${session_account}]`)
+            this.db.select('users_match', [`(array_remove(accounts, ${session_account}))[1] AS account`, 'messages'], `accounts @> ARRAY[${session_account}]`)
         );
         
         if (!matches.length) {

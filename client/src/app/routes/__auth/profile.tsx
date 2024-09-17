@@ -55,6 +55,12 @@ const pictures_compress = async (file) => {
   }
 }
 
+const interests_to_int = (interests) => {
+  return interests.map((interest) => {
+    return constants.interests.indexOf(interest)
+  })
+}
+
 export function Component() {
     const {user, eventEdit} = useSocket();
 
@@ -68,7 +74,7 @@ export function Component() {
         email: "",
         birth_date: new Date(),
         biography: "",
-        interests: [],
+        common_tags: [],
         pictures: [null, null, null, null, null],
         geolocation: {
           lat: 48.89666602483836,
@@ -89,7 +95,8 @@ export function Component() {
         {
           lattitude: values.geolocation.lat,
           longitude: values.geolocation.lng
-        }}
+        },
+        common_tags: interests_to_int(values.common_tags)}
       console.log(data)
       eventEdit(data, (err, data) => {
         if (err) {
@@ -286,7 +293,7 @@ export function Component() {
         
         <FormField
             control={form.control}
-            name="interests"
+            name="common_tags"
             render={({ field }) => (
               <FormItem className="w-full">
               <FormLabel>Interests</FormLabel>
