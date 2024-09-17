@@ -32,8 +32,22 @@ interface ChatStore {
   setUsersstored: (users: User[]) => void;
   addUser: (user: User) => void;
   addMessage: (userId: number, message: Message) => void;
-
+  receiveMessage: (message: string) =>void;
   removeUser: (userId: number) => void;
+
+}
+
+function transformData (item, state: User[]) {
+  const [username, message] = item.split(':');
+  const user = state.filter((user) => user.name === username)[0]
+  console.log("USERRRR", user)
+  const result = {
+      id: user.messages.length,
+      avatar: `https://placehold.co/520x520`,
+      name: username,
+      message: message
+  };
+  return result
 }
 
 const useChatStore = create(
@@ -51,13 +65,25 @@ const useChatStore = create(
         }));
       },
       addMessage: (userId: number, message: Message) => {
-        set((state) => ({
-          usersstored: state.usersstored.map((user) =>
+        set((state) => {
+          return ({usersstored: state.usersstored.map((user) =>
             user.id === userId
-              ? { ...user, messages: [...user.messages, message] }
+              ? ({ ...user, messages: [...user.messages, message] })
               : user
-          ),
-        }));
+          )})
+        });
+      },
+      receiveMessage: (receive: string) => {
+        set((state) => {
+          const message = transformData(receive, state.usersstored);
+          return ({
+            usersstored: state.usersstored.map((user) =>
+              user.name === message.name
+              ? ({ ...user, messages: [...user.messages, message] })
+              : user
+            ),
+          })
+        })
       },
       removeUser: (userId: number) => {
         set((state) => ({

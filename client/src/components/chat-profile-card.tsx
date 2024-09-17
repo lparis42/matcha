@@ -6,6 +6,7 @@ import { Badge } from './ui/badge';
 import { constants } from '@/constants';
 import { CircleOffIcon, GaugeIcon, GhostIcon, HeartCrackIcon, MapPinIcon, UserIcon } from 'lucide-react';
 import { Button } from './ui/button';
+import useChatStore from '@/store';
 
 interface ProfileCardProps {
         id: number;
@@ -24,15 +25,12 @@ interface ProfileCardProps {
 
 const ChatProfileCard = ({items}: ProfileCardProps) => {
     const { eventUnLike, eventReport, eventBlock, eventView } = useSocket();
+    const { removeUser } = useChatStore();
 
-    const handleUnLike = (index: number) => {
-        eventUnLike(index, (err, res) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(res);
-            }
-        });
+    const handleUnLike = async (index: number) => {
+        const [err, data] = eventUnLike(index);
+        if (!err)
+            removeUser(index);
     }
 
     const handleReport = async (index: number) => {
@@ -44,7 +42,7 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
     const handleBlock = (index: number) => {
         const [err, res] = eventBlock(index);
         if (res)
-            console.log("block", res);
+            removeUser(index);
     }
 
     if (!items) return (

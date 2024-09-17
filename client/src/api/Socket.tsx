@@ -1,4 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
+import useChatStore from "@/store";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import {io, Socket} from 'socket.io-client';
@@ -85,6 +86,8 @@ export const SocketProvider = ({ children }) => {
   // const location = useLocation();
   // const navigate = useNavigate();
 
+  const {receiveMessage } = useChatStore();
+
   useEffect(() => {
     fetch('https://localhost:2000', { // To get credentials when using client dev live server
       method: 'GET',
@@ -125,7 +128,12 @@ export const SocketProvider = ({ children }) => {
 
   const eventNotifications = (notifications: any) => {
     console.log('Notifications:', notifications);
-    setNotifications(prev => [...prev, notifications]);
+    if (notifications.type === "chat")
+    {
+      eventNewMessage(notifications.message)
+    }
+    else
+      setNotifications(prev => [...prev, notifications]);
   };
 
   const clearNotifications = () => {
@@ -172,16 +180,8 @@ export const SocketProvider = ({ children }) => {
     console.log('Account:', message);
     const [err, profile] = await eventView(message.account);
     setUser(profile);
+    console.log("VIEW PROFILE", profile)
   }
-
-  useEffect(() => {
-    if (!socketConnected) {
-      return;
-    }
-    socket.emit('client:get_current_user', (response) => {
-      console.log(response);
-    });
-  }, [socketConnected]);
 
   const eventGeolocation = useCallback(() => {
     if (navigator.geolocation) {
@@ -448,17 +448,20 @@ export const SocketProvider = ({ children }) => {
     return data;
   }, [socket]);
 
-  const eventChatHistories = useCallback((callback: (err: Error | null, message?: string) => void) => {
+  const eventChatHistories = useCallback(async () => {
     console.log('Emitting chat');
-    socket.emit('client:chat_histories', (err: Error, message: string) => {
-      if (err) {
-        sendtoast({ title: err.message });
-        callback(err);
-      } else {
-        console.log('Success:', message);
-        callback(null, message);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:chat_histories', (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [socket]);
 
   const eventBlock = useCallback(async (target_account: number) => {
@@ -497,8 +500,9 @@ export const SocketProvider = ({ children }) => {
     return data;
   }, [socket]);
 
-  const eventListenChat = (data) => {
+  const eventNewMessage = (data) => {
       console.log("CHAT RCEIVED", data)
+      receiveMessage(data)
   }
 
   const socketValue = {
