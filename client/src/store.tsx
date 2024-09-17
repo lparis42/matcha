@@ -50,8 +50,8 @@ function transformData (item, state: User[]) {
   return result
 }
 
-const useChatStore = create(
-  persist<ChatStore>(
+const useChatStore = create<ChatStore>(
+  
     (set, get) => ({
       usersstored: [],
 
@@ -90,10 +90,6 @@ const useChatStore = create(
           usersstored: state.usersstored.filter((user) => user.id !== userId),
         }));
       },
-  }),
-  {
-    name: 'chat-storage',
-    getStorage: () => localStorage
   }
 
 ));

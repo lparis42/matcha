@@ -28,19 +28,19 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
     const { removeUser } = useChatStore();
 
     const handleUnLike = async (index: number) => {
-        const [err, data] = eventUnLike(index);
+        const [err, data] = await eventUnLike(index);
         if (!err)
             removeUser(index);
     }
 
     const handleReport = async (index: number) => {
-        const [err, res] = eventReport(index);
+        const [err, res] = await eventReport(index);
         if (res)
             console.log("report", res);
     }
 
-    const handleBlock = (index: number) => {
-        const [err, res] = eventBlock(index);
+    const handleBlock = async (index: number) => {
+        const [err, res] = await eventBlock(index);
         if (res)
             removeUser(index);
     }
