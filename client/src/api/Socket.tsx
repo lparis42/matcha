@@ -316,6 +316,10 @@ export const SocketProvider = ({ children }) => {
         console.log('Success:', message);
         setUser(message);
         callback(null, message);
+        // eventView(user.id).then((data) => {
+        //   if (data === null)
+        //     setUser(data[1]);
+        // });
       }
     });
   }, [socket, user]);

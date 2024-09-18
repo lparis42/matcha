@@ -71,7 +71,7 @@ export function Component() {
         sexual_orientation: user.sexual_orientation || constants.sexual_orientations[0],
         first_name: user.first_name,
         last_name: user.last_name,
-        email: "",
+        email: user.email,
         date_of_birth: new Date(),
         biography: user.biography || "",
         common_tags: user.common_tags || [],
