@@ -158,9 +158,10 @@ class Server {
         origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
         methods: ['GET'],
         credentials: true,
+        secure: true,
       }
     });
-    
+
     // Use the shared session middleware for the Socket.IO server
     this.io.use(sharedsession(this.sessionMiddleware, {
       autoSave: true // Automatically save the session 

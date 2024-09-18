@@ -74,11 +74,19 @@ const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpe
                     {items?.location}
                     </div>
                     <div className="flex items-center text-sm text-gray-500 mb-2">
+<<<<<<< HEAD
+                    <BriefcaseIcon className="mr-2 h-4 w-4" />
+                    {items?.age} years
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <GraduationCapIcon className="mr-2 h-4 w-4" />
+=======
                     <UserIcon className="mr-2 h-4 w-4" />
                     {items?.age} years
                     </div>
                     <div className="flex items-center text-sm text-gray-500 mb-4">
                     <GaugeIcon className="mr-2 h-4 w-4" />
+>>>>>>> origin/browsing
                     {items?.fame_rating}
                     </div>
                     <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
@@ -99,7 +107,11 @@ const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpe
                 </div>
                 <div className='mt-auto'>
                     <Button className="w-full" onClick={()=> {handleExpend(items.id)}}>
+<<<<<<< HEAD
+                        <HeartIcon className="mr-2 h-4 w-4" /> View
+=======
                         <EyeIcon className="mr-2 h-4 w-4" /> View
+>>>>>>> origin/browsing
                     </Button>
                 </div>
               </CardContent>

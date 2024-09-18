@@ -10,6 +10,14 @@ async function handleClientLikers(socket, cb) {
         const likers = (await this.db.execute(
             this.db.select('users_private', ['likers'], `id = '${session_account}'`)
         ))[0].likers;
+
+        // add username and profile picture
+        for (let i = 0; i < likers.length; i++) {
+            const liker_public_data = (await this.db.execute(
+                this.db.select('users_public', ['username', 'profile_picture'], `id = '${likers[i]}'`)
+            ))[0];
+            likers[i] = { id: likers[i], username: liker_public_data.username, profile_picture: liker_public_data.profile_picture };
+        }
     
         cb(null, likers);
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Request likers for account '${session_account}'`);  
