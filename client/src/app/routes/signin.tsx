@@ -2,7 +2,7 @@ import React, {useState} from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { useSocket, Login } from "@/api/Socket"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -14,6 +14,7 @@ import { z } from "zod"
 export function Component() {
 
   const { eventLogin } = useSocket();
+  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof login>>({
     resolver: zodResolver(login),
@@ -22,13 +23,12 @@ export function Component() {
       password: "",
     },
   })
- 
-  // 2. Define a submit handler.
+
   function onSubmit(values: z.infer<typeof login>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values)
-    eventLogin(values);
+    eventLogin(values).then((res) => {
+      if (!res.err)
+        navigate("/browse")
+    })
   }
 
   return (
@@ -87,23 +87,3 @@ export function Component() {
         </div>
   )
 }
-
-                    {/*<div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        placeholder=""
-                        value={data.email} onChange={(e) => handleChange(e)}
-                        required
-                    />
-                    </div>
-                    <div className="grid gap-2">
-                    <div className="flex items-center">
-                        <Label htmlFor="password">Password</Label>
-                        <Link to="#" className="ml-auto inline-block text-sm underline">
-                        Forgot your password?
-                        </Link>
-                    </div>
-                    <Input id="password" type="password" value={data.password} onChange={(e) => handleChange(e)} required />
-                    </div>*/}

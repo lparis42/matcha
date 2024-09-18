@@ -80,7 +80,6 @@ export const SocketProvider = ({ children }) => {
 
   console.log('SocketProvider');
   const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
-  const [log, setLog] = useState<boolean>(false);
   const [socketConnected, setSocketConnected] = useState<boolean>(false);
   const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
   // const location = useLocation();
@@ -217,15 +216,13 @@ export const SocketProvider = ({ children }) => {
   //  }
   // }, [socket, location, navigate]);
 
-
-
-  const eventRegistration = useCallback((data: Register) => {
+  const eventRegistration = useCallback(async (userdata: Register) => {
     if (socket === null) {
       return;
     }
     console.log('Emitting registration');
-    if (data === undefined) {
-      data = {
+    if (userdata === undefined) {
+      userdata = {
         username: username,
         password: 'testpassword',
         email: `${username}@client.com`,
@@ -234,31 +231,41 @@ export const SocketProvider = ({ children }) => {
       };
     }
 
-    socket.emit('client:registration', data, (err: Error, message: string) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:registration', userdata, (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          sendtoast({ title: "succefully register" });
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [username, socket])
 
-  const eventLogin = useCallback((data: Login) => {
+  const eventLogin = useCallback(async (userdata: Login) => {
     if (socket === null) {
       return;
     }
     console.log('Emitting login');
-    if (!data) {
-      data = { email: `${username}@client.com`, password: 'testpassword' }
+    if (!userdata) {
+      userdata = { email: `${username}@client.com`, password: 'testpassword' }
     }
-    socket.emit('client:login', data, (err: Error, message: string) => {
-      if (err) {
-        sendtoast({ title: err.message });
-      } else {
-        console.log('Success:', message);
-        setLog(true);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:login', userdata, (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          sendtoast({ title: "succefully login" });
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [username, socket]);
 
   const eventPasswordReset = useCallback(() => {

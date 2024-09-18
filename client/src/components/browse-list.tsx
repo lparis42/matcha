@@ -90,18 +90,6 @@ export default function BrowseList({ filters, sortOption }: BrowseListProps) {
     useEffect(() => {
         async function fetchProfiles() {
             const [err, profiles] = await eventBrowsing();
-            //setError(err);
-            //const data = [];
-            //[0, 1, 2, 3, 4].forEach((index) => {
-            //    eventView(index, (err, profile) => {
-            //        if (err) {
-            //            console.log(err);
-            //        } else {
-            //            setItems(profile);
-            //        }
-            //    });
-            //});
-            // Calculate age for each profile
             const profilesWithAge = profiles.map(profile => ({
                 ...profile,
                 age: calculateAge(profile.date_of_birth)

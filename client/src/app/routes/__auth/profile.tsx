@@ -21,6 +21,7 @@ import { useSocket } from "@/api/Socket";
 import imageCompression from 'browser-image-compression';
 import MapView from "@/components/map";
 import { toast } from "@/components/ui/use-toast";
+import { useEffect } from "react";
 
 const convertToBase64 = (file: File) => {
   return new Promise((resolve, reject) => {
@@ -63,7 +64,6 @@ const interests_to_int = (interests) => {
 
 export function Component() {
     const {user, eventEdit} = useSocket();
-    console.log(user)
     const form = useForm<z.infer<typeof profile>>({
       resolver: zodResolver(profile),
       defaultValues: {
@@ -84,12 +84,15 @@ export function Component() {
     })
     
     const {setValue, getValues, watch} = form
+
+    useEffect(() => {
+      const isNoPictures = (!user.pictures || user.pictures.length === 0)
+      if (isNoPictures) {
+        toast({title: "You need to upload at least one picture"})
+      }
+    }, [])
    
-    // 2. Define a submit handler.
     function onSubmit(values: z.infer<typeof profile>) {
-      // Do something with the form values.
-      // ✅ This will be type-safe and validated.
-      //edit profil
       const data = {...values,
         geolocation: 
         {

@@ -1,5 +1,4 @@
-import React, {useState} from "react";
-import { Register, useSocket } from "@/api/Socket";
+import { useSocket } from "@/api/Socket";
 
 import { Button } from '@/components/ui/button'
 import {
@@ -10,10 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-
-import { DatePicker } from '@/components/ui/datepicker'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -25,6 +21,7 @@ import { register } from "@/types";
 export function Component() {
 
     const { eventRegistration } = useSocket();
+    const navigate  = useNavigate();
 
     const form = useForm<z.infer<typeof register>>({
       resolver: zodResolver(register),
@@ -36,13 +33,12 @@ export function Component() {
         username: "",
       },
     })
-   
-    // 2. Define a submit handler.
+
     function onSubmit(values: z.infer<typeof register>) {
-      // Do something with the form values.
-      // ✅ This will be type-safe and validated.
-      console.log(values)
-      eventRegistration(values);
+      eventRegistration(values).then((res) => {
+        if (!res.err)
+        navigate("/signin")
+      }) 
     }
 
     return (
@@ -142,45 +138,3 @@ export function Component() {
         </div>
     )
   }
-
-  {/*<div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="first-name">First name</Label>
-                      <FormControl>
-                        <Input id="first_name" placeholder="Max" {form.}/>{/*value={data.first_name} onChange={(e) => handleChange(e)}
-                      </FormControl>
-                      <FormMessage />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="last-name">Last name</Label>
-                      <Input id="last_name" placeholder="Robinson" value={data.last_name} onChange={(e) => handleChange(e)}/>
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="m@example.com"
-                      value={data.email}
-                      onChange={(e) => handleChange(e)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input id="password" type="password" value={data.password} onChange={(e) => handleChange(e)} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      type="username"
-                      placeholder="username"
-                      value={data.username}
-                      onChange={(e) => handleChange(e)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="birthday">Birthday</Label>
-                    {/*<DatePicker id="date_of_birth" date={data.date_of_birth} setDate={handleDateChange}/>onClick={() => {}}handleSubmit()
-                  </div>*/}
