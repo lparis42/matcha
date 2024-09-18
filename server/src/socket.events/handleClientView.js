@@ -63,6 +63,13 @@ async function handleClientView(socket, data, cb) {
             );
         }
 
+        // Add email if it's the current account
+        if (target_account === session_account) {
+            target_public_data.email = (await this.db.execute(
+                this.db.select('users_private', ['email'], `id = '${session_account}'`)
+            ))[0].email;
+        }
+
         cb(null, target_public_data);
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Viewed profile of account '${target_account}'`);
     } catch (err) {
