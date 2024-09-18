@@ -53,6 +53,23 @@ async function handleClientLogin(socket, data, cb) {
             this.db.update('users_public', { online: true }, `id = ${account_data.id}`)
         );
 
+        // Get offline notifications
+        const notifications = await this.db.execute(
+            this.db.select('users_notification', ['data'], `account = ${session_account}`)
+        );
+        // If there are notifications
+        if (notifications.length > 0) {
+            // For each notification
+            notifications.forEach(notification => {
+                // Emit to each socket of the session
+                socket.emit('server:notification', notification.data);
+            });
+            // Clear the notifications
+            await this.db.execute(
+                this.db.delete('users_notification', `account = ${session_account}`)
+            );
+        }
+
         // Get geolocation proxy boolean
         const geolocation_proxy = (await this.db.execute(
             this.db.select('users_public', ['geolocation_proxy'], `id = ${account_data.id}`)
