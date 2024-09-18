@@ -57,6 +57,7 @@ async function handleClientLogin(socket, data, cb) {
         const notifications = await this.db.execute(
             this.db.select('users_notification', ['data'], `account = ${session_account}`)
         );
+        
         // If there are notifications
         if (notifications.length > 0) {
             // For each notification
