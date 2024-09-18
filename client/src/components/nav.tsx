@@ -30,7 +30,6 @@ export function Nav() {
                 <Link
                   key={item.name}
                   to={item.href}
-                  re
                   className="inline-flex items-center px-1 pt-1 text-sm font-medium text-foreground hover:text-primary transition-colors"
                 >
                   {item.name}
