@@ -15,11 +15,7 @@ const server = new Server();
 setTimeout(async () => {
 
     // Client simulator
-<<<<<<< HEAD
     const clientCount = 3;
-=======
-    const clientCount = 10;
->>>>>>> origin/browsing
     if (!clientCount) {
         return console.error('ClientSimulator - Invalid client count');
     }
