@@ -29,11 +29,11 @@ export const profile = z.object({
         message: "Last Name must be at least 2 characters.",
       }).max(35),
     email: z.string().min(6).max(50).email(),
-    birth_date: z.date(),
+    date_of_birth: z.date(),
     gender: z.string(z.enum(constants.genders)),
     sexual_orientation: z.string(z.enum(constants.sexual_orientations)),
     biography: z.string().min(1).max(255),
-    interests: z.array(z.string(z.enum(constants.interests))),
+    common_tags: z.array(z.string(z.enum(constants.interests))),
     pictures: z.array(z.union([z.string(), z.null()])).max(5),
     geolocation: z.object({
         lat: z.number(),

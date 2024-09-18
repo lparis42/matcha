@@ -1,3 +1,5 @@
+import { useToast } from "@/components/ui/use-toast";
+import useChatStore from "@/store";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import {io, Socket} from 'socket.io-client';
@@ -56,6 +58,8 @@ interface SocketValue {
   user: User;
   notifications: any[];
   clearNotifications: Function;
+  eventBlock: Function;
+  eventReport: Function;
 }
 
 const SocketContext = createContext(null);
@@ -72,6 +76,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const { toast } = useToast();
 
   console.log('SocketProvider');
   const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
@@ -80,6 +85,8 @@ export const SocketProvider = ({ children }) => {
   const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
   // const location = useLocation();
   // const navigate = useNavigate();
+
+  const {receiveMessage } = useChatStore();
 
   useEffect(() => {
     fetch('https://localhost:2000', { // To get credentials when using client dev live server
@@ -108,6 +115,11 @@ export const SocketProvider = ({ children }) => {
     }
   }, [socket]);
 
+  
+  const sendtoast = (message: { title: string }) => {
+    toast(message);
+  };
+
   //useEffect(() => {
   //  if (socketConnected) {
   //    eventLocationPathname();
@@ -116,7 +128,12 @@ export const SocketProvider = ({ children }) => {
 
   const eventNotifications = (notifications: any) => {
     console.log('Notifications:', notifications);
-    setNotifications(prev => [...prev, notifications]);
+    if (notifications.type === "chat")
+    {
+      eventNewMessage(notifications.message)
+    }
+    else
+      setNotifications(prev => [...prev, notifications]);
   };
 
   const clearNotifications = () => {
@@ -159,21 +176,12 @@ export const SocketProvider = ({ children }) => {
     console.error('Connection failed:', error);
   };
 
-  const eventAccount = (message) => {
+  const eventAccount = async (message) => {
     console.log('Account:', message);
-    eventView(message.account, (err, profile: User) => {
-      setUser(profile);
-    });
+    const [err, profile] = await eventView(message.account);
+    setUser(profile);
+    console.log("VIEW PROFILE", profile)
   }
-
-  useEffect(() => {
-    if (!socketConnected) {
-      return;
-    }
-    socket.emit('client:get_current_user', (response) => {
-      console.log(response);
-    });
-  }, [socketConnected]);
 
   const eventGeolocation = useCallback(() => {
     if (navigator.geolocation) {
@@ -245,7 +253,7 @@ export const SocketProvider = ({ children }) => {
     }
     socket.emit('client:login', data, (err: Error, message: string) => {
       if (err) {
-        console.error('Error:', err);
+        sendtoast({ title: err.message });
       } else {
         console.log('Success:', message);
         setLog(true);
@@ -257,7 +265,7 @@ export const SocketProvider = ({ children }) => {
     console.log('Emitting password reset');
     socket.emit('client:password_reset', { email: `${username}@client.com` }, (err: Error, message: string) => {
       if (err) {
-        console.error('Error:', err);
+        sendtoast({ title: err.message });
       } else {
         console.log('Success:', message);
       }
@@ -268,7 +276,7 @@ export const SocketProvider = ({ children }) => {
     console.log('Emitting logout');
     socket.emit('client:logout', (err: Error, message: string) => {
       if (err) {
-        console.error('Error:', err);
+        sendtoast({ title: err.message });
       } else {
         console.log('Success:', message);
         setLog(false);
@@ -281,7 +289,7 @@ export const SocketProvider = ({ children }) => {
     console.log('Emitting unregistration');
     socket.emit('client:unregistration', (err: Error, message: string) => {
       if (err) {
-        console.error('Error:', err);
+        sendtoast({ title: err.message });
       } else {
         console.log('Success:', message);
       }
@@ -293,15 +301,9 @@ export const SocketProvider = ({ children }) => {
       return;
     }
     console.log('Emitting edit profile');
-    // const userData = {
-    //   gender: 'Male',
-    //   sexual_orientation: 'Heterosexual',
-    //   biography: 'Test biography',
-    //   pictures: [null, null, null, null, null],
-    // };
     socket.emit('client:edit', userData, (err: Error, message: User) => {
       if (err) {
-        console.error('Error:', err); 
+        sendtoast({ title: err.message });
         callback(err, null);
       } else {
         console.log('Success:', message);
@@ -311,12 +313,12 @@ export const SocketProvider = ({ children }) => {
     });
   }, [socket, user]);
 
-  const eventBrowsing = useCallback(async () => {
+  const eventBrowsing = useCallback(async (browsing_start: number = 0, browsing_stop: number = 20, sort: string = "fame_rating") => {
     console.log('Emitting browse profile');
     const data: [err: Error, listProfils: object[]] = await new Promise((resolve) => {
-      socket.emit('client:browsing', { browsing_start: 0, browsing_stop: 10, sort: "fame_rating" }, (err: Error, listProfils: object[]) => {
+      socket.emit('client:browsing', { browsing_start, browsing_stop, sort }, (err: Error, listProfils: object[]) => {
           if (err) {
-              console.error('Error:', err);
+              sendtoast({ title: err.message });
               resolve([err, null]);
           } else {
               console.log('Success:', listProfils);
@@ -328,76 +330,91 @@ export const SocketProvider = ({ children }) => {
     return data;
   }, [socket]);
 
-  const eventView = useCallback((target_account: number, callback: (err: Error | null, profile?: object) => void) => {
+  const eventView = useCallback(async (target_account: number) => {
     console.log('Emitting view profile', target_account);
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
-    socket.emit('client:view', { target_account: target_account }, (err: Error, profile: object) => {
-      if (err) {
-        console.error('Error:', err);
-        callback(err);
-      } else {
-        console.log('Success:', profile);
-        callback(null, profile);
-      }
+    const data: [err: Error, profile: object] = await new Promise((resolve) => {
+      socket.emit('client:view', { target_account: target_account }, (err: Error, profile: object) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', profile);
+          resolve([null, profile]);
+        }
+      });
     });
+    return data;
   }, [socket]);
 
-  const eventLike = useCallback((target_account: number, callback: (err: Error | null, message?: string) => void) => {
-    console.log('Emitting like profile');
-    if (typeof target_account !== 'number')
-      target_account = Number(prompt("Please enter the target account:"));
-    socket.emit('client:like', { target_account: target_account }, (err: Error, message: string) => {
-      if (err) {
-        console.error('Error:', err);
-        callback(err);
-      } else {
-        console.log('Success:', message);
-        callback(null, message);
-      }
-    });
+  const eventLike = useCallback(async (target_account: number) => {
+      console.log('Emitting like profile');
+      if (typeof target_account !== 'number')
+        target_account = Number(prompt("Please enter the target account:"));
+      const data: [err: Error, message: object] = await new Promise((resolve) => {
+        socket.emit('client:like', { target_account: target_account }, (err: Error, data: object) => {
+          if (err) {
+            sendtoast({ title: err.message });
+            resolve([err, null]);
+          } else {
+            console.log('Success:', data);
+            resolve([null, data]);
+          }
+        });
+      });
+      return data;
   }, [socket]);
 
-  const eventUnLike = useCallback((target_account: number, callback: (err: Error | null, message?: string) => void) => {
+  const eventUnLike = useCallback(async (target_account: number) => {
     console.log('Emitting unlike profile');
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
-    socket.emit('client:unlike', { target_account: target_account }, (err: Error, message: string) => {
-      if (err) {
-        console.error('Error:', err);
-        callback(err);
-      } else {
-        console.log('Success:', message);
-        callback(null, message);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:unlike', { target_account: target_account }, (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [socket]);
 
-  const eventViewers = useCallback((callback: (err: Error | null, message?: string) => void) => {
+  const eventViewers = useCallback(async () => {
     console.log('Emitting viewers');
-    socket.emit('client:viewers', (err: Error, message: string) => {
-      if (err) {
-        console.error('Error:', err);
-        callback(err);
-      } else {
-        console.log('Success:', message);
-        callback(null, message);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:viewers', (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [socket]);
 
-  const eventLikers = useCallback((callback: (err: Error | null, message?: string) => void) => {
+  const eventLikers = useCallback(async () => {
     console.log('Emitting likers');
-    socket.emit('client:likers', (err: Error, message: string) => {
-      if (err) {
-        console.error('Error:', err);
-        callback(err);
-      } else {
-        console.log('Success:', message);
-        callback(null, message);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:likers', (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
-  }, []);
+    return data;
+  }, [socket]);
 
   const eventMatch = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting Match');
@@ -405,7 +422,7 @@ export const SocketProvider = ({ children }) => {
     // const message = Math.random().toString(36).substring(3);
     socket.emit('client:matchs', (err: Error, message: string) => {
       if (err) {
-        console.error('Error:', err);
+        sendtoast({ title: err.message });
         callback(err);
       } else {
         console.log('Success:', message);
@@ -415,7 +432,7 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
 
-  const eventChat = useCallback((target_match: number, tosent: string, callback: (err: Error | null, message?: string) => void) => {
+  const eventChat = useCallback(async (target_match: number, tosent: string) => {
     console.log('Emitting chat');
     if (target_match === null || tosent === null)
     {
@@ -423,32 +440,75 @@ export const SocketProvider = ({ children }) => {
       tosent = Math.random().toString(36).substring(3);
     }
     console.log(target_match, tosent)
-    socket.emit('client:chat', { target_account: target_match, message: tosent }, (err: Error, message: string) => {
-      if (err) {
-        console.error('Error:', err);
-        callback(err)
-      } else {
-        console.log('Success:', message);
-        callback(null, message)
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:chat', { target_account: target_match, message: tosent }, (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [socket]);
 
-  const eventChatHistories = useCallback((callback: (err: Error | null, message?: string) => void) => {
+  const eventChatHistories = useCallback(async () => {
     console.log('Emitting chat');
-    socket.emit('client:chat_histories', (err: Error, message: string) => {
-      if (err) {
-        console.error('Error:', err);
-        callback(err);
-      } else {
-        console.log('Success:', message);
-        callback(null, message);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:chat_histories', (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [socket]);
 
-  const eventListenChat = (data) => {
+  const eventBlock = useCallback(async (target_account: number) => {
+    console.log('Emitting block profile');
+    if (typeof target_account !== 'number')
+      target_account = Number(prompt("Please enter the target account:"));
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:block', { target_account: target_account }, (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
+    });
+    return data;
+  }, [socket]);
+
+  const eventReport = useCallback(async (target_account: number) => {
+    console.log('Emitting report profile');
+    if (typeof target_account !== 'number')
+      target_account = Number(prompt("Please enter the target account:"));
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:report', { target_account: target_account }, (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
+    });
+    return data;
+  }, [socket]);
+
+  const eventNewMessage = (data) => {
       console.log("CHAT RCEIVED", data)
+      receiveMessage(data)
   }
 
   const socketValue = {
@@ -470,10 +530,11 @@ export const SocketProvider = ({ children }) => {
     eventBrowsing,
     eventMatch,
     eventChatHistories,
-    //subListenChat,
     notifications,
     clearNotifications,
-    log
+    eventBlock,
+    eventReport,
+    user,
   }
 
   if (socket === null) {

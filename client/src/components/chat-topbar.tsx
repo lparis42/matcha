@@ -25,7 +25,6 @@ export default function ChatTopbar({selectedUser}: ChatTopbarProps) {
           </Avatar>
           <div className="flex flex-col">
             <span className="font-medium">{selectedUser.name}</span>
-            <span className="text-xs">Active 2 mins ago</span>
           </div>
         </div>
       </div>

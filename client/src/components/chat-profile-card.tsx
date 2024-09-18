@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Carousel, CarouselPrevious, CarouselNext, CarouselContent, CarouselItem } from './ui/carousel';
 import { Badge } from './ui/badge';
 import { constants } from '@/constants';
-import { BriefcaseIcon, GraduationCapIcon, HeartIcon, MapPinIcon, XIcon } from 'lucide-react';
+import { CircleOffIcon, GaugeIcon, GhostIcon, HeartCrackIcon, MapPinIcon, UserIcon } from 'lucide-react';
 import { Button } from './ui/button';
+import useChatStore from '@/store';
 
 interface ProfileCardProps {
         id: number;
@@ -23,6 +24,7 @@ interface ProfileCardProps {
   }
 
 const ChatProfileCard = ({items}: ProfileCardProps) => {
+<<<<<<< HEAD
     const { eventUnLike, eventReport, eventBlock } = useSocket();
     //const [items, setItems] = useState<ProfileCardProps | undefined>(undefined);
 
@@ -54,6 +56,27 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
                 console.log(res);
             }
         });
+=======
+    const { eventUnLike, eventReport, eventBlock, eventView } = useSocket();
+    const { removeUser } = useChatStore();
+
+    const handleUnLike = async (index: number) => {
+        const [err, data] = await eventUnLike(index);
+        if (!err)
+            removeUser(index);
+    }
+
+    const handleReport = async (index: number) => {
+        const [err, res] = await eventReport(index);
+        if (res)
+            console.log("report", res);
+    }
+
+    const handleBlock = async (index: number) => {
+        const [err, res] = await eventBlock(index);
+        if (res)
+            removeUser(index);
+>>>>>>> origin/browsing
     }
 
     if (!items) return (
@@ -97,11 +120,19 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
                   {items?.location}
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
+<<<<<<< HEAD
                   <BriefcaseIcon className="mr-2 h-4 w-4" />
                   {calculateAge(items?.date_of_birth)} years
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <GraduationCapIcon className="mr-2 h-4 w-4" />
+=======
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  {calculateAge(items?.date_of_birth)} years
+                </div>
+                <div className="flex items-center text-sm text-gray-500 mb-4">
+                  <GaugeIcon className="mr-2 h-4 w-4" />
+>>>>>>> origin/browsing
                   {items?.fame_rating}
                 </div>
                 <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
@@ -118,6 +149,7 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
                     <p className="text-sm text-gray-600 mb-4">{items?.biography}</p>
                     <div className="flex justify-between items-center flex-wrap gap-2">
                         <Button className="flex-grow mr-2 bg-red-600" onClick={(e) => { e.stopPropagation(); handleUnLike(items?.id); }}>
+<<<<<<< HEAD
                             <HeartIcon className="mr-2 h-4 w-4" /> Unlike
                         </Button>
                         <Button className="flex-grow mr-2 bg-gray-500" onClick={(e) => { e.stopPropagation(); handleReport(items?.id); }}>
@@ -129,6 +161,15 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
                         <Button variant="outline" onClick={(e) => { e.stopPropagation(); }}>
                             <XIcon className="h-4 w-4" />
                             <span className="sr-only">Close</span>
+=======
+                            <HeartCrackIcon className="mr-2 h-4 w-4" /> Unlike
+                        </Button>
+                        <Button className="flex-grow mr-2 bg-gray-500" onClick={(e) => { e.stopPropagation(); handleReport(items?.id); }}>
+                            <GhostIcon className="mr-2 h-4 w-4" /> Report as fake
+                        </Button>
+                        <Button className="flex-grow mr-2 bg-slate-900" onClick={(e) => { e.stopPropagation(); handleBlock(items?.id); }}>
+                            <CircleOffIcon className="mr-2 h-4 w-4" /> Block
+>>>>>>> origin/browsing
                         </Button>
                     </div>
                 </div>

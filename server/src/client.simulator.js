@@ -23,6 +23,7 @@ class ClientSimulator {
             biography: this.randomData('biography'),
             common_tags: this.randomData('common_tags'),
             geolocation: this.randomData('geolocation'),
+            pictures: ['1_1722959364213_0.WebP', '1_1722959364213_0.WebP'],
             account: 0,
         };
     }

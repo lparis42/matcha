@@ -23,7 +23,6 @@ export function Chat({ selectedUser, isMobile, sendLogics, toggleViewProfile }: 
 
   const sendMessage = (newMessage: Message) => {
     sendLogics(selectedUser.id, newMessage.message)
-    setMessages([...messagesState, newMessage]);
   };
 
   return (

@@ -4,11 +4,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Carousel, CarouselPrevious, CarouselNext, CarouselContent, CarouselItem } from './ui/carousel';
 import { Badge } from './ui/badge';
 import { constants } from '@/constants';
+<<<<<<< HEAD
 import { BriefcaseIcon, GraduationCapIcon, HeartIcon, MapPinIcon, XIcon } from 'lucide-react';
+=======
+import { GaugeIcon, HeartIcon, MapPinIcon, UserIcon, XIcon } from 'lucide-react';
+>>>>>>> origin/browsing
 import { Button } from './ui/button';
 
 interface ProfileCardProps {
     items: {
+<<<<<<< HEAD
+=======
+        id: number,
+>>>>>>> origin/browsing
         username: string,
         first_name: string,
         last_name: string,
@@ -29,6 +37,7 @@ interface ProfileCardProps {
 
 const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
     const { eventLike } = useSocket();
+<<<<<<< HEAD
     //const [items, setItems] = useState<ProfileCardProps | undefined>(undefined);
     console.log("PROFILE", items);
 
@@ -59,6 +68,38 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
     //        </CardHeader>
     //    </Card>
     //)
+=======
+    const [isliked, setIsLiked] = useState(false);
+    console.log("PROFILE", items);
+
+    const handleClick = async () => {
+        const [err, res] = await eventLike(items?.id);
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(res);
+            setIsLiked(true);
+        }
+    }
+
+    if (!items) return (
+        <Card className='overflow-hidden'>
+            <Carousel>
+                <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
+                <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
+                <CarouselContent>
+                    {[...Array(7)].map((_, index) => (
+                        <CarouselItem key={index}>
+                        <img src={"https://placehold.co/520x520"} alt="" />
+                    </CarouselItem>))}
+                </CarouselContent>
+            </Carousel>
+            <CardHeader className="flex justify-center p-6">
+                <CardTitle className="text-2xl">Loading...</CardTitle>
+            </CardHeader>
+        </Card>
+    )
+>>>>>>> origin/browsing
 
     return (
         <Card className={`profile overflow-hidden cursor-pointer transition-all duration-300 ease-in-out sm:col-span-2 sm:row-span-2`}>
@@ -78,16 +119,28 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
             </Carousel>
             <CardContent className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{items?.first_name}<br></br> {items?.last_name}</h3>
+<<<<<<< HEAD
+=======
+                {items?.online ? "Online" : `Last seen ${items?.last_connection}`}
+>>>>>>> origin/browsing
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                   <MapPinIcon className="mr-2 h-4 w-4" />
                   {items?.location}
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
+<<<<<<< HEAD
                   <BriefcaseIcon className="mr-2 h-4 w-4" />
                   {calculateAge(items?.date_of_birth)} years
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <GraduationCapIcon className="mr-2 h-4 w-4" />
+=======
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  {calculateAge(items?.date_of_birth)} years
+                </div>
+                <div className="flex items-center text-sm text-gray-500 mb-4">
+                  <GaugeIcon className="mr-2 h-4 w-4" />
+>>>>>>> origin/browsing
                   {items?.fame_rating}
                 </div>
                 <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
@@ -103,9 +156,17 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
                 <div className="mt-4">
                     <p className="text-sm text-gray-600 mb-4">{items?.biography}</p>
                     <div className="flex justify-between items-center">
+<<<<<<< HEAD
                     <Button className="flex-grow mr-2" onClick={(e) => { e.stopPropagation(); handleClick(items?.id); }}>
                         <HeartIcon className="mr-2 h-4 w-4" /> Connect
                     </Button>
+=======
+                    {isliked ? <Button variant="outline" disabled>Connected</Button> :
+                        <Button className="flex-grow mr-2" onClick={(e) => { e.stopPropagation(); handleClick(); }}>
+                            <HeartIcon className="mr-2 h-4 w-4" /> Connect
+                        </Button>
+                    }
+>>>>>>> origin/browsing
                     <Button variant="outline" onClick={(e) => { e.stopPropagation(); handleExpend(items?.id)}}>
                         <XIcon className="h-4 w-4" />
                         <span className="sr-only">Close</span>

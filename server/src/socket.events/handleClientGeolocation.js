@@ -2,7 +2,7 @@ const axios = require('axios');
 const geoip = require('geoip-lite');
 
 async function getAddressByGeolocation(latitude, longitude) {
-    const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+    const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=14`);
     if (response.data.error) {
         throw 'Geolocation not found';
     }

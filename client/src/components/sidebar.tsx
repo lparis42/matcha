@@ -19,11 +19,11 @@ interface SidebarProps {
     avatar: string;
     variant: "grey" | "ghost";
   }[];
-  onClick?: () => void;
+  onSelect?: (user) => void;
   isMobile: boolean;
 }
 
-export function Sidebar({ links, isCollapsed, isMobile }: SidebarProps) {
+export function Sidebar({ links, isCollapsed, onSelect, isMobile }: SidebarProps) {
   return (
     <div
       data-collapsed={isCollapsed}
@@ -51,6 +51,7 @@ export function Sidebar({ links, isCollapsed, isMobile }: SidebarProps) {
                       link.variant === "grey" &&
                         "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white"
                     )}
+                    onClick={() => onSelect(link)}
                   >
                     <Avatar className="flex justify-center items-center">
                       <AvatarImage
@@ -82,6 +83,7 @@ export function Sidebar({ links, isCollapsed, isMobile }: SidebarProps) {
                   "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white shrink",
                 "justify-start gap-4"
               )}
+              onClick={() => onSelect(link)}
             >
               <Avatar className="flex justify-center items-center">
                 <AvatarImage
