@@ -8,14 +8,14 @@ if (process.env.NODE_ENV !== 'development') { // Disable console.log in producti
 }
 const server = new Server();
 
-return;
+
 ////////////////////////////////////////
 // Client simulator ////////////////////
 ////////////////////////////////////////
 setTimeout(async () => {
 
     // Client simulator
-    const clientCount = 1;
+    const clientCount = 3;
     if (!clientCount) {
         return console.error('ClientSimulator - Invalid client count');
     }
