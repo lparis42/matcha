@@ -518,7 +518,7 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventNewMessage = (data) => {
-      console.log("CHAT RCEIVED", data)
+      console.log("CHAT RECEIVED", data)
       receiveMessage(data)
   }
 
