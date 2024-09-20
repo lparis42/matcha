@@ -23,7 +23,7 @@ class ClientSimulator {
             biography: this.randomData('biography'),
             common_tags: this.randomData('common_tags'),
             geolocation: this.randomData('geolocation'),
-            pictures: ['1_1722959364213_0.WebP', '1_1722959364213_0.WebP'],
+            pictures: ['image.png', null, null, null, null],
             account: 0,
         };
     }
@@ -53,7 +53,7 @@ class ClientSimulator {
             username: this.data.username,
             first_name: this.data.first_name,
             last_name: this.data.last_name,
-
+            pictures: this.data.pictures,
         };
         return this.emit('client:registration', data);
     }
