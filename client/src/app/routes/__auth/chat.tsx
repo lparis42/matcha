@@ -188,11 +188,7 @@ export function Component ({
         </ResizablePanel>
         {ifViewProfile &&
           <ResizablePanel defaultSize={defaultLayout[1]} minSize={20} maxSize={30} style={{overflow: 'scroll'}}>
-<<<<<<< HEAD
-            <ChatProfileCard items={DATA[0]}/>
-=======
             <ChatProfileCard items={selectedUser}/>
->>>>>>> origin/browsing
           </ResizablePanel>
         }
       </ResizablePanelGroup>

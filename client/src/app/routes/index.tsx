@@ -5,7 +5,7 @@ import App from "@/app/App";
 import { useSocket } from "@/api/Socket";
 import { Navigate } from "react-router-dom";
 
-const DEBUG = true
+const DEBUG = false
 
 export function Component() {
   const {user} = useSocket()

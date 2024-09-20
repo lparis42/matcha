@@ -27,3 +27,6 @@ other
 - logout button ✅
 - page likers viewers (history)
 - responsive
+
+confirmation page avec reset password
+/confirm

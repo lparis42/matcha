@@ -60,6 +60,7 @@ interface SocketValue {
   clearNotifications: Function;
   eventBlock: Function;
   eventReport: Function;
+  eventLocationPathname: Function;
 }
 
 const SocketContext = createContext(null);
@@ -80,11 +81,8 @@ export const SocketProvider = ({ children }) => {
 
   console.log('SocketProvider');
   const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
-  const [log, setLog] = useState<boolean>(false);
   const [socketConnected, setSocketConnected] = useState<boolean>(false);
   const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
-  // const location = useLocation();
-  // const navigate = useNavigate();
 
   const {receiveMessage } = useChatStore();
 
@@ -119,12 +117,6 @@ export const SocketProvider = ({ children }) => {
   const sendtoast = (message: { title: string }) => {
     toast(message);
   };
-
-  //useEffect(() => {
-  //  if (socketConnected) {
-  //    eventLocationPathname();
-  //  }
-  //}, [socketConnected, eventLocationPathname]);
 
   const eventNotifications = (notifications: any) => {
     console.log('Notifications:', notifications);
@@ -202,30 +194,28 @@ export const SocketProvider = ({ children }) => {
     }
   }, [socket]);
 
-  // const eventLocationPathname = useCallback(() => {
-  //  if (location.pathname === '/confirm' && location.search.includes('activation_key')) {
-  //    const activation_key = new URLSearchParams(location.search).get('activation_key');
-  //    console.log('Emitting registration confirmation:', activation_key);
-  //    socket.emit('client:registration_confirmation', { activation_key: activation_key }, (err, message) => {
-  //      if (err) {
-  //        console.error('Error:', err);
-  //      } else {
-  //        console.log('Success:', message);
-  //      }
-  //      navigate('/');
-  //    });
-  //  }
-  // }, [socket, location, navigate]);
+  const eventLocationPathname = useCallback(async (activation_key) => {
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:registration_confirmation', { activation_key: activation_key }, (err, message) => {
+        if (err) {
+          toast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          toast({ title: message });
+          resolve([null, message]);
+        }
+      });
+    });
+    return data;
+  }, [socket]);
 
-
-
-  const eventRegistration = useCallback((data: Register) => {
+  const eventRegistration = useCallback(async (userdata: Register) => {
     if (socket === null) {
       return;
     }
     console.log('Emitting registration');
-    if (data === undefined) {
-      data = {
+    if (userdata === undefined) {
+      userdata = {
         username: username,
         password: 'testpassword',
         email: `${username}@client.com`,
@@ -234,31 +224,41 @@ export const SocketProvider = ({ children }) => {
       };
     }
 
-    socket.emit('client:registration', data, (err: Error, message: string) => {
-      if (err) {
-        console.error('Error:', err);
-      } else {
-        console.log('Success:', message);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:registration', userdata, (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          sendtoast({ title: "succefully register" });
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [username, socket])
 
-  const eventLogin = useCallback((data: Login) => {
+  const eventLogin = useCallback(async (userdata: Login) => {
     if (socket === null) {
       return;
     }
     console.log('Emitting login');
-    if (!data) {
-      data = { email: `${username}@client.com`, password: 'testpassword' }
+    if (!userdata) {
+      userdata = { email: `${username}@client.com`, password: 'testpassword' }
     }
-    socket.emit('client:login', data, (err: Error, message: string) => {
-      if (err) {
-        sendtoast({ title: err.message });
-      } else {
-        console.log('Success:', message);
-        setLog(true);
-      }
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:login', userdata, (err: Error, message: string) => {
+        if (err) {
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          sendtoast({ title: "succefully login" });
+          console.log('Success:', message);
+          resolve([null, message]);
+        }
+      });
     });
+    return data;
   }, [username, socket]);
 
   const eventPasswordReset = useCallback(() => {
@@ -309,6 +309,10 @@ export const SocketProvider = ({ children }) => {
         console.log('Success:', message);
         setUser(message);
         callback(null, message);
+        // eventView(user.id).then((data) => {
+        //   if (data === null)
+        //     setUser(data[1]);
+        // });
       }
     });
   }, [socket, user]);
@@ -507,7 +511,7 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventNewMessage = (data) => {
-      console.log("CHAT RCEIVED", data)
+      console.log("CHAT RECEIVED", data)
       receiveMessage(data)
   }
 
@@ -535,6 +539,7 @@ export const SocketProvider = ({ children }) => {
     eventBlock,
     eventReport,
     user,
+    eventLocationPathname,
   }
 
   if (socket === null) {
