@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { MenuIcon, XIcon, BellIcon } from 'lucide-react'
 import NotifButton from "./notif-button";
+import { useSocket } from "@/api/Socket";
 
 export function Nav() {
   const [isOpen, setIsOpen] = useState(false)
+  const { eventLogout } = useSocket()
 
   const navItems = [
     {name: 'Browse', href: '/browse'},
@@ -17,6 +19,7 @@ export function Nav() {
 
   const handleLogout = () => {
     localStorage.removeItem('token')
+    eventLogout()
     window.location.reload()
   }
 

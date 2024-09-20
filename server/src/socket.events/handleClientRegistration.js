@@ -45,24 +45,29 @@ async function handleClientRegistration(socket, data, cb) {
         }
 
         // Send the activation link by email
-        const link = `https://localhost:${process.env.HTTPS_PORT}/confirm?activation_key=${activation_key}`;
-        await this.email.post({
-          to: email,
-          subject: 'Account registration',
-          html: `Here is the link to confirm your registration: <a href="${link}">${link}</a>`
-        });
+        if (!email.endsWith('@client.com')) {
+            const link = `https://localhost:${process.env.HTTPS_PORT_CLIENT}/confirm?activation_key=${activation_key}`;
+            console.log('link:', link);
+            await this.email.post({
+            to: email,
+            subject: 'Account registration',
+            html: `Here is the link to confirm your registration: <a href="${link}">${link}</a>`
+            });
+        }
 
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Confirmation email sent to '${email}'`);
 
         // Confirm registration for testing purposes
-        await new Promise((resolve, reject) => {
-            this.handleClientRegistrationConfirmation(socket, { activation_key }, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve();
+        if (email.endsWith('@client.com')) {
+            await new Promise((resolve, reject) => {
+                this.handleClientRegistrationConfirmation(socket, { activation_key }, (err) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve();
+                });
             });
-        });
+        }
 
         cb(null);
     } catch (err) {

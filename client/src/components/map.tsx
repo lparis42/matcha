@@ -11,8 +11,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
-const LocationMarker = ({ setSelectedPosition }) => {
+const LocationMarker = ({ setSelectedPosition, default_value }) => {
   const [position, setPosition] = useState(null);
+
+  useEffect(() => {
+    setPosition(default_value);
+  }, []);
 
   useMapEvents({
     click(e) {
@@ -27,9 +31,9 @@ const LocationMarker = ({ setSelectedPosition }) => {
 };
 
 const MapView = ({setter, default_value}) => {
-  const [selectedPosition, setSelectedPosition] = useState(null);
+  const [selectedPosition, setSelectedPosition] = useState({ lat: default_value[0], lng: default_value[1] });
+
   useEffect(() => {
-    console.log(selectedPosition);
     setter("geolocation", selectedPosition);
   }, [selectedPosition]);
 
@@ -40,7 +44,7 @@ const MapView = ({setter, default_value}) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <LocationMarker setSelectedPosition={setSelectedPosition} />
+        <LocationMarker setSelectedPosition={setSelectedPosition} default_value={default_value}/>
       </MapContainer>
       {selectedPosition && (
         <div>

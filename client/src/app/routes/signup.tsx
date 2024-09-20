@@ -37,7 +37,7 @@ export function Component() {
     function onSubmit(values: z.infer<typeof register>) {
       eventRegistration(values).then((res) => {
         if (!res.err)
-        navigate("/signin")
+          navigate("/signin")
       }) 
     }
 

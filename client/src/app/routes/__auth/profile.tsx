@@ -62,6 +62,20 @@ const interests_to_int = (interests) => {
   })
 }
 
+const interests_to_string = (interests) => {
+  return interests.map((interest) => {
+    return constants.interests[interest]
+  })
+}
+
+const prefix_pictures = (pictures) => {
+  return pictures.map((picture) => {
+    if (picture === '')
+      return null;
+    return `https://localhost:2000/images/${picture}`
+  })
+}
+
 export function Component() {
     const {user, eventEdit} = useSocket();
     const form = useForm<z.infer<typeof profile>>({
@@ -72,11 +86,12 @@ export function Component() {
         first_name: user.first_name,
         last_name: user.last_name,
         email: user.email,
-        date_of_birth: new Date(),
+        date_of_birth: user.date_of_birth ? new Date(user.date_of_birth) : new Date(),
         biography: user.biography || "",
-        common_tags: user.common_tags || [],
-        pictures: [null, null, null, null, null],
-        geolocation: {
+        common_tags: user.common_tags ? interests_to_string(user.common_tags) : [],
+        pictures: user.pictures ? prefix_pictures(user.pictures) : [null, null, null, null, null],
+        geolocation: user.geolocation ? {lat: user.geolocation[0], lng: user.geolocation[1]} :
+        {
           lat: 48.89666602483836,
           lng: 2.3183834552764897
         }
@@ -333,7 +348,7 @@ export function Component() {
         {getValues('pictures')[0] === null && <span className="text-red-500 font-medium">Almost one image is required</span>}
         <div className="flex flex-wrap gap-6 max-w-xl justify-center">
           {watch('pictures').map((file, index) => {
-              if (file === null) {
+              if (file === null || file === '') {
                 return (
                   <div key={index} className="rounded w-40 h-40 outline-4 outline-dashed outline-gray-400 select-none" onClick={() => {document.getElementById(`picture${index}`).click()}}>
                     <div className="flex items-center justify-center h-full text-gray-400">
@@ -359,7 +374,7 @@ export function Component() {
         <CardTitle>Location</CardTitle>
       </CardHeader>
       <CardContent>
-        <MapView setter={setValue} default_value={[48.8964367907082, 2.318555492854633]}/>
+        <MapView setter={setValue} default_value={user.geolocation || [48.8964367907082, 2.318555492854633]}/>
       </CardContent>
       <CardFooter>
         <Button type="submit">Save Changes</Button>

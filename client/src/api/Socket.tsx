@@ -60,6 +60,7 @@ interface SocketValue {
   clearNotifications: Function;
   eventBlock: Function;
   eventReport: Function;
+  eventLocationPathname: Function;
 }
 
 const SocketContext = createContext(null);
@@ -82,8 +83,6 @@ export const SocketProvider = ({ children }) => {
   const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
   const [socketConnected, setSocketConnected] = useState<boolean>(false);
   const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
-  // const location = useLocation();
-  // const navigate = useNavigate();
 
   const {receiveMessage } = useChatStore();
 
@@ -118,12 +117,6 @@ export const SocketProvider = ({ children }) => {
   const sendtoast = (message: { title: string }) => {
     toast(message);
   };
-
-  //useEffect(() => {
-  //  if (socketConnected) {
-  //    eventLocationPathname();
-  //  }
-  //}, [socketConnected, eventLocationPathname]);
 
   const eventNotifications = (notifications: any) => {
     console.log('Notifications:', notifications);
@@ -201,20 +194,20 @@ export const SocketProvider = ({ children }) => {
     }
   }, [socket]);
 
-  // const eventLocationPathname = useCallback(() => {
-  //  if (location.pathname === '/confirm' && location.search.includes('activation_key')) {
-  //    const activation_key = new URLSearchParams(location.search).get('activation_key');
-  //    console.log('Emitting registration confirmation:', activation_key);
-  //    socket.emit('client:registration_confirmation', { activation_key: activation_key }, (err, message) => {
-  //      if (err) {
-  //        console.error('Error:', err);
-  //      } else {
-  //        console.log('Success:', message);
-  //      }
-  //      navigate('/');
-  //    });
-  //  }
-  // }, [socket, location, navigate]);
+  const eventLocationPathname = useCallback(async (activation_key) => {
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:registration_confirmation', { activation_key: activation_key }, (err, message) => {
+        if (err) {
+          toast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          toast({ title: message });
+          resolve([null, message]);
+        }
+      });
+    });
+    return data;
+  }, [socket]);
 
   const eventRegistration = useCallback(async (userdata: Register) => {
     if (socket === null) {
@@ -546,6 +539,7 @@ export const SocketProvider = ({ children }) => {
     eventBlock,
     eventReport,
     user,
+    eventLocationPathname,
   }
 
   if (socket === null) {
