@@ -42,14 +42,14 @@ async function handleClientPasswordReset(socket, data, cb) {
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - New password sent by email to '${email}'`);
 
         // Confirm the password reset for testing purposes
-        await new Promise((resolve, reject) => {
-            this.handleClientPasswordResetConfirmation(socket, { activation_key: activation_key }, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve();
-            });
-        });     
+        // await new Promise((resolve, reject) => {
+        //     this.handleClientPasswordResetConfirmation(socket, { activation_key: activation_key }, (err) => {
+        //         if (err) {
+        //             reject(err);
+        //         }
+        //         resolve();
+        //     });
+        // });     
 
         cb(null);
     } catch (err) {

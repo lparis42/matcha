@@ -58,16 +58,16 @@ async function handleClientRegistration(socket, data, cb) {
         console.log(`\x1b[35m${socket.handshake.sessionID}\x1b[0m:\x1b[34m${socket.id}\x1b[0m - Confirmation email sent to '${email}'`);
 
         // Confirm registration for testing purposes
-        if (email.endsWith('@client.com')) {
-            await new Promise((resolve, reject) => {
-                this.handleClientRegistrationConfirmation(socket, { activation_key }, (err) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    resolve();
-                });
-            });
-        }
+        // if (email.endsWith('@client.com')) {
+        //     await new Promise((resolve, reject) => {
+        //         this.handleClientRegistrationConfirmation(socket, { activation_key }, (err) => {
+        //             if (err) {
+        //                 reject(err);
+        //             }
+        //             resolve();
+        //         });
+        //     });
+        // }
 
         cb(null);
     } catch (err) {
