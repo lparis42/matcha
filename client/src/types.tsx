@@ -33,7 +33,7 @@ export const profile = z.object({
     gender: z.string(z.enum(constants.genders)),
     sexual_orientation: z.string(z.enum(constants.sexual_orientations)),
     biography: z.string().min(1).max(255),
-    common_tags: z.array(z.string(z.enum(constants.interests))),
+    common_tags: z.array(z.string(z.enum(constants.interests))).min(1),
     pictures: z.array(z.union([z.string(), z.null()])).max(5),
     geolocation: z.object({
         lat: z.number(),

@@ -55,7 +55,7 @@ export function Component ({
           const [username, message] = item.split(':');
           transformed.push({
               id: index,
-              avatar: `https://localhost:2000/images/${profile.pictures[0]}`,
+              avatar: username === user.username ? `https://localhost:2000/images/${user.pictures[0]}` : `https://localhost:2000/images/${profile.pictures[0]}`,
               name: username,
               message: message
           });

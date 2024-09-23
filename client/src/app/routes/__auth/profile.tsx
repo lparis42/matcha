@@ -69,6 +69,12 @@ const interests_to_string = (interests) => {
 }
 
 const prefix_pictures = (pictures) => {
+  if (pictures === null) {
+    return [null, null, null, null, null]
+  }
+  if (pictures.length === 0) {
+    return [null, null, null, null, null]
+  }
   return pictures.map((picture) => {
     if (picture === '')
       return null;
@@ -89,7 +95,7 @@ export function Component() {
         date_of_birth: user.date_of_birth ? new Date(user.date_of_birth) : new Date(),
         biography: user.biography || "",
         common_tags: user.common_tags ? interests_to_string(user.common_tags) : [],
-        pictures: user.pictures ? prefix_pictures(user.pictures) : [null, null, null, null, null],
+        pictures: prefix_pictures(user.pictures),
         geolocation: user.geolocation ? {lat: user.geolocation[0], lng: user.geolocation[1]} :
         {
           lat: 48.89666602483836,
@@ -114,7 +120,8 @@ export function Component() {
           lattitude: values.geolocation.lat,
           longitude: values.geolocation.lng
         },
-        common_tags: interests_to_int(values.common_tags)}
+        common_tags: interests_to_int(values.common_tags)
+      }
       console.log(data)
       eventEdit(data, (err, data) => {
         if (err) {

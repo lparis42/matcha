@@ -2,6 +2,7 @@ import { useSocket } from "@/api/Socket"
 import PreviewCard from "./preview-card"
 import { useEffect, useState } from "react";
 import ItemProfile from "./item-profile";
+import { useToast } from "./ui/use-toast";
 
 
 const DATA = [
@@ -86,10 +87,15 @@ export default function BrowseList({ filters, sortOption }: BrowseListProps) {
     const {eventBrowsing, eventView} = useSocket()
     const [error, setError] = useState<Error | null>(null);
     const [listProfils, setListProfils] = useState<any[] | null>(null);
+    const { toast } = useToast();
 
     useEffect(() => {
         async function fetchProfiles() {
             const [err, profiles] = await eventBrowsing();
+            if (err) {
+                toast({title: err.client});
+                return;
+            }
             const profilesWithAge = profiles.map(profile => ({
                 ...profile,
                 age: calculateAge(profile.date_of_birth)

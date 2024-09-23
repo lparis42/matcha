@@ -43,7 +43,7 @@ function transformData (item, state: User[]) {
   console.log("USERRRR", user)
   const result = {
       id: user.messages.length,
-      avatar: `https://placehold.co/520x520`,
+      avatar: `https://localhost:2000/images/${user.pictures[0]}`,
       name: username,
       message: message
   };
