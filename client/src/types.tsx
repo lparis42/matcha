@@ -4,10 +4,10 @@ import { constants } from './constants'
 export const register = z.object({
     first_name: z.string().min(2, {
         message: "Fisrt Name must be at least 2 characters.",
-      }).max(35),
+      }).max(35).regex(/^[A-Za-z]+$/, { message: "First Name must contain only letters." }),
     last_name: z.string().min(2, {
         message: "Last Name must be at least 2 characters.",
-      }).max(35),
+      }).max(35).regex(/^[A-Za-z]+$/, { message: "First Name must contain only letters." }),
     email: z.string().min(6).max(50).email(),
     password: z.string().min(8).max(20),
     username: z.string().min(4).max(20),

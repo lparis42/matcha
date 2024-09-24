@@ -1,4 +1,4 @@
-import React, {useState} from "react"
+import React, {useEffect, useState} from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -13,8 +13,13 @@ import { z } from "zod"
 
 export function Component() {
 
-  const { eventLogin } = useSocket();
+  const { eventLogin, user } = useSocket();
   const navigate = useNavigate();
+
+  useEffect(()=>{
+    if (user)
+      navigate("/browse")
+  },[user])
 
   const form = useForm<z.infer<typeof login>>({
     resolver: zodResolver(login),
@@ -26,7 +31,7 @@ export function Component() {
 
   function onSubmit(values: z.infer<typeof login>) {
     eventLogin(values).then((res) => {
-      if (!res.err)
+      if (!res[0])
         navigate("/browse")
     })
   }

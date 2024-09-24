@@ -69,9 +69,10 @@ const interests_to_string = (interests) => {
 }
 
 const prefix_pictures = (pictures) => {
-  if (pictures === null) {
+  if (pictures === null || pictures === undefined) {
     return [null, null, null, null, null]
   }
+  console.log(pictures)
   if (pictures.length === 0) {
     return [null, null, null, null, null]
   }
@@ -100,7 +101,7 @@ export function Component() {
         {
           lat: 48.89666602483836,
           lng: 2.3183834552764897
-        }
+        } 
       },
     })
     
@@ -129,6 +130,7 @@ export function Component() {
         } else {
           toast({title: "Profile updated successfully"})
           console.log("retour", data)
+          location.reload()
         }
       })
     }

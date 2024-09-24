@@ -230,7 +230,7 @@ export const SocketProvider = ({ children }) => {
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
-          sendtoast({ title: "succefully register" });
+          sendtoast({ title: "succefully register, validate your account with the link in email !" });
           resolve([null, message]);
         }
       });
@@ -310,7 +310,7 @@ export const SocketProvider = ({ children }) => {
         setUser(message);
         callback(null, message);
         // eventView(user.id).then((data) => {
-        //   if (data === null)
+        //   if (data !== null)
         //     setUser(data[1]);
         // });
       }

@@ -16,12 +16,18 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { register } from "@/types";
+import { useEffect } from "react";
 
 
 export function Component() {
 
-    const { eventRegistration } = useSocket();
+    const { eventRegistration, user } = useSocket();
     const navigate  = useNavigate();
+
+    useEffect(()=>{
+      if (user)
+        navigate("/browse")
+    },[user])
 
     const form = useForm<z.infer<typeof register>>({
       resolver: zodResolver(register),
@@ -35,10 +41,7 @@ export function Component() {
     })
 
     function onSubmit(values: z.infer<typeof register>) {
-      eventRegistration(values).then((res) => {
-        if (!res.err)
-          navigate("/signin")
-      }) 
+      eventRegistration(values)
     }
 
     return (
