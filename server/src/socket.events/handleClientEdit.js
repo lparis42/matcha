@@ -47,8 +47,12 @@ async function handleClientEdit(socket, data, cb) {
             if (!Array.isArray(pictures) || pictures.length !== 5) {
                 throw { client: 'Invalid pictures A', status: 400 };
             }
-            await Promise.all(pictures.map(async (base64Image) => {
+            await Promise.all(pictures.map(async (base64Image, index) => {
                 if (!base64Image) {
+                    return;
+                }
+                console.log(base64Image)
+                if (fs.existsSync(path.join(path.resolve('..'), 'images', `${base64Image}`))) {
                     return;
                 }
                 try {
@@ -72,7 +76,21 @@ async function handleClientEdit(socket, data, cb) {
             if (pictures) {
                 const filenames = new Array(5).fill("");
                 await Promise.all(pictures.map(async (image, index) => {
-                    if (!image) {
+                    if (account_public_data.pictures[index] === image)
+                    {
+                        filenames[index] = image
+                        return;
+                    }
+                    if (image === null)
+                    {
+                        image = ''
+                        if (account_public_data.pictures[index])
+                        {
+                            const oldImagePath = path.join(path.resolve('..'), 'images', account_public_data.pictures[index]);
+                            await fs.promises.unlink(oldImagePath).catch(err => {
+                                if (err.code !== 'ENOENT') throw err;
+                            });
+                        }
                         return;
                     }
                     filenames[index] = `${session_account}_${Date.now()}_${index}.WebP`;

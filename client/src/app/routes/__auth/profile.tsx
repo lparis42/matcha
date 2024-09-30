@@ -79,7 +79,7 @@ const prefix_pictures = (pictures) => {
   return pictures.map((picture) => {
     if (picture === '')
       return null;
-    return `https://localhost:2000/images/${picture}`
+    return `${picture}`
   })
 }
 
@@ -370,9 +370,9 @@ export function Component() {
               return (
                 <div key={index} className="rounded w-40 h-40 outline-4 outline outline-gray-400 select-none relative">
                   <div className="absolute -right-3 -top-3 w-5 h-5" onClick={() => onDeletePicture(index)}>
-                    <XCircle className="w-5 h-5 text-red-500" fill="#fff"/>
+                  <XCircle className="w-5 h-5 text-red-500" fill="#fff"/>
                   </div>
-                  <img src={file} alt="Preview" className="rounded w-40 h-40 object-cover"/>
+                  <img src={file.startsWith('data') ? file : 'https://localhost:2000/images/' + file} alt="Preview" className="rounded w-40 h-40 object-cover"/>
                 </div>
               )
             }
