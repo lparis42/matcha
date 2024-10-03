@@ -18,9 +18,6 @@ export const login = z.object({
     password: z.string().max(60)
 })
 
-
-//const editable_fields = ['first_name', 'last_name', 'email', 'date_of_birth', 'gender', 'sexual_orientation', 'biography', 'interests', 'pictures', 'geolocation'];
-
 export const profile = z.object({
     first_name: z.string().min(2, {
         message: "Fisrt Name must be at least 2 characters.",
@@ -41,3 +38,8 @@ export const profile = z.object({
     })
 })
 
+export enum AuthStatus {
+  Unknown,
+  Authenticated,
+  Guest,
+}

@@ -95,3 +95,17 @@ const useChatStore = create<ChatStore>(
 ));
 
 export default useChatStore;
+
+export const useAccountStore = create(
+  persist(
+    combine(
+      {
+        account: null as undefined | null | User,
+      },
+      (set) => ({
+        setAccount: (account: User | null) => set({ account }),
+      })
+    ),
+    { name: "account" }
+  )
+);

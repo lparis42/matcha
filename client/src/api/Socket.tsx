@@ -161,6 +161,7 @@ export const SocketProvider = ({ children }) => {
 
   const eventSocketDisconnect = () => {
     console.log('Socket disconnected');
+    toast({ title: 'Socket disconnected' });
     setSocketConnected(false);
   };
 
