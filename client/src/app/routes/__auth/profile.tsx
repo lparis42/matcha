@@ -22,6 +22,7 @@ import imageCompression from 'browser-image-compression';
 import MapView from "@/components/map";
 import { toast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
+import { useAccount } from "@/hook/useAccount";
 
 const convertToBase64 = (file: File) => {
   return new Promise((resolve, reject) => {
@@ -52,7 +53,7 @@ const pictures_compress = async (file) => {
     return base64;
   }
   catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -72,7 +73,6 @@ const prefix_pictures = (pictures) => {
   if (pictures === null || pictures === undefined) {
     return [null, null, null, null, null]
   }
-  console.log(pictures)
   if (pictures.length === 0) {
     return [null, null, null, null, null]
   }
@@ -84,7 +84,9 @@ const prefix_pictures = (pictures) => {
 }
 
 export function Component() {
-    const {user, eventEdit} = useSocket();
+    const { account: user } = useAccount();
+    
+    const {eventEdit} = useSocket();
     const form = useForm<z.infer<typeof profile>>({
       resolver: zodResolver(profile),
       defaultValues: {
@@ -123,13 +125,11 @@ export function Component() {
         },
         common_tags: interests_to_int(values.common_tags)
       }
-      console.log(data)
       eventEdit(data, (err, data) => {
         if (err) {
           console.error(err);
         } else {
           toast({title: "Profile updated successfully"})
-          console.log("retour", data)
           location.reload()
         }
       })
@@ -140,9 +140,7 @@ export function Component() {
       
       const prevFiles = getValues('pictures')
       const prev = prevFiles.findIndex((file) => file === null)
-      console.log(file)
       prevFiles[prev] = await pictures_compress(file)
-      console.log(prevFiles[prev])
       setValue('pictures', prevFiles)
     }
 

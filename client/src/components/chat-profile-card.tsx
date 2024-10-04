@@ -7,6 +7,7 @@ import { constants } from '@/constants';
 import { CircleOffIcon, GaugeIcon, GhostIcon, HeartCrackIcon, MapPinIcon, UserIcon } from 'lucide-react';
 import { Button } from './ui/button';
 import useChatStore from '@/store';
+import { toast } from './ui/use-toast';
 
 interface ProfileCardProps {
         id: number;
@@ -36,7 +37,7 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
     const handleReport = async (index: number) => {
         const [err, res] = await eventReport(index);
         if (res)
-            console.log("report", res);
+            toast({title : "User has been reported"});
     }
 
     const handleBlock = async (index: number) => {

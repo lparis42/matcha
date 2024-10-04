@@ -11,14 +11,12 @@ export function Component() {
             const [err, data] = await eventViewers()
             if (!err) {
                 setViewers(data)
-                console.log("viewers", data)
             }
         }
         const fetchLikers = async () => {
             const [err, data] = await eventLikers()
             if (!err) {
                 setLikers(data)
-                console.log("likers", data)
             }
         }
         fetchViewers()

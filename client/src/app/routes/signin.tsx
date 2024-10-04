@@ -10,16 +10,18 @@ import { login } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { useAuth } from "@/hook/useAuth"
 
 export function Component() {
 
-  const { eventLogin, user } = useSocket();
+  const { status } = useAuth();
+  const { eventLogin } = useSocket();
   const navigate = useNavigate();
 
   useEffect(()=>{
-    if (user)
+    if (status === "Authenticated")
       navigate("/browse")
-  },[user])
+  },[status])
 
   const form = useForm<z.infer<typeof login>>({
     resolver: zodResolver(login),

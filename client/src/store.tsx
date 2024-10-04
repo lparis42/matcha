@@ -94,8 +94,6 @@ const useChatStore = create<ChatStore>(
 
 ));
 
-export default useChatStore;
-
 export const useAccountStore = create(
   persist(
     combine(
@@ -109,3 +107,6 @@ export const useAccountStore = create(
     { name: "account" }
   )
 );
+
+export default useChatStore;
+

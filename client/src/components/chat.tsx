@@ -17,7 +17,6 @@ export function Chat({ selectedUser, isMobile, sendLogics, toggleViewProfile }: 
   const [messagesState, setMessages] = React.useState<Message[]>(selectedUser.messages ?? []);
 
   useEffect(() => {
-    console.log("in chat:", selectedUser)
     setMessages(selectedUser.messages)
   }, [selectedUser]);
 

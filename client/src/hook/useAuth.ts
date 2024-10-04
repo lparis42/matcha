@@ -1,5 +1,4 @@
-import { useAccountStore } from "../store.ts";
-import { useCallback } from "react";
+import { useAccountStore } from "../../src/store";
 
 export enum AuthStatus {
     Unknown,
@@ -9,6 +8,7 @@ export enum AuthStatus {
 
 export function useAuth() {
   const { account, setAccount } = useAccountStore();
+
   let status;
   switch (account) {
     case null:
@@ -22,23 +22,9 @@ export function useAuth() {
       break;
   }
 
-  const authenticate = useCallback(() => {
-    
-  }, []);
-
-  const login = useCallback((username: string, password: string) => {
-    
-  }, []);
-
-  const logout = useCallback(() => {
-    
-  }, []);
-
   return {
     account,
     status,
-    authenticate,
-    login,
-    logout,
+    setAccount
   };
 }

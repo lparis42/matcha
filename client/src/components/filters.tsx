@@ -18,7 +18,7 @@ export default function Filters ({ onFiltersChange }: FiltersProps) {
 
     useEffect(() => {
         onFiltersChange({ ageRange, kmRange, interests, isSuggested });
-    }, [ageRange, kmRange, interests, isSuggested, onFiltersChange]);
+    }, [ageRange, kmRange, interests, isSuggested]);
 
     return (
         <div className="w-full md:w-1/4 space-y-6">

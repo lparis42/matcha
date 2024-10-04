@@ -1,4 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hook/useAuth";
 import useChatStore from "@/store";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -76,11 +77,11 @@ export const useSocket = (): SocketValue => {
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const { setAccount } = useAuth();
   const [notifications, setNotifications] = useState<any[]>([]);
   const { toast } = useToast();
 
-  console.log('SocketProvider');
-  const [username, setUsername] = useState<string>((Math.random().toString(36)).slice(2, 8));
+  console.log('SocketProvider render');
   const [socketConnected, setSocketConnected] = useState<boolean>(false);
   const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
 
@@ -91,8 +92,9 @@ export const SocketProvider = ({ children }) => {
       method: 'GET',
       credentials: 'include',
     }).then(() => {
+      console.log('Fetched');
       setSocket(io('https://localhost:2000', {
-        secure: false,
+        secure: true,
         reconnection: true,
         rejectUnauthorized: true,
         withCredentials: true,
@@ -103,10 +105,10 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    console.log('SocketProvider useEffect');
     if (socket !== null) {
-      socket.connect();
       socket.on('connect', eventSocketConnect);
+      socket.connect();
+      console.log('Socket connection');
       return () => {
         socket.off('connect');
       };
@@ -119,7 +121,6 @@ export const SocketProvider = ({ children }) => {
   };
 
   const eventNotifications = (notifications: any) => {
-    console.log('Notifications:', notifications);
     if (notifications.type === "chat")
     {
       eventNewMessage(notifications.message)
@@ -143,7 +144,6 @@ export const SocketProvider = ({ children }) => {
     socket.on('connect_error', eventSocketError);
     socket.on('server:account', eventAccount);
 
-    setSocketConnected(true);
     console.log('Socket connected');
 
     return () => {
@@ -170,10 +170,9 @@ export const SocketProvider = ({ children }) => {
   };
 
   const eventAccount = async (message) => {
-    console.log('Account:', message);
     const [err, profile] = await eventView(message.account);
-    setUser(profile);
-    console.log("VIEW PROFILE", profile)
+    setAccount(profile);
+    console.log("Account", profile)
   }
 
   const eventGeolocation = useCallback(() => {
@@ -215,15 +214,6 @@ export const SocketProvider = ({ children }) => {
       return;
     }
     console.log('Emitting registration');
-    if (userdata === undefined) {
-      userdata = {
-        username: username,
-        password: 'testpassword',
-        email: `${username}@client.com`,
-        last_name: 'Test',
-        first_name: 'User'
-      };
-    }
 
     const data: [err: Error, message: string] = await new Promise((resolve) => {
       socket.emit('client:registration', userdata, (err: Error, message: string) => {
@@ -237,16 +227,13 @@ export const SocketProvider = ({ children }) => {
       });
     });
     return data;
-  }, [username, socket])
+  }, [socket])
 
   const eventLogin = useCallback(async (userdata: Login) => {
     if (socket === null) {
       return;
     }
     console.log('Emitting login');
-    if (!userdata) {
-      userdata = { email: `${username}@client.com`, password: 'testpassword' }
-    }
     const data: [err: Error, message: string] = await new Promise((resolve) => {
       socket.emit('client:login', userdata, (err: Error, message: string) => {
         if (err) {
@@ -254,24 +241,24 @@ export const SocketProvider = ({ children }) => {
           resolve([err, null]);
         } else {
           sendtoast({ title: "succefully login" });
-          console.log('Success:', message);
           resolve([null, message]);
         }
       });
     });
     return data;
-  }, [username, socket]);
+  }, [socket]);
 
-  const eventPasswordReset = useCallback(() => {
-    console.log('Emitting password reset');
-    socket.emit('client:password_reset', { email: `${username}@client.com` }, (err: Error, message: string) => {
-      if (err) {
-        sendtoast({ title: err.message });
-      } else {
-        console.log('Success:', message);
-      }
-    });
-  }, [username]);
+  //to do
+  //const eventPasswordReset = useCallback(() => {
+  //  console.log('Emitting password reset');
+  //  socket.emit('client:password_reset', { email: `${account}` }, (err: Error, message: string) => {
+  //    if (err) {
+  //      sendtoast({ title: err.message });
+  //    } else {
+  //      sendtoast({ title: 'password reset succefully, clic the link' });
+  //    }
+  //  });
+  //}, [username]);
 
   const eventLogout = useCallback(() => {
     console.log('Emitting logout');
@@ -279,9 +266,7 @@ export const SocketProvider = ({ children }) => {
       if (err) {
         sendtoast({ title: err.message });
       } else {
-        console.log('Success:', message);
-        setLog(false);
-        setUser(null);
+        setAccount(null);
       }
     });
   }, [socket]);
@@ -292,7 +277,7 @@ export const SocketProvider = ({ children }) => {
       if (err) {
         sendtoast({ title: err.message });
       } else {
-        console.log('Success:', message);
+        sendtoast({ title: 'unregistration succefully' });
       }
     });
   }, []);
@@ -307,13 +292,8 @@ export const SocketProvider = ({ children }) => {
         sendtoast({ title: err.message });
         callback(err, null);
       } else {
-        console.log('Success:', message);
-        setUser(message);
+        setAccount(message);
         callback(null, message);
-        // eventView(user.id).then((data) => {
-        //   if (data !== null)
-        //     setUser(data[1]);
-        // });
       }
     });
   }, [socket, user]);
@@ -326,17 +306,14 @@ export const SocketProvider = ({ children }) => {
               sendtoast({ title: err.message });
               resolve([err, null]);
           } else {
-              console.log('Success:', listProfils);
               resolve([null, listProfils]);
           }
       });
     });
-    console.log('Data:', data);
     return data;
   }, [socket]);
 
   const eventView = useCallback(async (target_account: number) => {
-    console.log('Emitting view profile', target_account);
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
     const data: [err: Error, profile: object] = await new Promise((resolve) => {
@@ -345,7 +322,6 @@ export const SocketProvider = ({ children }) => {
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
-          console.log('Success:', profile);
           resolve([null, profile]);
         }
       });
@@ -363,7 +339,6 @@ export const SocketProvider = ({ children }) => {
             sendtoast({ title: err.message });
             resolve([err, null]);
           } else {
-            console.log('Success:', data);
             resolve([null, data]);
           }
         });
@@ -381,7 +356,6 @@ export const SocketProvider = ({ children }) => {
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
-          console.log('Success:', message);
           resolve([null, message]);
         }
       });
@@ -397,7 +371,6 @@ export const SocketProvider = ({ children }) => {
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
-          console.log('Success:', message);
           resolve([null, message]);
         }
       });
@@ -413,7 +386,6 @@ export const SocketProvider = ({ children }) => {
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
-          console.log('Success:', message);
           resolve([null, message]);
         }
       });
@@ -430,7 +402,6 @@ export const SocketProvider = ({ children }) => {
         sendtoast({ title: err.message });
         callback(err);
       } else {
-        console.log('Success:', message);
         callback(null, message);
       }
     });
@@ -444,14 +415,12 @@ export const SocketProvider = ({ children }) => {
       target_match = Number(prompt("Please enter the target account:"));
       tosent = Math.random().toString(36).substring(3);
     }
-    console.log(target_match, tosent)
     const data: [err: Error, message: string] = await new Promise((resolve) => {
       socket.emit('client:chat', { target_account: target_match, message: tosent }, (err: Error, message: string) => {
         if (err) {
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
-          console.log('Success:', message);
           resolve([null, message]);
         }
       });
@@ -460,14 +429,13 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventChatHistories = useCallback(async () => {
-    console.log('Emitting chat');
+    console.log('Emitting chat histories');
     const data: [err: Error, message: string] = await new Promise((resolve) => {
       socket.emit('client:chat_histories', (err: Error, message: string) => {
         if (err) {
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
-          console.log('Success:', message);
           resolve([null, message]);
         }
       });
@@ -485,7 +453,6 @@ export const SocketProvider = ({ children }) => {
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
-          console.log('Success:', message);
           resolve([null, message]);
         }
       });
@@ -503,7 +470,6 @@ export const SocketProvider = ({ children }) => {
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
-          console.log('Success:', message);
           resolve([null, message]);
         }
       });
@@ -512,7 +478,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventNewMessage = (data) => {
-      console.log("CHAT RECEIVED", data)
       receiveMessage(data)
   }
 
@@ -522,7 +487,7 @@ export const SocketProvider = ({ children }) => {
     geolocation,
     eventRegistration,
     eventLogin,
-    eventPasswordReset,
+    //eventPasswordReset,
     eventLogout,
     eventUnregistration,
     eventEdit,

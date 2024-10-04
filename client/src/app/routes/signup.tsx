@@ -17,17 +17,19 @@ import { z } from "zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { register } from "@/types";
 import { useEffect } from "react";
+import { useAuth } from "@/hook/useAuth";
 
 
 export function Component() {
 
-    const { eventRegistration, user } = useSocket();
+    const { status } = useAuth();
+    const { eventRegistration } = useSocket();
     const navigate  = useNavigate();
 
     useEffect(()=>{
-      if (user)
+      if (status === "Authenticated")
         navigate("/browse")
-    },[user])
+    },[status])
 
     const form = useForm<z.infer<typeof register>>({
       resolver: zodResolver(register),

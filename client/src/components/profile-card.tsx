@@ -31,14 +31,12 @@ interface ProfileCardProps {
 const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
     const { eventLike } = useSocket();
     const [isliked, setIsLiked] = useState(false);
-    console.log("PROFILE", items);
 
     const handleClick = async () => {
         const [err, res] = await eventLike(items?.id);
         if (err) {
             console.log(err);
         } else {
-            console.log(res);
             setIsLiked(true);
         }
     }

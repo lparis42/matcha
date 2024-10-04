@@ -4,6 +4,7 @@ import ChatProfileCard from '@/components/chat-profile-card';
 import { userData, Message, User } from '@/components/data';
 import { Sidebar } from '@/components/sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import useChatStore from '@/store';
 import React, { useEffect, useState } from 'react';
@@ -46,11 +47,9 @@ export function Component ({
     const [ifViewProfile, setIfViewProfile] = useState(false)
 
     const {usersstored, setUsersstored, addMessage} = useChatStore();
-    console.log("USERSSTORED", usersstored)
 
     function transformData(data: string[], profile): Message[] {
       const transformed: Message[] = [];
-      console.log(profile)
       data.forEach((item, index) => {
           const [username, message] = item.split(':');
           transformed.push({
@@ -97,11 +96,10 @@ export function Component ({
           );
           setUsersstored(users)
           setSelectedUser(users[0])
-          console.log(users)
         }
 
         if (err) {
-          console.error(err);
+          toast({title: err.message})
         } else {
           await set_users()
         }
