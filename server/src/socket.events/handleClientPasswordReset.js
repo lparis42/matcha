@@ -31,7 +31,9 @@ async function handleClientPasswordReset(socket, data, cb) {
         );
 
         // Send the new password by email
-        const link = `https://localhost:${process.env.HTTPS_PORT}/confirm?activation_key=${activation_key}`;
+        const link = `https://localhost:${process.env.HTTPS_PORT_CLIENT}/confirmpw?activation_key=${activation_key}`;
+        console.log('link:', link);
+
         await this.email.post({
             from: 'email@server.com',
             to: email,

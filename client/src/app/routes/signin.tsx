@@ -11,11 +11,12 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { AuthStatus, useAuth } from "@/hook/useAuth"
+import { toast } from "@/components/ui/use-toast"
 
 export function Component() {
 
   const { status } = useAuth();
-  const { eventLogin } = useSocket();
+  const { eventLogin, eventPasswordReset } = useSocket();
   const navigate = useNavigate();
 
   useEffect(()=>{
@@ -37,6 +38,8 @@ export function Component() {
         navigate("/browse")
     })
   }
+
+  const {getValues} = form
 
   return (
     <div className="flex items-center justify-center h-screen">
@@ -88,7 +91,16 @@ export function Component() {
                     </Link>
                 </div>
                 </form>
+                <Button className="w-full" onClick={()=>{
+                  const email = getValues('email')
+                  console.log(email)
+                  if (!email)
+                    toast({title: "first type your email in the field Email"})
+                  else
+                    eventPasswordReset(email)
+                  }}> Reset Password </Button>
                 </Form>
+
                 </CardContent>
             </Card>
         </div>

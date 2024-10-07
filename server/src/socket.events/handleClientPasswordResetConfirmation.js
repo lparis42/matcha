@@ -27,6 +27,7 @@ async function handleClientPasswordResetConfirmation(socket, data, cb) {
             subject: 'New password',
             html: `Here is your new password: ${new_password}`
         });
+        console.log(new_password)
 
         // Update the password in the database
         const hash_password = await bcrypt.hash(new_password, 10);

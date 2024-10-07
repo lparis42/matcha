@@ -1,4 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
+import { useAccount } from "@/hook/useAccount";
 import { useAuth } from "@/hook/useAuth";
 import useChatStore from "@/store";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
@@ -56,12 +57,12 @@ interface SocketValue {
   eventMatch: Function;
   eventChatHistories: Function;
   subListenChat: Function;
-  user: User;
   notifications: any[];
   clearNotifications: Function;
   eventBlock: Function;
   eventReport: Function;
   eventLocationPathname: Function;
+  eventLocationPathnamePW: Function;
   eventGeolocation: Function;
 }
 
@@ -77,8 +78,7 @@ export const useSocket = (): SocketValue => {
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const { setAccount } = useAuth();
+  const { setAccount, account } = useAuth();
   const [notifications, setNotifications] = useState<any[]>([]);
   const { toast } = useToast();
 
@@ -89,26 +89,41 @@ export const SocketProvider = ({ children }) => {
   const {receiveMessage } = useChatStore();
 
   useEffect(() => {
+    try {
     fetch('https://localhost:2000', {
       method: 'GET',
       credentials: 'include',
     }).then(() => {
       console.log('Fetched');
+      try {
       setSocket(io('https://localhost:2000', {
         secure: true,
         reconnection: true,
         rejectUnauthorized: true,
         withCredentials: true,
-      }));
+      }));}
+      catch (e)
+      {
+        toast({title: e})
+      }
     }).catch(error => {
       console.error('Error fetching:', error);
     });
+  }
+  catch (e) {
+    toast({title: e})
+  }
   }, []);
 
   useEffect(() => {
     if (socket !== null) {
       socket.on('connect', eventSocketConnect);
-      socket.connect();
+      try {
+        socket.connect();
+      }
+      catch (e) {
+        toast({title: e})
+      }
       console.log('Socket connection');
       return () => {
         socket.off('connect');
@@ -167,7 +182,7 @@ export const SocketProvider = ({ children }) => {
   };
 
   const eventSocketError = (error: Error) => {
-    console.error('Connection failed:', error);
+    toast({title: 'Connection error. reload the page.'})
   };
 
   const eventAccount = async (message) => {
@@ -198,6 +213,21 @@ export const SocketProvider = ({ children }) => {
   const eventLocationPathname = useCallback(async (activation_key) => {
     const data: [err: Error, message: string] = await new Promise((resolve) => {
       socket.emit('client:registration_confirmation', { activation_key: activation_key }, (err, message) => {
+        if (err) {
+          toast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          toast({ title: message });
+          resolve([null, message]);
+        }
+      });
+    });
+    return data;
+  }, [socket]);
+
+  const eventLocationPathnamePW = useCallback(async (activation_key) => {
+    const data: [err: Error, message: string] = await new Promise((resolve) => {
+      socket.emit('client:password_reset_confirmation', { activation_key: activation_key }, (err, message) => {
         if (err) {
           toast({ title: err.message });
           resolve([err, null]);
@@ -249,17 +279,16 @@ export const SocketProvider = ({ children }) => {
     return data;
   }, [socket]);
 
-  //to do
-  //const eventPasswordReset = useCallback(() => {
-  //  console.log('Emitting password reset');
-  //  socket.emit('client:password_reset', { email: `${account}` }, (err: Error, message: string) => {
-  //    if (err) {
-  //      sendtoast({ title: err.message });
-  //    } else {
-  //      sendtoast({ title: 'password reset succefully, clic the link' });
-  //    }
-  //  });
-  //}, [username]);
+  const eventPasswordReset = useCallback((email) => {
+   console.log('Emitting password reset');
+   socket.emit('client:password_reset', { email: email }, (err: Error, message: string) => {
+     if (err) {
+       sendtoast({ title: err.message });
+     } else {
+       sendtoast({ title: 'password reset succefully, clic the link send by email and your password will be in the mail' });
+     }
+   });
+  }, [socket]);
 
   const eventLogout = useCallback(() => {
     console.log('Emitting logout');
@@ -297,7 +326,7 @@ export const SocketProvider = ({ children }) => {
         callback(null, message);
       }
     });
-  }, [socket, user]);
+  }, [socket]);
 
   const eventBrowsing = useCallback(async (browsing_start: number = 0, browsing_stop: number = 20, sort: string = "fame_rating") => {
     console.log('Emitting browse profile');
@@ -396,8 +425,6 @@ export const SocketProvider = ({ children }) => {
 
   const eventMatch = useCallback((callback: (err: Error | null, message?: string) => void) => {
     console.log('Emitting Match');
-    // const target_match = prompt("Please enter the target account:");
-    // const message = Math.random().toString(36).substring(3);
     socket.emit('client:matchs', (err: Error, message: string) => {
       if (err) {
         sendtoast({ title: err.message });
@@ -488,7 +515,7 @@ export const SocketProvider = ({ children }) => {
     geolocation,
     eventRegistration,
     eventLogin,
-    //eventPasswordReset,
+    eventPasswordReset,
     eventLogout,
     eventUnregistration,
     eventEdit,
@@ -505,8 +532,8 @@ export const SocketProvider = ({ children }) => {
     clearNotifications,
     eventBlock,
     eventReport,
-    user,
     eventLocationPathname,
+    eventLocationPathnamePW,
     eventGeolocation
   }
 

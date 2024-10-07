@@ -153,9 +153,6 @@ export function Component() {
 
     return (
       <main className="flex items-center justify-center p-6">
-      <Button onClick={() => {
-        console.log(getValues('geolocation'))
-      }}></Button>
       <div className="grid gap-8">
       <Card>
       <CardHeader>
