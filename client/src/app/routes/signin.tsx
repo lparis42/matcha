@@ -10,7 +10,7 @@ import { login } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { useAuth } from "@/hook/useAuth"
+import { AuthStatus, useAuth } from "@/hook/useAuth"
 
 export function Component() {
 
@@ -19,7 +19,7 @@ export function Component() {
   const navigate = useNavigate();
 
   useEffect(()=>{
-    if (status === "Authenticated")
+    if (status === AuthStatus.Authenticated)
       navigate("/browse")
   },[status])
 

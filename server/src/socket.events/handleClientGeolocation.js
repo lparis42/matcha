@@ -24,6 +24,7 @@ async function getGeolocationAndLocationByIP(ip) {
 async function handleClientGeolocation(socket, data, cb) {
     try {
 
+        console.log("geoloc")
         // Extract data
         const session_account = await this.getSessionAccount(socket.handshake.sessionID);
         if (!session_account) {

@@ -86,7 +86,7 @@ const prefix_pictures = (pictures) => {
 export function Component() {
     const { account: user } = useAccount();
     
-    const {eventEdit} = useSocket();
+    const {eventEdit, eventGeolocation} = useSocket();
     const form = useForm<z.infer<typeof profile>>({
       resolver: zodResolver(profile),
       defaultValues: {
@@ -99,7 +99,7 @@ export function Component() {
         biography: user.biography || "",
         common_tags: user.common_tags ? interests_to_string(user.common_tags) : [],
         pictures: prefix_pictures(user.pictures),
-        geolocation: user.geolocation ? {lat: user.geolocation[0], lng: user.geolocation[1]} :
+        geolocation: user.geolocation ? {lat: Number(user.geolocation[0]), lng: Number(user.geolocation[1])} :
         {
           lat: 48.89666602483836,
           lng: 2.3183834552764897
@@ -114,6 +114,7 @@ export function Component() {
       if (isNoPictures) {
         toast({title: "You need to upload at least one picture"})
       }
+      eventGeolocation()
     }, [])
    
     function onSubmit(values: z.infer<typeof profile>) {
@@ -152,6 +153,9 @@ export function Component() {
 
     return (
       <main className="flex items-center justify-center p-6">
+      <Button onClick={() => {
+        console.log(getValues('geolocation'))
+      }}></Button>
       <div className="grid gap-8">
       <Card>
       <CardHeader>
@@ -381,7 +385,7 @@ export function Component() {
         <CardTitle>Location</CardTitle>
       </CardHeader>
       <CardContent>
-        <MapView setter={setValue} default_value={user.geolocation || [48.8964367907082, 2.318555492854633]}/>
+        <MapView setter={setValue} default_value={[getValues('geolocation.lat'), getValues('geolocation.lng')]}/>
       </CardContent>
       <CardFooter>
         <Button type="submit">Save Changes</Button>

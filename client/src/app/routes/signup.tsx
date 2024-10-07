@@ -17,7 +17,7 @@ import { z } from "zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { register } from "@/types";
 import { useEffect } from "react";
-import { useAuth } from "@/hook/useAuth";
+import { AuthStatus, useAuth } from "@/hook/useAuth";
 
 
 export function Component() {
@@ -27,7 +27,7 @@ export function Component() {
     const navigate  = useNavigate();
 
     useEffect(()=>{
-      if (status === "Authenticated")
+      if (status === AuthStatus.Authenticated)
         navigate("/browse")
     },[status])
 

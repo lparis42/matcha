@@ -62,6 +62,7 @@ interface SocketValue {
   eventBlock: Function;
   eventReport: Function;
   eventLocationPathname: Function;
+  eventGeolocation: Function;
 }
 
 const SocketContext = createContext(null);
@@ -88,7 +89,7 @@ export const SocketProvider = ({ children }) => {
   const {receiveMessage } = useChatStore();
 
   useEffect(() => {
-    fetch('https://localhost:2000', { // To get credentials when using client dev live server
+    fetch('https://localhost:2000', {
       method: 'GET',
       credentials: 'include',
     }).then(() => {
@@ -180,8 +181,8 @@ export const SocketProvider = ({ children }) => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          setGeolocation({ latitude, longitude });
-          socket.emit('client:geolocation', { latitude, longitude });
+          //setGeolocation({ latitude, longitude });
+          socket.emit('client:geolocation', { latitude, longitude }, () => {});
           console.log('Emitting geolocation:', latitude, longitude);
         },
         (error) => {
@@ -506,6 +507,7 @@ export const SocketProvider = ({ children }) => {
     eventReport,
     user,
     eventLocationPathname,
+    eventGeolocation
   }
 
   if (socket === null) {
