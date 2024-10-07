@@ -3,6 +3,7 @@ import Filters from '@/components/filters'
 import BrowseList from '@/components/browse-list'
 import SortMenu from '@/components/sort-menu'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useLocation, useParams } from 'react-router-dom'
 
 interface FiltersState {
   ageRange: [number, number];
@@ -11,7 +12,14 @@ interface FiltersState {
   isSuggested: boolean;
 }
 
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
 export function Component() {
+  const query = useQuery();
+  const id = Number(query.get('id'));
+  console.log(id)
   const [sortOption, setSortOption] = useState<string>("age");
 
   const [filters, setFilters] = useState<FiltersState>({
@@ -38,7 +46,7 @@ export function Component() {
         <div className='space-y-6'>
           <SortMenu onSortOptionChange={handleSortOptionChange}/>
           <div className="w-full md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <BrowseList filters={filters} sortOption={sortOption}/>
+            <BrowseList filters={filters} sortOption={sortOption} userId={id}/>
           </div>
         </div>
       </div>

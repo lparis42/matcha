@@ -12,11 +12,12 @@ interface ItemProfileProps {
         geolocation: number[];
         location: string;
         online: boolean;
-    }
+    },
+    initialExpanded
 }
 
-export default function ItemProfile({items}: ItemProfileProps) {
-    const [isExpanded, setIsExpanded] = useState(false);
+export default function ItemProfile({items, initialExpanded = false}: ItemProfileProps) {
+    const [isExpanded, setIsExpanded] = useState(initialExpanded);
 
     const toggleCard = () => {
         setIsExpanded(!isExpanded);

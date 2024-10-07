@@ -14,9 +14,9 @@ async function handleClientLikers(socket, cb) {
         // add username and profile picture
         for (let i = 0; i < likers.length; i++) {
             const liker_public_data = (await this.db.execute(
-                this.db.select('users_public', ['username', 'profile_picture'], `id = '${likers[i]}'`)
+                this.db.select('users_public', ['username'], `id = '${likers[i]}'`)
             ))[0];
-            likers[i] = { id: likers[i], username: liker_public_data.username, profile_picture: liker_public_data.profile_picture };
+            likers[i] = { id: likers[i], username: liker_public_data.username};
         }
     
         cb(null, likers);

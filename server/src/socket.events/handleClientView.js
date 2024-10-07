@@ -18,6 +18,7 @@ async function handleClientView(socket, data, cb) {
         if (!target_public_data) {
             throw { client: `Account '${target_account}' not found`, status: 404 };
         }
+        target_public_data.id = target_account
         const target_viewers = (await this.db.execute(
             this.db.select('users_private', ['viewers'], `id = '${target_account}'`)
         ))[0].viewers;

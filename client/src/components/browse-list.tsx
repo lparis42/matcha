@@ -67,6 +67,7 @@ interface FiltersState {
 interface BrowseListProps {
     filters: FiltersState;
     sortOption: string;
+    userId?: number;
   }
 
 interface Profile {
@@ -83,7 +84,7 @@ interface Profile {
     fame_rating: number;
 }
 
-export default function BrowseList({ filters, sortOption }: BrowseListProps) {
+export default function BrowseList({ filters, sortOption, userId }: BrowseListProps) {
     const {eventBrowsing, eventView} = useSocket()
     const [error, setError] = useState<Error | null>(null);
     const [listProfils, setListProfils] = useState<any[] | null>(null);
@@ -96,12 +97,28 @@ export default function BrowseList({ filters, sortOption }: BrowseListProps) {
                 toast({title: err.client});
                 return;
             }
+
             const profilesWithAge = profiles.map(profile => ({
                 ...profile,
                 age: calculateAge(profile.date_of_birth)
             }));
+
+
             const filteredProfiles = filterProfiles(profilesWithAge, filters);
             const sortedProfiles = sortProfiles(filteredProfiles, sortOption);
+            
+            // Fetch the user by ID and add to the profiles list
+            if (userId) {
+              const [userErr, userProfile] = await eventView(userId);
+              if (userErr) {
+                toast({ title: userErr.client });
+              } else {
+                console.log(userProfile)
+                sortedProfiles.unshift(userProfile)
+                console.log(profiles)
+              }
+            }
+            
             setListProfils(sortedProfiles);
         }
 
@@ -114,7 +131,7 @@ export default function BrowseList({ filters, sortOption }: BrowseListProps) {
     return (
         <>
         {listProfils.map((item: any, index: number) => (
-            <ItemProfile key={index} items={item} />
+            <ItemProfile key={index} items={item} initialExpanded={item.id === userId}/>
         ))}
         </>
     )

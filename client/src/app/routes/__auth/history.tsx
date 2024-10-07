@@ -1,5 +1,6 @@
 import { useSocket } from '@/api/Socket';
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export function Component() {
     const [viewers, setViewers] = useState([])
@@ -29,13 +30,14 @@ export function Component() {
             <h2 className="text-xl font-bold">Viewers</h2>
             <ul>
                 {viewers.map((viewer, index) => (
-                    <li key={index}>- Account {viewer} view your profile</li>
+                    
+                   <Link to={'/browse?id=' + viewer.id}> <li key={index}>- Account {viewer.username} view your profile</li></Link>
                 ))}
             </ul>
             <h2 className="text-xl font-bold mt-6">Likers</h2>
             <ul>
                 {likers.map((liker, index) => (
-                    <li key={index}>- Account {liker} liked your profile</li>
+                    <Link to={'/browse?id=' + liker.id}> <li key={index}>- Account {liker.username} liked your profile</li></Link>
                 ))}
             </ul>
         </div>

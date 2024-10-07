@@ -14,9 +14,9 @@ async function handleClientViewers(socket, cb) {
         // add username and profile picture
         for (let i = 0; i < viewers.length; i++) {
             const viewer_public_data = (await this.db.execute(
-                this.db.select('users_public', ['username', 'profile_picture'], `id = '${viewers[i]}'`)
+                this.db.select('users_public', ['username'], `id = '${viewers[i]}'`)
             ))[0];
-            viewers[i] = { id: viewers[i], username: viewer_public_data.username, profile_picture: viewer_public_data.profile_picture };
+            viewers[i] = { id: viewers[i], username: viewer_public_data.username };
         }
         
         cb(null, viewers);
