@@ -49,7 +49,7 @@ const pictures_compress = async (file) => {
     const compressedFile = await imageCompression(file, options);
 
     // Convert the compressed file to base64
-    const base64: string = await convertToBase64(compressedFile);
+    const base64: string = await convertToBase64(compressedFile) as string;
     return base64;
   }
   catch (error) {
@@ -126,7 +126,7 @@ export function Component() {
         },
         common_tags: interests_to_int(values.common_tags)
       }
-      eventEdit(data, (err, data) => {
+      eventEdit(data, (err) => {
         if (err) {
           console.error(err);
         } else {

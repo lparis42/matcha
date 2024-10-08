@@ -5,7 +5,7 @@ const notif_messages = {
     unlike: "unliked your profile",
 }
 
-export default function NotifCard ({type, account}: {type: string, account: number}) {
+export default function NotifCard ({type}: {type: string, account: number}) {
     return (
         <div className="flex items-start gap-3">
             <div className="flex-1 space-y-1">

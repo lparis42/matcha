@@ -10,6 +10,7 @@ import useChatStore from '@/store';
 import { toast } from './ui/use-toast';
 
 interface ProfileCardProps {
+    items: {
         id: number;
         gender: string;
         sexual_orientation: string;
@@ -22,6 +23,11 @@ interface ProfileCardProps {
         pictures: string[];
         location: string;
         fame_rating: number;
+        online: boolean;
+        age: number;
+        common_tags: string[];
+        date_of_birth: Date;
+    }
   }
 
 const ChatProfileCard = ({items}: ProfileCardProps) => {

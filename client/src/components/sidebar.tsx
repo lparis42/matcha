@@ -17,13 +17,13 @@ interface SidebarProps {
     name: string;
     messages: Message[];
     avatar: string;
-    variant: "grey" | "ghost";
+    variant: "default" | "ghost";
   }[];
   onSelect?: (user) => void;
   isMobile: boolean;
 }
 
-export function Sidebar({ links, isCollapsed, onSelect, isMobile }: SidebarProps) {
+export function Sidebar({ links, isCollapsed, onSelect }: SidebarProps) {
   return (
     <div
       data-collapsed={isCollapsed}
@@ -44,11 +44,11 @@ export function Sidebar({ links, isCollapsed, onSelect, isMobile }: SidebarProps
               <Tooltip key={index} delayDuration={0}>
                 <TooltipTrigger asChild>
                   <Link
-                    href="#"
+                    to="#"
                     className={cn(
                       buttonVariants({ variant: link.variant, size: "icon" }),
                       "h-11 w-11 md:h-16 md:w-16",
-                      link.variant === "grey" &&
+                      link.variant === "default" &&
                         "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white"
                     )}
                     onClick={() => onSelect(link)}
@@ -76,10 +76,10 @@ export function Sidebar({ links, isCollapsed, onSelect, isMobile }: SidebarProps
           ) : (
             <Link
               key={index}
-              href="#"
+              to="#"
               className={cn(
-                buttonVariants({ variant: link.variant, size: "xl" }),
-                link.variant === "grey" &&
+                buttonVariants({ variant: link.variant, size: "lg" }),
+                link.variant === "default" &&
                   "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white shrink",
                 "justify-start gap-4"
               )}

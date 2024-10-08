@@ -16,7 +16,6 @@ const styles = {
     padding: '20px',
     borderRadius: '8px',
     boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
-    textAlign: 'center',
     width: 'auto',
     maxWidth: '50%',
     height: 'auto'
@@ -38,7 +37,6 @@ const styles = {
     listStyleType: 'none',
     padding: 0,
     display: 'flex',
-    flexWrap: 'wrap',
     justifyContent: 'center',
     width: '100%',
   },
@@ -71,8 +69,6 @@ const Button = ({ onClick, children }) => {
       <button
         onClick={onClick}
         style={styles.button}
-        onMouseOver={(e) => e.target.style.backgroundColor = styles.buttonHover.backgroundColor}
-        onMouseOut={(e) => e.target.style.backgroundColor = styles.button.backgroundColor}
       >
         {children}
       </button>

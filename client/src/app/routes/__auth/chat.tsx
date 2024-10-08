@@ -5,6 +5,7 @@ import { userData, Message, User } from '@/components/data';
 import { Sidebar } from '@/components/sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { toast } from '@/components/ui/use-toast';
+import { useAccount } from '@/hook/useAccount';
 import { cn } from '@/lib/utils';
 import useChatStore from '@/store';
 import React, { useEffect, useState } from 'react';
@@ -43,7 +44,8 @@ export function Component ({
     const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
     const [isMobile, setIsMobile] = useState(false);
     const [selectedUser, setSelectedUser] = React.useState(null);
-    const { eventChatHistories, eventChat, eventView, user } = useSocket()
+    const { eventChatHistories, eventChat, eventView } = useSocket()
+    const { account: user } = useAccount();
     const [ifViewProfile, setIfViewProfile] = useState(false)
 
     const {usersstored, setUsersstored, addMessage} = useChatStore();

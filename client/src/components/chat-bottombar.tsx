@@ -21,24 +21,13 @@ import {
   }
   
   export default function ChatBottombar({
-    sendMessage, isMobile,
+    sendMessage,
   }: ChatBottombarProps) {
     const [message, setMessage] = useState("");
     const inputRef = useRef<HTMLTextAreaElement>(null);
   
     const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       setMessage(event.target.value);
-    };
-  
-    const handleThumbsUp = () => {
-      const newMessage: Message = {
-        id: message.length + 1,
-        name: loggedInUserData.name,
-        avatar: loggedInUserData.avatar,
-        message: "👍",
-      };
-      sendMessage(newMessage);
-      setMessage("");
     };
   
     const handleSend = () => {
@@ -88,7 +77,7 @@ import {
           </div>
   
             <Link
-              href="#"
+              to="#"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "icon" }),
                 "h-9 w-9",

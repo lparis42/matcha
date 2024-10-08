@@ -24,6 +24,12 @@ interface User {
   avatar: string;
   messages: Message[];
   name: string;
+  username: string;
+  date_of_birth: string;
+  online: boolean;
+  last_connection: string;
+  common_tags: number[];
+  geolocation: {lat: number, lng: number};
 }
 
 interface ChatStore {
@@ -52,7 +58,7 @@ function transformData (item, state: User[]) {
 
 const useChatStore = create<ChatStore>(
   
-    (set, get) => ({
+    (set) => ({
       usersstored: [],
 
 

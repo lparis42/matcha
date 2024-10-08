@@ -182,11 +182,11 @@ export const SocketProvider = ({ children }) => {
   };
 
   const eventSocketError = (error: Error) => {
-    toast({title: 'Connection error. reload the page.'})
+    toast({title: error.message});
   };
 
   const eventAccount = async (message) => {
-    const [err, profile] = await eventView(message.account);
+    const [err, profile ] = await eventView(message.account);
     setAccount(profile);
     console.log("Account", profile)
   }
@@ -281,7 +281,7 @@ export const SocketProvider = ({ children }) => {
 
   const eventPasswordReset = useCallback((email) => {
    console.log('Emitting password reset');
-   socket.emit('client:password_reset', { email: email }, (err: Error, message: string) => {
+   socket.emit('client:password_reset', { email: email }, (err: Error) => {
      if (err) {
        sendtoast({ title: err.message });
      } else {
@@ -292,7 +292,7 @@ export const SocketProvider = ({ children }) => {
 
   const eventLogout = useCallback(() => {
     console.log('Emitting logout');
-    socket.emit('client:logout', (err: Error, message: string) => {
+    socket.emit('client:logout', (err: Error) => {
       if (err) {
         sendtoast({ title: err.message });
       } else {
@@ -303,7 +303,7 @@ export const SocketProvider = ({ children }) => {
 
   const eventUnregistration = useCallback(() => {
     console.log('Emitting unregistration');
-    socket.emit('client:unregistration', (err: Error, message: string) => {
+    socket.emit('client:unregistration', (err: Error) => {
       if (err) {
         sendtoast({ title: err.message });
       } else {
@@ -347,7 +347,7 @@ export const SocketProvider = ({ children }) => {
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
     const data: [err: Error, profile: object] = await new Promise((resolve) => {
-      socket.emit('client:view', { target_account: target_account }, (err: Error, profile: object) => {
+      socket.emit('client:view', { target_account: target_account }, (err: Error, profile: User) => {
         if (err) {
           sendtoast({ title: err.message });
           resolve([err, null]);

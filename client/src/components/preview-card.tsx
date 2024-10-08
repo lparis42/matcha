@@ -9,7 +9,6 @@ import { Button } from './ui/button';
 import ViewCard from './view-card';
 
 interface ProfileCardProps {
-    items: {
         id: number;
         gender: string;
         sexual_orientation: string;
@@ -22,7 +21,9 @@ interface ProfileCardProps {
         pictures: string[];
         location: string;
         fame_rating: number;
-    }
+        online: boolean;
+        age: number;
+        common_tags: string[];
   }
 
 const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpend: (index: number) => void;}) => {
