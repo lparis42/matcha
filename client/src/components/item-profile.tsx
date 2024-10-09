@@ -5,13 +5,20 @@ import PreviewCard from "./preview-card";
 interface ItemProfileProps {
     items: {
         id: number;
+        gender: string;
+        sexual_orientation: string;
         first_name: string;
-        date_of_birth: string;
-        common_tags: string[];
+        last_name: string;
+        email: string;
+        birth_date: Date;
+        biography: string;
+        interests: string[];
         pictures: string[];
-        geolocation: number[];
         location: string;
+        fame_rating: number;
         online: boolean;
+        age: number;
+        common_tags: string[];
     },
     initialExpanded
 }

@@ -1,3 +1,4 @@
+import { Message } from "@/components/data";
 import { useToast } from "@/components/ui/use-toast";
 import { useAccount } from "@/hook/useAccount";
 import { useAuth } from "@/hook/useAuth";
@@ -7,16 +8,27 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {io, Socket} from 'socket.io-client';
 
 interface User {
-  id: number;
-  first_name: string;
-  last_name: string;
-  username: string;
-  biography: string;
-  gender: string;
-  sexual_orientation: string;
-  common_tags: string[];
-  pictures: string[];
-  date_of_birth: Date;
+    id: number;
+    gender: string;
+    sexual_orientation: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    birth_date: Date;
+    biography: string;
+    interests: string[];
+    pictures: string[];
+    location: string;
+    fame_rating: number;
+    avatar: string;
+    name: string;
+    username: string;
+    date_of_birth: string;
+    online: boolean;
+    last_connection: string;
+    common_tags: number[];
+    geolocation: {lat: number, lng: number};
+    messages: Message[];
 }
 
 export type Register = {
@@ -187,7 +199,7 @@ export const SocketProvider = ({ children }) => {
 
   const eventAccount = async (message) => {
     const [err, profile ] = await eventView(message.account);
-    setAccount(profile);
+    setAccount(profile as User);
     console.log("Account", profile)
   }
 

@@ -20,8 +20,6 @@ export default function NotifButton () {
         <DropdownMenu onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger>
                 <div
-                variant="ghost"
-                size="icon"
                 className="relative"
                 aria-label={`${notificationCount} unread notifications`}
                 >
