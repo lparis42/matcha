@@ -113,9 +113,7 @@ export default function BrowseList({ filters, sortOption, userId }: BrowseListPr
               if (userErr) {
                 toast({ title: userErr.client });
               } else {
-                console.log(userProfile)
                 sortedProfiles.unshift(userProfile)
-                console.log(profiles)
               }
             }
             

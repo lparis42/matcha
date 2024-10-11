@@ -6,6 +6,7 @@ import { Badge } from './ui/badge';
 import { constants } from '@/constants';
 import { GaugeIcon, HeartIcon, MapPinIcon, UserIcon, XIcon } from 'lucide-react';
 import { Button } from './ui/button';
+import { toast } from './ui/use-toast';
 
 interface ProfileCardProps {
     items: {
@@ -35,7 +36,7 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
     const handleClick = async () => {
         const [err, res] = await eventLike(items?.id);
         if (err) {
-            console.log(err);
+            toast({title: err});
         } else {
             setIsLiked(true);
         }

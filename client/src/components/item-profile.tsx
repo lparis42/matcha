@@ -28,7 +28,6 @@ export default function ItemProfile({items, initialExpanded = false}: ItemProfil
 
     const toggleCard = () => {
         setIsExpanded(!isExpanded);
-        console.log("toggle");
     };
 
     return (

@@ -94,7 +94,6 @@ export const SocketProvider = ({ children }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const { toast } = useToast();
 
-  console.log('SocketProvider render');
   const [socketConnected, setSocketConnected] = useState<boolean>(false);
   const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
 
@@ -106,7 +105,6 @@ export const SocketProvider = ({ children }) => {
       method: 'GET',
       credentials: 'include',
     }).then(() => {
-      console.log('Fetched');
       try {
       setSocket(io('https://localhost:2000', {
         secure: true,
@@ -136,7 +134,6 @@ export const SocketProvider = ({ children }) => {
       catch (e) {
         toast({title: e})
       }
-      console.log('Socket connection');
       return () => {
         socket.off('connect');
       };
@@ -172,8 +169,6 @@ export const SocketProvider = ({ children }) => {
     socket.on('connect_error', eventSocketError);
     socket.on('server:account', eventAccount);
 
-    console.log('Socket connected');
-
     return () => {
       socket.off('server:notification')
       socket.off('reconnect_attempt');
@@ -183,12 +178,10 @@ export const SocketProvider = ({ children }) => {
     };
   };
 
-  const eventReconnectAttempt = (attemptNumber: number) => {
-    console.log('Reconnect attempt:', attemptNumber);
+  const eventReconnectAttempt = () => {
   };
 
   const eventSocketDisconnect = () => {
-    console.log('Socket disconnected');
     toast({ title: 'Socket disconnected' });
     setSocketConnected(false);
   };
@@ -200,7 +193,6 @@ export const SocketProvider = ({ children }) => {
   const eventAccount = async (message) => {
     const [err, profile ] = await eventView(message.account);
     setAccount(profile as User);
-    console.log("Account", profile)
   }
 
   const eventGeolocation = useCallback(() => {
@@ -210,7 +202,6 @@ export const SocketProvider = ({ children }) => {
           const { latitude, longitude } = position.coords;
           //setGeolocation({ latitude, longitude });
           socket.emit('client:geolocation', { latitude, longitude }, () => {});
-          console.log('Emitting geolocation:', latitude, longitude);
         },
         (error) => {
           socket.emit('client:geolocation', { latitude: null, longitude: null });
@@ -256,7 +247,6 @@ export const SocketProvider = ({ children }) => {
     if (socket === null) {
       return;
     }
-    console.log('Emitting registration');
 
     const data: [err: Error, message: string] = await new Promise((resolve) => {
       socket.emit('client:registration', userdata, (err: Error, message: string) => {
@@ -276,7 +266,6 @@ export const SocketProvider = ({ children }) => {
     if (socket === null) {
       return;
     }
-    console.log('Emitting login');
     const data: [err: Error, message: string] = await new Promise((resolve) => {
       socket.emit('client:login', userdata, (err: Error, message: string) => {
         if (err) {
@@ -292,7 +281,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventPasswordReset = useCallback((email) => {
-   console.log('Emitting password reset');
    socket.emit('client:password_reset', { email: email }, (err: Error) => {
      if (err) {
        sendtoast({ title: err.message });
@@ -303,7 +291,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventLogout = useCallback(() => {
-    console.log('Emitting logout');
     socket.emit('client:logout', (err: Error) => {
       if (err) {
         sendtoast({ title: err.message });
@@ -314,7 +301,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventUnregistration = useCallback(() => {
-    console.log('Emitting unregistration');
     socket.emit('client:unregistration', (err: Error) => {
       if (err) {
         sendtoast({ title: err.message });
@@ -328,7 +314,6 @@ export const SocketProvider = ({ children }) => {
     if (socket === null) {
       return;
     }
-    console.log('Emitting edit profile');
     socket.emit('client:edit', userData, (err: Error, message: User) => {
       if (err) {
         sendtoast({ title: err.message });
@@ -341,7 +326,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventBrowsing = useCallback(async (browsing_start: number = 0, browsing_stop: number = 20, sort: string = "fame_rating") => {
-    console.log('Emitting browse profile');
     const data: [err: Error, listProfils: object[]] = await new Promise((resolve) => {
       socket.emit('client:browsing', { browsing_start, browsing_stop, sort }, (err: Error, listProfils: object[]) => {
           if (err) {
@@ -372,7 +356,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventLike = useCallback(async (target_account: number) => {
-      console.log('Emitting like profile');
       if (typeof target_account !== 'number')
         target_account = Number(prompt("Please enter the target account:"));
       const data: [err: Error, message: object] = await new Promise((resolve) => {
@@ -389,7 +372,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventUnLike = useCallback(async (target_account: number) => {
-    console.log('Emitting unlike profile');
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
     const data: [err: Error, message: string] = await new Promise((resolve) => {
@@ -406,7 +388,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventViewers = useCallback(async () => {
-    console.log('Emitting viewers');
     const data: [err: Error, message: string] = await new Promise((resolve) => {
       socket.emit('client:viewers', (err: Error, message: string) => {
         if (err) {
@@ -421,7 +402,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventLikers = useCallback(async () => {
-    console.log('Emitting likers');
     const data: [err: Error, message: string] = await new Promise((resolve) => {
       socket.emit('client:likers', (err: Error, message: string) => {
         if (err) {
@@ -436,7 +416,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventMatch = useCallback((callback: (err: Error | null, message?: string) => void) => {
-    console.log('Emitting Match');
     socket.emit('client:matchs', (err: Error, message: string) => {
       if (err) {
         sendtoast({ title: err.message });
@@ -449,7 +428,6 @@ export const SocketProvider = ({ children }) => {
 
 
   const eventChat = useCallback(async (target_match: number, tosent: string) => {
-    console.log('Emitting chat');
     if (target_match === null || tosent === null)
     {
       target_match = Number(prompt("Please enter the target account:"));
@@ -469,7 +447,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventChatHistories = useCallback(async () => {
-    console.log('Emitting chat histories');
     const data: [err: Error, message: string] = await new Promise((resolve) => {
       socket.emit('client:chat_histories', (err: Error, message: string) => {
         if (err) {
@@ -484,7 +461,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventBlock = useCallback(async (target_account: number) => {
-    console.log('Emitting block profile');
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
     const data: [err: Error, message: string] = await new Promise((resolve) => {
@@ -501,7 +477,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventReport = useCallback(async (target_account: number) => {
-    console.log('Emitting report profile');
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
     const data: [err: Error, message: string] = await new Promise((resolve) => {

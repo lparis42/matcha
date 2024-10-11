@@ -74,7 +74,7 @@ export function Component() {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" {...field} />
+                          <Input type="password" autoComplete="current-password" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -93,7 +93,6 @@ export function Component() {
                 </form>
                 <Button className="w-full" onClick={()=>{
                   const email = getValues('email')
-                  console.log(email)
                   if (!email)
                     toast({title: "first type your email in the field Email"})
                   else

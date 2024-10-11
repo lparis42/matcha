@@ -46,7 +46,6 @@ interface ChatStore {
 function transformData (item, state: User[]) {
   const [username, message] = item.split(':');
   const user = state.filter((user) => user.name === username)[0]
-  console.log("USERRRR", user)
   const result = {
       id: user.messages.length,
       avatar: `https://localhost:2000/images/${user.pictures[0]}`,
