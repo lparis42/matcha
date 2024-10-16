@@ -46,7 +46,7 @@ async function handleClientRegistration(socket, data, cb) {
 
         // Send the activation link by email
         if (!email.endsWith('@client.com')) {
-            const link = `https://localhost:${process.env.HTTPS_PORT_CLIENT}/confirm?activation_key=${activation_key}`;
+            const link = `https://localhost:${process.env.HTTPS_PORT}/confirm?activation_key=${activation_key}`;
             console.log('link:', link);
             await this.email.post({
             to: email,

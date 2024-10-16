@@ -109,12 +109,12 @@ class Server {
   // Configure the application
   configureApplication() {
     this.app = express();
-     this.app.use(cors({ // Use the CORS middleware for the application
-       origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
-       methods: ['GET'],
-       credentials: true, // Allow credentials
-       secure: true, // Allow secure connections
-     }));
+    this.app.use(cors({ // Use the CORS middleware for the application
+      origin: [`https://localhost:${process.env.HTTPS_PORT}`],
+      methods: ['GET'],
+      credentials: true, // Allow credentials
+      secure: true, // Allow secure connections
+    }));
     this.app.use(cookieParser(process.env.SESSION_MIDDLEWARE_SECRET)); // Use the cookie parser middleware for the application
     this.app.use(this.sessionMiddleware); // Use the session middleware for the application
     console.log(`Application configured`);
@@ -127,7 +127,7 @@ class Server {
     const imagesPath = path.join(process.cwd(), '..', 'images');
     this.app.use('/images', express.static(imagesPath));
 
-    const distPath = path.join(process.cwd(), process.env.CLIENT_DIST_PATH);
+    const distPath = path.join(process.cwd(), '..', 'client', 'dist');
     this.app.use(express.static(distPath));
 
     // Handle React routing, return all requests to React app
@@ -155,7 +155,7 @@ class Server {
     this.io = socketIo(this.server, { // Create a Socket.IO server
       maxHttpBufferSize: 1e6, // Set the maximum HTTP buffer size to 1MB
       cors: {
-        origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:${process.env.HTTPS_PORT_CLIENT}`],
+        origin: [`https://localhost:${process.env.HTTPS_PORT}`],
         methods: ['GET'],
         credentials: true,
         secure: true,

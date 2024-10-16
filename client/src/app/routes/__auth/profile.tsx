@@ -387,7 +387,7 @@ export function Component() {
         <CardTitle>Location</CardTitle>
       </CardHeader>
       <CardContent>
-        <MapView setter={setValue} default_value={[getValues('geolocation.lat'), getValues('geolocation.lng')]}/>
+        <MapView setter={(key: 'geolocation', value: { lat: number, lng: number }) => setValue(key, value)} default_value={[getValues('geolocation.lat'), getValues('geolocation.lng')]}/>
       </CardContent>
       <CardFooter>
         <Button type="submit">Save Changes</Button>
