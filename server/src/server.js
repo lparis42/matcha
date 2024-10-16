@@ -131,7 +131,7 @@ class Server {
     this.app.use(express.static(distPath));
 
     // Handle React routing, return all requests to React app
-    this.app.get('/', (req, res) => {
+    this.app.get('*', (req, res) => {
       req.session.sessionID = null;
       res.sendFile(path.join(distPath, 'index.html'));
     });
