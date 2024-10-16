@@ -1,10 +1,8 @@
 import { Message } from "@/components/data";
 import { useToast } from "@/components/ui/use-toast";
-import { useAccount } from "@/hook/useAccount";
-import { useAuth } from "@/hook/useAuth";
+import { useAccountStore } from "../../src/store";
 import useChatStore from "@/store";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { useLocation, useNavigate } from 'react-router-dom';
 import {io, Socket} from 'socket.io-client';
 
 interface User {
@@ -96,39 +94,42 @@ export const useSocket = (): SocketValue => {
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const { setAccount, account } = useAuth();
+  const { setAccount } = useAccountStore();
   const [notifications, setNotifications] = useState<any[]>([]);
   const { toast } = useToast();
 
   const [socketConnected, setSocketConnected] = useState<boolean>(false);
-  const [geolocation, setGeolocation] = useState<Geolocation | null>(null);
 
   const {receiveMessage } = useChatStore();
 
-  useEffect(() => {
+  const globalConnection = () => {
     try {
-    fetch('https://localhost:2000', {
-      method: 'GET',
-      credentials: 'include',
-    }).then(() => {
-      try {
-      setSocket(io('https://localhost:2000', {
-        secure: true,
-        reconnection: true,
-        rejectUnauthorized: true,
-        withCredentials: true,
-      }));}
-      catch (e)
-      {
-        toast({title: e})
-      }
-    }).catch(error => {
-      console.error('Error fetching:', error);
-    });
+      fetch('https://localhost:2000', {
+        method: 'GET',
+        credentials: 'include',
+      }).then(() => {
+        try {
+        setSocket(io('https://localhost:2000', {
+          secure: true,
+          reconnection: true,
+          rejectUnauthorized: true,
+          withCredentials: true,
+        }));}
+        catch (e)
+        {
+          toast({title: e})
+        }
+      }).catch(error => {
+        console.error('Error fetching:', error);
+      });
+    }
+    catch (e) {
+      toast({title: e})
+    }
   }
-  catch (e) {
-    toast({title: e})
-  }
+
+  useEffect(() => {
+    globalConnection();
   }, []);
 
   useEffect(() => {
@@ -193,10 +194,20 @@ export const SocketProvider = ({ children }) => {
   };
 
   const eventSocketError = (error: Error) => {
-    toast({title: error.message});
+    try {
+      globalConnection();
+    }
+    catch (e) {
+      toast({title: error.message});
+    }
+    
   };
 
   const eventAccount = async (message) => {
+    if (message.account == null) {
+      setAccount(null);
+      return;
+    }
     const [err, profile ] = await eventView(message.account);
     setAccount(profile as User);
   }
@@ -509,7 +520,6 @@ export const SocketProvider = ({ children }) => {
   const socketValue = {
     socket,
     socketConnected,
-    geolocation,
     eventRegistration,
     eventLogin,
     eventPasswordReset,

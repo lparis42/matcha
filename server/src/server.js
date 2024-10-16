@@ -31,7 +31,7 @@ class Server {
     this.configureSocketIoServer();
     this.configureSocketIoEvent();
     this.configureRoutes();
-    this.server.listen(port, () => {
+    this.server.listen(port, '0.0.0.0', () => {
       console.log(`Listening on port ${port}`);
     });
   }
@@ -127,25 +127,14 @@ class Server {
     const imagesPath = path.join(process.cwd(), '..', 'images');
     this.app.use('/images', express.static(imagesPath));
 
-    // For testing purposes only
-    //if (process.env.NODE_ENV === 'development') {
-    //  this.app.get('/', (req, res) => {
-    //    req.session.sessionID = null;
-    //    res.sendStatus(200);
-    //  });
-    //}
+    const distPath = path.join(process.cwd(), process.env.CLIENT_DIST_PATH);
+    this.app.use(express.static(distPath));
 
-    if (true) {
-      const distPath = path.join(process.cwd(), process.env.CLIENT_DIST_PATH);
-      this.app.use(express.static(distPath));
-
-      // Handle React routing, return all requests to React app
-      this.app.get('/*', (req, res) => {
-        req.session.sessionID = null;
-        res.sendFile(path.join(distPath, 'index.html'));
-      });
-    }
-
+    // Handle React routing, return all requests to React app
+    this.app.get('/', (req, res) => {
+      req.session.sessionID = null;
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
   }
 
   // Configure the HTTPS server

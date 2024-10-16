@@ -1,4 +1,6 @@
+import { useCallback } from "react";
 import { useAccountStore } from "../../src/store";
+import { useSocket } from "@/api/Socket";
 
 export enum AuthStatus {
     Unknown,
@@ -8,6 +10,7 @@ export enum AuthStatus {
 
 export function useAuth() {
   const { account, setAccount } = useAccountStore();
+  const { eventView } = useSocket();
 
   let status;
   switch (account) {
@@ -22,9 +25,20 @@ export function useAuth() {
       break;
   }
 
+  const authenticate = useCallback(async () => {
+    if (account === null)
+      return ;
+    const [err, data] = await eventView(account.id)
+    if (err)
+      setAccount(null)
+    else
+      setAccount(data)
+  }, []);
+
   return {
     account,
     status,
-    setAccount
+    setAccount,
+    authenticate
   };
 }

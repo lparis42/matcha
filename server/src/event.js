@@ -106,6 +106,9 @@ class Event {
                 }
 
             }
+            else {
+                socket.emit('server:account', { account: null });
+            }
 
             // Handle the client events
             const events = [
