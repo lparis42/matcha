@@ -69,15 +69,15 @@ class Email {
         },
       });
 
-      console.log('Sending test email...');
-      const recipients = {
-        from: process.env.GMAIL_USER,
-        to: process.env.GMAIL_USER,
-        subject: 'Test email',
-        text: 'This is a test email.'
-      };
-      const info = await this.transporter.sendMail(recipients);
-      console.log('Email sent: (' + info.response + ') to ' + recipients.to);
+      // console.log('Sending test email...');
+      // const recipients = {
+      //   from: process.env.GMAIL_USER,
+      //   to: process.env.GMAIL_USER,
+      //   subject: 'Test email',
+      //   text: 'This is a test email.'
+      // };
+      // const info = await this.transporter.sendMail(recipients);
+      // console.log('Email sent: (' + info.response + ') to ' + recipients.to);
 
     } catch (error) {
       console.error('Error creating OAuth2 transporter:', error);
