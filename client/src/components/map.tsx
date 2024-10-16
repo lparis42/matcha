@@ -35,7 +35,7 @@ const MapView = ({setter, default_value}) => {
 
   useEffect(() => {
     setter("geolocation", selectedPosition);
-  }, [selectedPosition]);
+  }, [selectedPosition, default_value]);
 
   return (
     <div>

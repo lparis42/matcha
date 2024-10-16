@@ -114,7 +114,12 @@ export function Component() {
       if (isNoPictures) {
         toast({title: "You need to upload at least one picture"})
       }
-      eventGeolocation()
+
+      async function geolocation() {
+        const data = await eventGeolocation()
+        setValue('geolocation', {lat: data.latitude, lng: data.longitude})
+      }
+      geolocation()
     }, [])
    
     function onSubmit(values: z.infer<typeof profile>) {

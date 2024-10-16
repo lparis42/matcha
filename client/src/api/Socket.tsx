@@ -78,6 +78,12 @@ interface SocketValue {
   eventGeolocation: Function;
 }
 
+const GeolocationPositionErrorNames = {
+  1: 'PERMISSION_DENIED',
+  2: 'POSITION_UNAVAILABLE',
+  3: 'TIMEOUT',
+};
+
 const SocketContext = createContext(null);
 
 export const useSocket = (): SocketValue => {
@@ -195,22 +201,26 @@ export const SocketProvider = ({ children }) => {
     setAccount(profile as User);
   }
 
-  const eventGeolocation = useCallback(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          //setGeolocation({ latitude, longitude });
-          socket.emit('client:geolocation', { latitude, longitude }, () => {});
-        },
-        (error) => {
-          socket.emit('client:geolocation', { latitude: null, longitude: null });
-          console.error(`Error: ${error.message}`);
-        }
-      );
-    } else {
-      alert("Geolocation is not supported by this browser.");
-    }
+  const eventGeolocation = useCallback(async () => {
+    const data: [err: GeolocationPositionError, message: { latitude: number, longitude: number}] = await new Promise((resolve) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            socket.emit('client:geolocation', { latitude, longitude }, () => {});
+            resolve([null, { latitude, longitude }]);
+          },
+          (error) => {
+            socket.emit('client:geolocation', { latitude: null, longitude: null });
+            toast({ title: `Geolocation error: ${GeolocationPositionErrorNames[error.code]}` });
+            resolve([error, null]);
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    });
+    return data;
   }, [socket]);
 
   const eventLocationPathname = useCallback(async (activation_key) => {
