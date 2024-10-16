@@ -17,5 +17,8 @@
   "license": "ISC",
   "devDependencies": {
     "concurrently": "latest"
+  },
+  "dependencies": {
+    "nodemon": "^3.1.7"
   }
 }

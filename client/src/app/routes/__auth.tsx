@@ -1,5 +1,4 @@
 import React from "react";
-import App from "@/app/App";
 import { useSocket } from "@/api/Socket";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast"

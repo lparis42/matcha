@@ -136,7 +136,7 @@ class Server {
     //}
 
     if (true) {
-      const distPath = path.join(process.cwd(), '..', 'dist');
+      const distPath = path.join(process.cwd(), process.env.CLIENT_DIST_PATH);
       this.app.use(express.static(distPath));
 
       // Handle React routing, return all requests to React app
