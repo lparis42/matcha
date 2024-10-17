@@ -116,7 +116,7 @@ export function Component() {
       }
 
       async function geolocation() {
-        const data = await eventGeolocation()
+        const [err, data] = await eventGeolocation()
         setValue('geolocation', {lat: data.latitude, lng: data.longitude})
       }
       geolocation()
@@ -387,7 +387,7 @@ export function Component() {
         <CardTitle>Location</CardTitle>
       </CardHeader>
       <CardContent>
-        <MapView setter={(key: 'geolocation', value: { lat: number, lng: number }) => setValue(key, value)} default_value={[getValues('geolocation.lat'), getValues('geolocation.lng')]}/>
+        <MapView setter={setValue} default_value={[watch('geolocation.lat'), watch('geolocation.lng')]}/>
       </CardContent>
       <CardFooter>
         <Button type="submit">Save Changes</Button>

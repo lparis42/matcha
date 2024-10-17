@@ -22,7 +22,7 @@ export function Component() {
   useEffect(()=>{
     if (status === AuthStatus.Authenticated)
       navigate("/browse")
-  },[status])
+  }, [status])
 
   const form = useForm<z.infer<typeof login>>({
     resolver: zodResolver(login),

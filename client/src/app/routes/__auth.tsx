@@ -7,18 +7,13 @@ import { useAccount } from "@/hook/useAccount";
 import { useAuth, AuthStatus } from "@/hook/useAuth";
 
 export function ErrorBoundary() {
-  const error = useRouteError()
+  useRouteError()
   return <Navigate to="/signin" />
 }
 
 export function Component() {
-  const { account, authenticate } = useAuth();
+  const { account } = useAccount();
   const location = useLocation();
-
-  useEffect(() => {
-    console.log("Authenticating...");
-    authenticate();
-  }, []);
 
   const isNoPictures = (location.pathname !== "/profile" && (!account.pictures || account.pictures.length === 0))
   return (

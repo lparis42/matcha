@@ -4,6 +4,7 @@ import BrowseList from '@/components/browse-list'
 import SortMenu from '@/components/sort-menu'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useLocation, useParams } from 'react-router-dom'
+import { useAccount } from '@/hook/useAccount'
 
 interface FiltersState {
   ageRange: [number, number];
@@ -17,6 +18,7 @@ function useQuery() {
 }
 
 export function Component() {
+  useAccount();
   const query = useQuery();
   const id = Number(query.get('id'));
   const [sortOption, setSortOption] = useState<string>("age");

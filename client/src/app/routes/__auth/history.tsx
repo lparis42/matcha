@@ -1,8 +1,10 @@
 import { useSocket } from '@/api/Socket';
+import { useAccount } from '@/hook/useAccount';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export function Component() {
+    useAccount();
     const [viewers, setViewers] = useState([])
     const [likers, setLikers] = useState([])
     const { eventLikers, eventViewers} = useSocket()

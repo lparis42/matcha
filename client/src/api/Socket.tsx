@@ -204,6 +204,7 @@ export const SocketProvider = ({ children }) => {
   };
 
   const eventAccount = async (message) => {
+    console.log(message);
     if (message.account == null) {
       setAccount(null);
       return;
