@@ -35,7 +35,7 @@ const convertToBase64 = (file: File) => {
 
 const options = {
   maxSizeMB: 1,
-  maxWidthOrHeight: 1920,
+  maxWidthOrHeight: 512,
   useWebWorker: true,
 };
 
@@ -47,13 +47,16 @@ const pictures_compress = async (file) => {
   try {
     // Compress the image file
     const compressedFile = await imageCompression(file, options);
-
+    if (file.size > options.maxSizeMB * 1024 * 1024) {
+      throw new Error("File size exceeds the 1mb limit");
+    }
     // Convert the compressed file to base64
     const base64: string = await convertToBase64(compressedFile) as string;
     return base64;
   }
   catch (error) {
-    console.error(error);
+    toast({title: error.message});
+    return null;
   }
 }
 
@@ -86,7 +89,7 @@ const prefix_pictures = (pictures) => {
 export function Component() {
     const { account: user } = useAccount();
     
-    const {eventEdit, eventGeolocation} = useSocket();
+    const {eventEdit, eventGeolocation, eventAccount} = useSocket();
     const form = useForm<z.infer<typeof profile>>({
       resolver: zodResolver(profile),
       defaultValues: {
@@ -110,13 +113,16 @@ export function Component() {
     const {setValue, getValues, watch} = form
 
     useEffect(() => {
-      const isNoPictures = (!user.pictures || user.pictures.length === 0)
+      const isNoPictures = (!user.pictures || user.pictures.length === 0 || user.pictures[0] === '')
       if (isNoPictures) {
         toast({title: "You need to upload at least one picture"})
       }
 
       async function geolocation() {
         const [err, data] = await eventGeolocation()
+        if (err) {
+          return
+        }
         setValue('geolocation', {lat: data.latitude, lng: data.longitude})
       }
       geolocation()
@@ -135,8 +141,8 @@ export function Component() {
         if (err) {
           console.error(err);
         } else {
+          eventAccount({account: user.id})
           toast({title: "Profile updated successfully"})
-          location.reload()
         }
       })
     }

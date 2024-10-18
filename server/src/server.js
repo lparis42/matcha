@@ -153,7 +153,7 @@ class Server {
   // Configure the Socket.IO server 
   configureSocketIoServer() {
     this.io = socketIo(this.server, { // Create a Socket.IO server
-      maxHttpBufferSize: 1e6, // Set the maximum HTTP buffer size to 1MB
+      maxHttpBufferSize: 2 * 1024 * 1024, // Set the maximum HTTP buffer size to 2MB
       cors: {
         origin: [`https://localhost:${process.env.HTTPS_PORT}`],
         methods: ['GET'],

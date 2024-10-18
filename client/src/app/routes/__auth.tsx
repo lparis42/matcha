@@ -15,7 +15,7 @@ export function Component() {
   const { account } = useAccount();
   const location = useLocation();
 
-  const isNoPictures = (location.pathname !== "/profile" && (!account.pictures || account.pictures.length === 0))
+  const isNoPictures = (location.pathname !== "/profile" && (!account.pictures || account.pictures.length === 0 || account.pictures[0] === ""));
   return (
       <>
           <Nav />
