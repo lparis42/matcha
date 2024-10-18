@@ -74,6 +74,7 @@ interface SocketValue {
   eventLocationPathname: Function;
   eventLocationPathnamePW: Function;
   eventGeolocation: Function;
+  eventAccount: Function;
 }
 
 const GeolocationPositionErrorNames = {
@@ -204,7 +205,6 @@ export const SocketProvider = ({ children }) => {
   };
 
   const eventAccount = async (message) => {
-    console.log(message);
     if (message.account == null) {
       setAccount(null);
       return;
@@ -542,7 +542,8 @@ export const SocketProvider = ({ children }) => {
     eventReport,
     eventLocationPathname,
     eventLocationPathnamePW,
-    eventGeolocation
+    eventGeolocation,
+    eventAccount,
   }
 
   if (socket === null) {
