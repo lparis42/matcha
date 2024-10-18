@@ -47,15 +47,15 @@ class Server {
     };
     this.db = new database(...Object.values(options));
     await this.db.connect();
-    await Promise.all([ // Reset the database tables for testing purposes
-      this.db.execute(this.db.drop('users_match')),
-      this.db.execute(this.db.drop('users_private')),
-      this.db.execute(this.db.drop('users_preview')),
-      this.db.execute(this.db.drop('users_public')),
-      this.db.execute(this.db.drop('users_session')),
-      this.db.execute(this.db.drop('users_report')),
-      this.db.execute(this.db.drop('users_notification')),
-    ]);
+    // await Promise.all([ // Reset the database tables for testing purposes
+    //   this.db.execute(this.db.drop('users_match')),
+    //   this.db.execute(this.db.drop('users_private')),
+    //   this.db.execute(this.db.drop('users_preview')),
+    //   this.db.execute(this.db.drop('users_public')),
+    //   this.db.execute(this.db.drop('users_session')),
+    //   this.db.execute(this.db.drop('users_report')),
+    //   this.db.execute(this.db.drop('users_notification')),
+    // ]);
     await Promise.all([
       this.db.execute(this.db.create('users_private', structure.database.users_private.columns)),
       this.db.execute(this.db.create('users_preview', structure.database.users_preview.columns)),
