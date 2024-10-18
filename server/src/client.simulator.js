@@ -18,6 +18,7 @@ class ClientSimulator {
             email: this.randomData('email'),
             first_name: this.randomData('first_name'),
             last_name: this.randomData('last_name'),
+            date_of_birth: this.randomData('date_of_birth'),
             gender: this.randomData('gender'),
             sexual_orientation: this.randomData('sexual_orientation'),
             biography: this.randomData('biography'),
@@ -132,6 +133,7 @@ class ClientSimulator {
         const data = {
             gender: this.data.gender,
             sexual_orientation: this.data.sexual_orientation,
+            date_of_birth: this.data.date_of_birth,
             biography: this.data.biography,
             common_tags: this.data.common_tags,
             pictures: [base64Image, null, null, null, null],
@@ -236,6 +238,11 @@ class ClientSimulator {
             case 'first_name':
             case 'last_name':
                 return generateRandomString(2, 35, alpha);
+            case 'date_of_birth':
+                const start = new Date(1920, 0, 1);
+                const end = new Date();
+                const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+                return randomDate.toISOString().slice(0, 10);
             case 'gender':
                 return structure.database.users_public.genders[Math.floor(Math.random() * 2)];
             case 'sexual_orientation':
