@@ -79,7 +79,10 @@ export function Nav() {
               {item.name}
             </a>
           ))}
-          <NotifButton />
+          <div className="flex gap-3">
+            <Button className="h-6 bg-red-500" onClick={handleLogout}>Logout</Button>
+            <NotifButton />
+          </div>
         </div>
       </div>
       
