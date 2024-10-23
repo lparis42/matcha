@@ -80,8 +80,8 @@ const ChatProfileCard = ({items}: ProfileCardProps) => {
                     if (!picture)
                         return null;
                     return (
-                    <CarouselItem key={index} className=''>
-                        <img src={`https://localhost:2000/images/${picture}`} alt="" className='object-cover aspect-square'/>
+                    <CarouselItem key={index} className='overflow-hidden w-full aspect-square'>
+                        <img src={`https://localhost:2000/images/${picture}`} alt="" className='aspect-square object-contain mx-auto'/>
                     </CarouselItem>)
                 })}
                 </CarouselContent>

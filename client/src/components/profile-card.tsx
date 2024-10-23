@@ -42,6 +42,8 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
         }
     }
 
+    console.log(items);
+
     if (!items) return (
         <Card className='overflow-hidden'>
             <Carousel>

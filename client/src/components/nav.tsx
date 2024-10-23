@@ -69,16 +69,15 @@ export function Nav() {
         id="mobile-menu"
       >
         <div className="px-2 pt-2 pb-3 space-y-1">
-          {navItems.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
-              onClick={() => setIsOpen(false)}
-            >
-              {item.name}
-            </a>
-          ))}
+        {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                {item.name}
+              </Link>
+            ))}
           <div className="flex gap-3">
             <Button className="h-6 bg-red-500" onClick={handleLogout}>Logout</Button>
             <NotifButton />

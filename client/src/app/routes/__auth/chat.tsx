@@ -126,7 +126,12 @@ export function Component ({
     }, []);
 
     useEffect(()=>{
-      setSelectedUser(usersstored[0])
+      if (selectedUser) {
+        const updatedUser = usersstored.find(user => user.id === selectedUser.id);
+        if (updatedUser) {
+          setSelectedUser(updatedUser);
+        }
+      }
     }, [usersstored])
 
     return (
@@ -170,7 +175,7 @@ export function Component ({
                 variant: "ghost",
               }))}
               onSelect={(user) => {
-                selectedUser(user)
+                setSelectedUser(user)
               }}
               isMobile={isMobile}
             />
