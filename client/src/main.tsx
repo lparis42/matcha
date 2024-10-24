@@ -14,11 +14,9 @@ import { ErrorBoundary } from './components/error-boundaries';
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <ErrorBoundary>
-    <Suspense fallback={<div>Loading...</div>}>
       <SocketProvider>
         <RouterProvider router={router} />
         <Toaster />
       </SocketProvider>
-    </Suspense>
   </ErrorBoundary>
 );

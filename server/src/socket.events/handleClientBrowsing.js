@@ -149,7 +149,8 @@ async function handleClientBrowsing(socket, data, cb) {
             picture: match.pictures[0],
             geolocation: match.geolocation,
             location: match.location,
-            online: match.online
+            online: match.online,
+            fame_rating: match.fame_rating,
         }));
 
         cb(null, data_to_return);

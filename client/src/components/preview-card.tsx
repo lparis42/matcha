@@ -19,6 +19,7 @@ interface ProfileCardProps {
         biography: string;
         interests: string[];
         pictures: string[];
+        picture?: string;
         location: string;
         fame_rating: number;
         online: boolean;
@@ -53,14 +54,17 @@ const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpe
                     <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
                     <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
                     <CarouselContent>
-                    {items?.pictures?.map((picture, index) => {
-                        if (!picture)
-                            return null;
-                        return (
-                        <CarouselItem key={index} className=''>
-                            <img src={`https://localhost:2000/images/${picture}`} alt="" className='object-cover aspect-square'/>
-                        </CarouselItem>)
-                    })}
+                    {
+                        items?.picture ? (
+                            <CarouselItem className='overflow-hidden w-full aspect-square'>
+                                <img src={`https://localhost:2000/images/${items.picture}`} alt="" className='aspect-square object-contain mx-auto'/>
+                            </CarouselItem>
+                        ) : (
+                            <CarouselItem className='overflow-hidden w-full aspect-square'>
+                                <img src={"https://placehold.co/520x520"} alt="" className='aspect-square object-contain mx-auto'/>
+                            </CarouselItem>
+                        )
+                    }
                     </CarouselContent>
                 </Carousel>
             </CardHeader>

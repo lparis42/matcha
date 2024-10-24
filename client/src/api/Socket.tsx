@@ -5,6 +5,11 @@ import useChatStore from "@/store";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import {io, Socket} from 'socket.io-client';
 
+interface SocketError {
+  message: string;
+  status?: number;
+}
+
 interface User {
     id: number;
     gender: string;
@@ -151,6 +156,12 @@ export const SocketProvider = ({ children }) => {
   
   const sendtoast = (message: { title: string }) => {
     toast(message);
+  };
+
+  const checkerror = (error: SocketError) => {
+    if (error.status === 401) {
+      setAccount(null);
+    }
   };
 
   const eventNotifications = (notifications: any) => {
@@ -332,12 +343,13 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  const eventEdit = useCallback((userData, callback: (err: Error | null, profile: User) => void) => {
+  const eventEdit = useCallback((userData, callback: (err: SocketError | null, profile: User) => void) => {
     if (socket === null) {
       return;
     }
-    socket.emit('client:edit', userData, (err: Error, message: User) => {
+    socket.emit('client:edit', userData, (err: SocketError, message: User) => {
       if (err) {
+        checkerror(err);
         sendtoast({ title: err.message });
         callback(err, null);
       } else {
@@ -348,9 +360,10 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventBrowsing = useCallback(async (browsing_start: number = 0, browsing_stop: number = 20, sort: string = "fame_rating") => {
-    const data: [err: Error, listProfils: object[]] = await new Promise((resolve) => {
-      socket.emit('client:browsing', { browsing_start, browsing_stop, sort }, (err: Error, listProfils: object[]) => {
+    const data: [err: SocketError, listProfils: object[]] = await new Promise((resolve) => {
+      socket.emit('client:browsing', { browsing_start, browsing_stop, sort }, (err: SocketError, listProfils: object[]) => {
           if (err) {
+              checkerror(err);
               sendtoast({ title: err.message });
               resolve([err, null]);
           } else {
@@ -364,9 +377,10 @@ export const SocketProvider = ({ children }) => {
   const eventView = useCallback(async (target_account: number) => {
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
-    const data: [err: Error, profile: object] = await new Promise((resolve) => {
-      socket.emit('client:view', { target_account: target_account }, (err: Error, profile: User) => {
+    const data: [err: SocketError, profile: object] = await new Promise((resolve) => {
+      socket.emit('client:view', { target_account: target_account }, (err: SocketError, profile: User) => {
         if (err) {
+          checkerror(err);
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
@@ -380,9 +394,10 @@ export const SocketProvider = ({ children }) => {
   const eventLike = useCallback(async (target_account: number) => {
       if (typeof target_account !== 'number')
         target_account = Number(prompt("Please enter the target account:"));
-      const data: [err: Error, message: object] = await new Promise((resolve) => {
-        socket.emit('client:like', { target_account: target_account }, (err: Error, data: object) => {
+      const data: [err: SocketError, message: object] = await new Promise((resolve) => {
+        socket.emit('client:like', { target_account: target_account }, (err: SocketError, data: object) => {
           if (err) {
+            checkerror(err);
             sendtoast({ title: err.message });
             resolve([err, null]);
           } else {
@@ -396,9 +411,10 @@ export const SocketProvider = ({ children }) => {
   const eventUnLike = useCallback(async (target_account: number) => {
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
-    const data: [err: Error, message: string] = await new Promise((resolve) => {
-      socket.emit('client:unlike', { target_account: target_account }, (err: Error, message: string) => {
+    const data: [err: SocketError, message: string] = await new Promise((resolve) => {
+      socket.emit('client:unlike', { target_account: target_account }, (err: SocketError, message: string) => {
         if (err) {
+          checkerror(err);
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
@@ -410,9 +426,10 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventViewers = useCallback(async () => {
-    const data: [err: Error, message: string] = await new Promise((resolve) => {
-      socket.emit('client:viewers', (err: Error, message: string) => {
+    const data: [err: SocketError, message: string] = await new Promise((resolve) => {
+      socket.emit('client:viewers', (err: SocketError, message: string) => {
         if (err) {
+          checkerror(err);
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
@@ -424,9 +441,10 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventLikers = useCallback(async () => {
-    const data: [err: Error, message: string] = await new Promise((resolve) => {
-      socket.emit('client:likers', (err: Error, message: string) => {
+    const data: [err: SocketError, message: string] = await new Promise((resolve) => {
+      socket.emit('client:likers', (err: SocketError, message: string) => {
         if (err) {
+          checkerror(err);
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
@@ -437,9 +455,10 @@ export const SocketProvider = ({ children }) => {
     return data;
   }, [socket]);
 
-  const eventMatch = useCallback((callback: (err: Error | null, message?: string) => void) => {
-    socket.emit('client:matchs', (err: Error, message: string) => {
+  const eventMatch = useCallback((callback: (err: SocketError | null, message?: string) => void) => {
+    socket.emit('client:matchs', (err: SocketError, message: string) => {
       if (err) {
+        checkerror(err);
         sendtoast({ title: err.message });
         callback(err);
       } else {
@@ -455,9 +474,10 @@ export const SocketProvider = ({ children }) => {
       target_match = Number(prompt("Please enter the target account:"));
       tosent = Math.random().toString(36).substring(3);
     }
-    const data: [err: Error, message: string] = await new Promise((resolve) => {
-      socket.emit('client:chat', { target_account: target_match, message: tosent }, (err: Error, message: string) => {
+    const data: [err: SocketError, message: string] = await new Promise((resolve) => {
+      socket.emit('client:chat', { target_account: target_match, message: tosent }, (err: SocketError, message: string) => {
         if (err) {
+          checkerror(err);
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
@@ -469,9 +489,10 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   const eventChatHistories = useCallback(async () => {
-    const data: [err: Error, message: string] = await new Promise((resolve) => {
-      socket.emit('client:chat_histories', (err: Error, message: string) => {
+    const data: [err: SocketError, message: string] = await new Promise((resolve) => {
+      socket.emit('client:chat_histories', (err: SocketError, message: string) => {
         if (err) {
+          checkerror(err);
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
@@ -485,9 +506,10 @@ export const SocketProvider = ({ children }) => {
   const eventBlock = useCallback(async (target_account: number) => {
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
-    const data: [err: Error, message: string] = await new Promise((resolve) => {
-      socket.emit('client:block', { target_account: target_account }, (err: Error, message: string) => {
+    const data: [err: SocketError, message: string] = await new Promise((resolve) => {
+      socket.emit('client:block', { target_account: target_account }, (err: SocketError, message: string) => {
         if (err) {
+          checkerror(err);
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
@@ -501,9 +523,10 @@ export const SocketProvider = ({ children }) => {
   const eventReport = useCallback(async (target_account: number) => {
     if (typeof target_account !== 'number')
       target_account = Number(prompt("Please enter the target account:"));
-    const data: [err: Error, message: string] = await new Promise((resolve) => {
-      socket.emit('client:report', { target_account: target_account }, (err: Error, message: string) => {
+    const data: [err: SocketError, message: string] = await new Promise((resolve) => {
+      socket.emit('client:report', { target_account: target_account }, (err: SocketError, message: string) => {
         if (err) {
+          checkerror(err);
           sendtoast({ title: err.message });
           resolve([err, null]);
         } else {
