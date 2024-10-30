@@ -43,12 +43,11 @@ const pictures_compress = async (file) => {
   if (file === null) {
     return null;
   }
-  // Compress the image file
   try {
     // Compress the image file
     const compressedFile = await imageCompression(file, options);
-    if (file.size > options.maxSizeMB * 1024 * 1024) {
-      throw new Error("File size exceeds the 1mb limit");
+    if (compressedFile.size > options.maxSizeMB * 1024 * 1024) {
+      throw new Error("File size exceeds the 1mb limit after compression");
     }
     // Convert the compressed file to base64
     const base64: string = await convertToBase64(compressedFile) as string;
