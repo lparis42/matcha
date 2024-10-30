@@ -1,5 +1,5 @@
 import { useSocket } from '@/api/Socket';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Carousel, CarouselPrevious, CarouselNext, CarouselContent, CarouselItem } from './ui/carousel';
 import { Badge } from './ui/badge';
@@ -7,6 +7,7 @@ import { constants } from '@/constants';
 import { GaugeIcon, HeartIcon, MapPinIcon, UserIcon, XIcon } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from './ui/use-toast';
+import { ListContext } from './browse-list';
 
 interface ProfileCardProps {
     items: {
@@ -32,20 +33,22 @@ interface ProfileCardProps {
 const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
     const { eventLike } = useSocket();
     const [isliked, setIsLiked] = useState(false);
+    const {dispatch} = useContext(ListContext);
 
     const handleClick = async () => {
         const [err, res] = await eventLike(items?.id);
         if (err) {
-            toast({title: err});
+            //toast({title: err});
         } else {
+            toast({title: 'you have liked this user successfully'});
             setIsLiked(true);
+            handleExpend(items?.id);
+            dispatch({type: 'REMOVE', payload: items?.id});
         }
     }
 
-    console.log(items);
-
     if (!items) return (
-        <Card className='overflow-hidden'>
+        <Card className={'overflow-hidden'}>
             <Carousel>
                 <CarouselPrevious className='absolute top-1/2 left-0 transform -translate-y-1/2 z-10'/>
                 <CarouselNext className='absolute top-1/2 right-0 transform -translate-y-1/2 z-10' />
@@ -80,7 +83,9 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
             </Carousel>
             <CardContent className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{items?.first_name}<br></br> {items?.last_name}</h3>
-                {items?.online ? "Online" : `Last seen ${items?.last_connection}`}
+                {items?.online ? "Online" : (
+                    items?.last_connection ? `Last seen ${items?.last_connection}`: ''
+                )}
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                   <MapPinIcon className="mr-2 h-4 w-4" />
                   {items?.location}
