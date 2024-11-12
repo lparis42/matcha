@@ -29,13 +29,13 @@ export const profile = z.object({
     date_of_birth: z.date(),
     gender: z.string(z.enum(constants.genders)),
     sexual_orientation: z.string(z.enum(constants.sexual_orientations)),
-    biography: z.string().min(1).max(255),
-    common_tags: z.array(z.string(z.enum(constants.interests))).min(1),
+    biography: z.string().min(1).max(255).optional(),
+    common_tags: z.array(z.string(z.enum(constants.interests))).min(1).optional(),
     pictures: z.array(z.union([z.string(), z.null()])).max(5),
     geolocation: z.object({
         lat: z.number(),
         lng: z.number()
-    })
+    }).optional()
 })
 
 export enum AuthStatus {

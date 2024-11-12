@@ -24,6 +24,12 @@ async function handleClientBrowsing(socket, data, cb) {
             this.db.select('users_private', ['blocked_accounts'], `id = ${session_account}`)
         ))[0].blocked_accounts;
 
+        //Get the id of account user liked
+        const liked_accounts = (await this.db.execute(
+            this.db.select('users_private', ['id'], `likers @> '{${session_account}}'`)
+        ));
+        console.log(liked_accounts);
+
         let gender_browsing = null;
         switch (account_data.sexual_orientation) {
             case 'Heterosexual':
@@ -39,8 +45,9 @@ async function handleClientBrowsing(socket, data, cb) {
             this.db.select('users_public',
                 ['id', 'first_name', 'date_of_birth', 'common_tags', 'pictures', 'fame_rating', 'geolocation', 'location', 'online', 'pictures'],
                 (blocked_accounts.length > 0 ? `id NOT IN (${blocked_accounts.join(',')}) AND ` : '') +
-                `id != ${session_account}` + (gender_browsing ? ` AND gender IN (${gender_browsing})` : ``))
-        );
+                `id != ${session_account}` + (gender_browsing ? ` AND gender IN (${gender_browsing})` : ``) +
+                (liked_accounts.length > 0 ? ` AND id NOT IN (${liked_accounts.map(account => account.id).join(',')})` : ``)
+        ));
         // Calculate the distance and age difference between the account and the matches
         const matches_with_calculated_data = matches.map((match) => {
             const distance = account_data.geolocation && match.geolocation ?

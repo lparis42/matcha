@@ -268,7 +268,7 @@ export const SocketProvider = ({ children }) => {
           toast({ title: err.message });
           resolve([err, null]);
         } else {
-          toast({ title: message });
+          //toast({ title: message });
           resolve([null, message]);
         }
       });
@@ -318,7 +318,7 @@ export const SocketProvider = ({ children }) => {
      if (err) {
        sendtoast({ title: err.message });
      } else {
-       sendtoast({ title: 'password reset succefully, clic the link send by email and your password will be in the mail' });
+       sendtoast({ title: 'password reset succefully, click the link send by email and your password will be in the mail' });
      }
    });
   }, [socket]);

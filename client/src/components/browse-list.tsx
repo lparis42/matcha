@@ -1,62 +1,8 @@
 import { useSocket } from "@/api/Socket"
 import PreviewCard from "./preview-card"
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useReducer, useState } from "react";
 import ItemProfile from "./item-profile";
 import { useToast } from "./ui/use-toast";
-
-
-const DATA = [
-    {
-        "id": 1,
-        "first_name": "User",
-        "date_of_birth": "1990-01-01",
-        "common_tags": ['Technology', 'Health', 'Business', 'Entertainment'],
-        "pictures": ["1_1722959364213_0.WebP"],
-        "geolocation": [40.7128, -74.0060],
-        "location": "New York, USA",
-        "online": true
-    },
-    {
-        "id": 2,
-        "first_name": "User",
-        "date_of_birth": "1985-05-15",
-        "common_tags": ['Technology', 'Health', 'Business'],
-        "pictures": ["1_1722959364213_0.WebP"],
-        "geolocation": [34.0522, -118.2437],
-        "location": "Los Angeles, USA",
-        "online": false,
-    },
-    {
-        "id": 3,
-        "first_name": "User",
-        "date_of_birth": "1992-07-20",
-        "common_tags": ['Business', 'Entertainment', 'Travel'],
-        "pictures": ["1_1722959364213_0.WebP"],
-        "geolocation": [51.5074, -0.1278],
-        "location": "London, UK",
-        "online": false,
-    },
-    {
-        "id": 4,
-        "first_name": "User",
-        "date_of_birth": "1988-11-30",
-        "common_tags": ['Technology', 'Health', 'Travel'],
-        "pictures": ["1_1722959364213_0.WebP"],
-        "geolocation": [48.8566, 2.3522],
-        "location": "Paris, France",
-        "online": false,
-    },
-    {
-        "id": 5,
-        "first_name": "User",
-        "date_of_birth": "1995-03-25",
-        "common_tags": ['Religion', 'Law'],
-        "pictures": ["1_1722959364213_0.WebP"],
-        "geolocation": [35.6895, 139.6917],
-        "location": "Tokyo, Japan",
-        "online": false,
-    }
-]
 
 interface FiltersState {
     ageRange: [number, number];
@@ -84,10 +30,24 @@ interface Profile {
     fame_rating: number;
 }
 
+export const ListContext = createContext(null);
+
+function listReducer(state: any, action: any) {
+    switch (action.type) {
+      case "REMOVE":
+        return state.filter((item: any) => item.id !== action.payload);
+      case "SET_PROFILES":
+        return action.payload;
+      default:
+        return state;
+    }
+  }
+
 export default function BrowseList({ filters, sortOption, userId }: BrowseListProps) {
     const {eventBrowsing, eventView} = useSocket()
     const [error, setError] = useState<Error | null>(null);
-    const [listProfils, setListProfils] = useState<any[] | null>(null);
+    //const [listProfils, setListProfils] = useState<any[] | null>(null);
+    const [listProfils, dispatch] = useReducer(listReducer, null);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -117,21 +77,21 @@ export default function BrowseList({ filters, sortOption, userId }: BrowseListPr
               }
             }
             
-            setListProfils(sortedProfiles);
+            dispatch({ type: 'SET_PROFILES', payload: sortedProfiles });
         }
 
         fetchProfiles();
     }, [filters, sortOption]);
-    
+
     if (error) return <div>Error: {error.message}</div>
     if (!listProfils) return <div>Loading...</div>
     
     return (
-        <>
-        {listProfils.map((item: any, index: number) => (
-            <ItemProfile key={index} items={item} initialExpanded={item.id === userId}/>
-        ))}
-        </>
+        <ListContext.Provider value={{ dispatch }}>
+          {listProfils.map((item: any, index: number) => (
+              <ItemProfile key={index} items={item} initialExpanded={item.id === userId}/>
+          ))}
+        </ListContext.Provider>
     )
 }
 

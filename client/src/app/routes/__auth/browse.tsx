@@ -2,8 +2,7 @@ import { useCallback, useState } from 'react'
 import Filters from '@/components/filters'
 import BrowseList from '@/components/browse-list'
 import SortMenu from '@/components/sort-menu'
-import { Checkbox } from '@/components/ui/checkbox'
-import { useLocation, useParams } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useAccount } from '@/hook/useAccount'
 
 interface FiltersState {
