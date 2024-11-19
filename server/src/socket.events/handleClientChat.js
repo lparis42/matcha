@@ -53,7 +53,7 @@ async function handleClientChat(socket, data, cb) {
                 this.db.select('users_session', ['sid'], `account = ${target_account}`)
             ))[0].sid;
             // Emit the notification to each socket of the target account
-            this.io.to(target_session_id).emit('server:notification', { type: "chat", message: `${account_data.username}:${message}` });
+            this.io.to(target_session_id).emit('server:notification', { type: "chat", account_id: session_account, message: `${account_data.username}:${message}` });
         } else {
             // Save the notification for the target account
             await this.db.execute(

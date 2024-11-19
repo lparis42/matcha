@@ -25,6 +25,12 @@ async function handleClientView(socket, data, cb) {
 
         // Update target account viewers and fame rating, and current account view history
         if (target_account !== session_account) {
+            // Add 'like' if target is already liked by session
+            const target_likers = (await this.db.execute(
+                this.db.select('users_private', ['likers'], `id = '${target_account}'`)
+            ))[0].likers;
+
+            target_public_data.liked = target_likers.includes(session_account) ? true : false
 
             // Update target account viewers and fame rating
             if (!target_viewers.includes(session_account)) {
@@ -32,6 +38,7 @@ async function handleClientView(socket, data, cb) {
                     this.db.update('users_public', { fame_rating: 1 }, `id = '${target_account}'`, 'ADD') +
                     this.db.update('users_private', { viewers: session_account }, `id = '${target_account}'`, 'ARRAY_APPEND')
                 );
+
 
                 // Check if the target account is online
                 if ((await this.db.execute(

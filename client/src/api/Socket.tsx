@@ -165,12 +165,12 @@ export const SocketProvider = ({ children }) => {
   };
 
   const eventNotifications = (notifications: any) => {
+    console.log(notifications)
+    setNotifications(prev => [...prev, notifications]);
     if (notifications.type === "chat")
     {
       eventNewMessage(notifications.message)
     }
-    else
-      setNotifications(prev => [...prev, notifications]);
   };
 
   const clearNotifications = () => {

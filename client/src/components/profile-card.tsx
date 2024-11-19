@@ -25,7 +25,8 @@ interface ProfileCardProps {
         geolocation: number[],
         location: string,
         online: boolean,
-        last_connection: Date
+        last_connection: Date,
+        liked: boolean
     },
     handleExpend: (index: number) => void 
   }
@@ -34,6 +35,11 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
     const { eventLike } = useSocket();
     const [isliked, setIsLiked] = useState(false);
     const {dispatch} = useContext(ListContext);
+
+    useEffect(() => {
+        if (items?.liked !== undefined)
+            setIsLiked(items?.liked)
+    }, [items])
 
     const handleClick = async () => {
         const [err, res] = await eventLike(items?.id);
