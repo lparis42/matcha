@@ -30,15 +30,15 @@ async function handleClientUnlike(socket, data, cb) {
                 this.db.update('users_private', { likers: session_account }, `id = '${target_account}'`, 'ARRAY_REMOVE')
             );
 
-            // Update match status
-            await this.db.execute(
-                this.db.update('users_match', { online: false }, `accounts @> ARRAY[${session_account}, ${target_account}]`)
-            );
-
             // Get the match id
             const match_id = (await this.db.execute(
                 this.db.select('users_match', ['id'], `accounts @> ARRAY[${session_account}, ${target_account}]`)
             ))[0]?.id;
+
+            // Update match status
+            await this.db.execute(
+                this.db.delete('users_match', `accounts @> ARRAY[${session_account}, ${target_account}]`)
+            );
 
             // Check if the target account is online
             if ((await this.db.execute(
