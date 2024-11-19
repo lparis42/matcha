@@ -60,7 +60,7 @@ async function handleClientBrowsing(socket, data, cb) {
                 : 1000;
             return { ...match, distance, age_difference: Math.abs(age_difference) };
         });
-        console.log(account_data)
+        
         // Sort the matches by common tags, fame rating, location and age difference
         const sorted_matches = matches_with_calculated_data.sort((a, b) => {
             
