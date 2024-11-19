@@ -17,7 +17,7 @@ function useQuery() {
 }
 
 export function Component() {
-  useAccount();
+  // useAccount();
   const query = useQuery();
   const id = Number(query.get('id'));
   const [sortOption, setSortOption] = useState<string>("age");

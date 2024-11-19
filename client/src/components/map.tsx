@@ -51,11 +51,11 @@ const MapView = ({setter, default_value}) => {
 
   return (
     <div>
+  {/* // @ts-ignore */}
       <MapContainer center={default_value} zoom={13} style={{ height: '500px', width: '100%' }}>
         <MapUpdater center={default_value} />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <LocationMarker setSelectedPosition={setSelectedPosition} default_value={default_value}/>
       </MapContainer>

@@ -57,7 +57,7 @@ setTimeout(async () => {
     await process('Login', clientSimulators);
     // Geolocation simulation
     console.info(`ClientSimulator - Geolocation simulation`);
-    await process('Geolocation', clientSimulators, { latitude: 48.8566, longitude: 2.3522 });
+    //await process('Geolocation', clientSimulators, { latitude: 48.8566, longitude: 2.3522 });
     // Edit simulation
     console.info(`ClientSimulator - Edit simulation`);
     await process('Edit', clientSimulators);
