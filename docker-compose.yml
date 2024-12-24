@@ -7,6 +7,10 @@ services:
     ports:
       - "5432:5432"
 
+  wait-for-it:
+    image: busybox
+    command: /bin/sh -c "while ! nc -z postgres 5432; do sleep 1; done;"
+
   server:
     build:
       context: .
@@ -15,7 +19,7 @@ services:
       CLIENT_DIST_PATH: ${CLIENT_DIST_PATH}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_HOST: postgres
       DATABASE_PORT: ${DATABASE_PORT}
       SESSION_MIDDLEWARE_SECRET: ${SESSION_MIDDLEWARE_SECRET}
       SESSION_MIDDLEWARE_RESAVE: ${SESSION_MIDDLEWARE_RESAVE}
@@ -32,5 +36,6 @@ services:
       NODE_ENV: ${NODE_ENV}
     depends_on:
       - postgres
+      - wait-for-it
     ports:
       - "2000:2000"
