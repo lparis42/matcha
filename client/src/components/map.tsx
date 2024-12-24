@@ -56,6 +56,7 @@ const MapView = ({setter, default_value}) => {
         <MapUpdater center={default_value} />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={"&copy; <a href='https://www.openstreetmap.org/copyright'>"}
         />
         <LocationMarker setSelectedPosition={setSelectedPosition} default_value={default_value}/>
       </MapContainer>

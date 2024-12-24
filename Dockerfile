@@ -1,6 +1,7 @@
-FROM node:lts
+FROM node:20-alpine
 WORKDIR /usr/src/app
 RUN corepack enable
+
 # Copy package.json and package-lock.json
 COPY . .
 

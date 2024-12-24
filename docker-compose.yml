@@ -7,10 +7,6 @@ services:
     ports:
       - "5432:5432"
 
-  wait-for-it:
-    image: busybox
-    command: /bin/sh -c "while ! nc -z postgres 5432; do sleep 1; done;"
-
   server:
     build:
       context: .
@@ -36,6 +32,6 @@ services:
       NODE_ENV: ${NODE_ENV}
     depends_on:
       - postgres
-      - wait-for-it
     ports:
       - "2000:2000"
+    restart: "no"
