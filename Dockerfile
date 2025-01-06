@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20-slim
 WORKDIR /usr/src/app
 RUN corepack enable
 
@@ -15,4 +15,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Start the application
-CMD ["npm", "run", "server"]
+CMD ["npm", "run", "start"]

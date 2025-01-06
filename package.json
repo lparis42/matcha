@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "client": "npm run dev --prefix client",
     "server": "npm run dev --prefix server",
+    "start": "npm run start --prefix server",
     "build": "npm run build --prefix client",
     "dev": "concurrently \"npm run client\" \"npm run server\" ",
     "update": "git add * && git commit -am 'update' && git push",
