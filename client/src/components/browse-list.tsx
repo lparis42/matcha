@@ -3,6 +3,7 @@ import PreviewCard from "./preview-card"
 import { createContext, useContext, useEffect, useReducer, useState } from "react";
 import ItemProfile from "./item-profile";
 import { useToast } from "./ui/use-toast";
+import { interests_to_int } from "@/app/routes/__auth/profile";
 
 interface FiltersState {
     ageRange: [number, number];
@@ -113,7 +114,8 @@ function filterProfiles(profiles: any[], filters: FiltersState): any[] {
   return profiles.filter(profile => {
     const ageMatch = profile.age >= filters.ageRange[0] && profile.age <= filters.ageRange[1];
     const kmMatch = profile.distance <= filters.kmRange[0];
-    const interestsMatch = filters.interests.every(interest => profile.common_tags.includes(interest));
+    const filterinterestint = interests_to_int(filters.interests)
+    const interestsMatch = filterinterestint.every(interest => profile.common_tags.includes(interest));
     return ageMatch && interestsMatch && kmMatch
   });
 }

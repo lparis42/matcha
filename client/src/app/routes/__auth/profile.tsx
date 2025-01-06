@@ -59,7 +59,7 @@ const pictures_compress = async (file) => {
   }
 }
 
-const interests_to_int = (interests) => {
+export const interests_to_int = (interests) => {
   return interests.map((interest) => {
     return constants.interests.indexOf(interest)
   })
