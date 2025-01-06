@@ -3,6 +3,19 @@ const path = require('path');
 const structure = require('./structure');
 const sharp = require('sharp');
 
+const GEO_DATA = [
+    [2.3522219, 48.856614],
+    [2.3345947, 48.8602941],
+    [2.373047, 48.8529682],
+    [2.2890119, 48.873782],
+    [2.349014, 48.853924],
+    [2.312373, 48.865633],
+    [2.376198, 48.841849],
+    [2.285174, 48.853403],
+    [2.330628, 48.880062],
+    [2.321786, 48.871943]
+]
+
 class ClientSimulator {
     constructor() {
         // Connexion au serveur Socket.IO
@@ -239,8 +252,8 @@ class ClientSimulator {
             case 'last_name':
                 return generateRandomString(2, 35, alpha);
             case 'date_of_birth':
-                const start = new Date(1920, 0, 1);
-                const end = new Date();
+                const start = new Date(1990, 0, 1);
+                const end = new Date(2005, 0, 1);
                 const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
                 return randomDate.toISOString().slice(0, 10);
             case 'gender':
@@ -252,7 +265,7 @@ class ClientSimulator {
             case 'common_tags':
                 return Array.from({ length: 5 }, () => Math.floor(Math.random() * structure.database.users_public.common_tags.length));
             case 'geolocation':
-                return [Math.random() * 180 - 90, Math.random() * 360 - 180];
+                return GEO_DATA[Math.floor(Math.random() * 10)];
         }
     }
 }
