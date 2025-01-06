@@ -4,16 +4,16 @@ const structure = require('./structure');
 const sharp = require('sharp');
 
 const GEO_DATA = [
-    [2.3522219, 48.856614],
-    [2.3345947, 48.8602941],
-    [2.373047, 48.8529682],
-    [2.2890119, 48.873782],
-    [2.349014, 48.853924],
-    [2.312373, 48.865633],
-    [2.376198, 48.841849],
-    [2.285174, 48.853403],
-    [2.330628, 48.880062],
-    [2.321786, 48.871943]
+    [48.856614, 2.3522219],
+    [48.8602941, 2.3345947],
+    [48.8529682, 2.373047],
+    [48.873782, 2.2890119],
+    [48.853924, 2.349014],
+    [48.865633, 2.312373],
+    [48.841849, 2.376198],
+    [48.853403, 2.285174],
+    [48.880062, 2.330628],
+    [48.871943, 2.321786]
 ]
 
 class ClientSimulator {
@@ -158,8 +158,8 @@ class ClientSimulator {
         return this.emit('client:browsing', data);
     }
 
-    async simulateGeolocation(data) {
-        return this.emit('client:geolocation', data);
+    async simulateGeolocation() {
+        return this.emit('client:geolocation', { latitude: this.data.geolocation[0], longitude: this.data.geolocation[1] });
     }
 
     async simulateLikers() {

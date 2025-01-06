@@ -1,5 +1,27 @@
 const structure = require("../structure");
 
+function haversineDistance(account, match) {
+
+    const lat1 = account.geolocation[0] 
+    const lon1 = account.geolocation[1]
+    const lat2 = match.geolocation[0]
+    const lon2 = match.geolocation[1];
+
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in kilometers
+
+    return distance;
+}
+
 async function handleClientBrowsing(socket, data, cb) {
     try {
         // Extract data
@@ -28,7 +50,6 @@ async function handleClientBrowsing(socket, data, cb) {
         const liked_accounts = (await this.db.execute(
             this.db.select('users_private', ['id'], `likers @> '{${session_account}}'`)
         ));
-        console.log(liked_accounts);
 
         let gender_browsing = null;
         switch (account_data.sexual_orientation) {
@@ -48,13 +69,10 @@ async function handleClientBrowsing(socket, data, cb) {
                 `id != ${session_account}` + (gender_browsing ? ` AND gender IN (${gender_browsing})` : ``) +
                 (liked_accounts.length > 0 ? ` AND id NOT IN (${liked_accounts.map(account => account.id).join(',')})` : ``)
         ));
+
         // Calculate the distance and age difference between the account and the matches
         const matches_with_calculated_data = matches.map((match) => {
-            const distance = account_data.geolocation && match.geolocation ?
-                Math.sqrt(
-                    Math.pow((account_data.geolocation[0] - match.geolocation[0]) / 111.12, 2) +
-                    Math.pow((account_data.geolocation[1] - match.geolocation[1]) / 111.12, 2))
-                : 1000;
+            const distance = match.geolocation && account_data.geolocation ? haversineDistance(account_data, match) : 1000;
             const age_difference = match.date_of_birth && account_data.date_of_birth ?
                 new Date(match.date_of_birth).getFullYear() - new Date(account_data.date_of_birth).getFullYear()
                 : 1000;
@@ -158,6 +176,7 @@ async function handleClientBrowsing(socket, data, cb) {
             location: match.location,
             online: match.online,
             fame_rating: match.fame_rating,
+            distance: match.distance,
         }));
 
         cb(null, data_to_return);

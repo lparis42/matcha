@@ -19,6 +19,7 @@ interface ItemProfileProps {
         online: boolean;
         age: number;
         common_tags: string[];
+        distance: number;
     },
     initialExpanded
 }

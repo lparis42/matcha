@@ -9,7 +9,6 @@ interface FiltersState {
   ageRange: [number, number];
   kmRange: [number];
   interests: string[];
-  isSuggested: boolean;
 }
 
 function useQuery() {
@@ -25,8 +24,7 @@ export function Component() {
   const [filters, setFilters] = useState<FiltersState>({
       ageRange: [18, 80],
       kmRange: [5],
-      interests: [],
-      isSuggested: true
+      interests: []
   });
 
   const handleSortOptionChange = useCallback((option: string) => {

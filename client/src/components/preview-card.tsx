@@ -25,6 +25,7 @@ interface ProfileCardProps {
         online: boolean;
         age: number;
         common_tags: string[];
+        distance: number;
   }
 
 const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpend: (index: number) => void;}) => {
@@ -77,6 +78,9 @@ const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpe
                     <div className="flex items-center text-sm text-gray-500 mb-2">
                     <MapPinIcon className="mr-2 h-4 w-4" />
                     {items?.location}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                    {Math.floor(items?.distance)} km
                     </div>
                     <div className="flex items-center text-sm text-gray-500 mb-2">
                     <UserIcon className="mr-2 h-4 w-4" />

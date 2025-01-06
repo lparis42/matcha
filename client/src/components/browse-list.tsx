@@ -100,8 +100,8 @@ function sortProfiles(profiles: any[], sortOption: string): any[] {
     switch (sortOption) {
       case "age":
         return profiles.sort((a, b) => a.age - b.age);
-    //  case "proximity":
-    //    return profiles.sort((a, b) => a.distance - b.distance);
+      case "proximity":
+        return profiles.sort((a, b) => a.distance - b.distance);
       case "common_tags":
         return profiles.sort((a, b) => b.tags.length - a.tags.length);
       default:
@@ -112,9 +112,9 @@ function sortProfiles(profiles: any[], sortOption: string): any[] {
 function filterProfiles(profiles: any[], filters: FiltersState): any[] {
   return profiles.filter(profile => {
     const ageMatch = profile.age >= filters.ageRange[0] && profile.age <= filters.ageRange[1];
-    //const kmMatch = profile.distance <= filters.kmRange[0];
+    const kmMatch = profile.distance <= filters.kmRange[0];
     const interestsMatch = filters.interests.every(interest => profile.common_tags.includes(interest));
-    return ageMatch && interestsMatch //&& kmMatch
+    return ageMatch && interestsMatch && kmMatch
   });
 }
 
