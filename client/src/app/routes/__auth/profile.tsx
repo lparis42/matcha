@@ -97,7 +97,7 @@ export function Component() {
         first_name: user.first_name,
         last_name: user.last_name,
         email: user.email,
-        date_of_birth: user.date_of_birth ? new Date(user.date_of_birth) : new Date(),
+        date_of_birth: user.date_of_birth ? new Date(user.date_of_birth) : new Date(2000, 1, 1),
         biography: user.biography || "",
         common_tags: user.common_tags ? interests_to_string(user.common_tags) : [],
         pictures: prefix_pictures(user.pictures),

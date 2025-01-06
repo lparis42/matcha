@@ -71,7 +71,7 @@ const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpe
             </CardHeader>
             <CardContent className="p-4 flex-grow flex flex-col">
                 <div className=''>
-                    <h3 className="font-semibold text-lg mb-2">{items?.first_name}</h3>
+                    <h3 className="font-semibold text-lg mb-2 break-words">{items?.first_name}</h3>
                     {items?.online ?
                         <h2 className="text-sm mb-2 text-green-600">Online</h2>
                         : <h2 className="text-sm mb-2 text-red-600">Offline</h2>}
