@@ -35,6 +35,10 @@ export function Component() {
         navigate("/")
     }
 
+    if (!location.search.includes('activation_key')) {
+        return <></>
+    }
+
     return (
         <main className="flex items-center justify-center p-6">
         <div className="grid gap-8">
