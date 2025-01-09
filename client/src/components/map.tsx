@@ -64,7 +64,7 @@ const MapView = ({setter, default_value}) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution={"&copy; <a href='https://www.openstreetmap.org/copyright'>"}
         />
-        <LocationMarker setSelectedPosition={setSelectedPosition} default_value={default_value}/>
+        <LocationMarker setSelectedPosition={setSelectedPosition} default_value={selectedPosition}/>
       </MapContainer>
     </div>
   );

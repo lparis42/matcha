@@ -133,7 +133,7 @@ export function Component() {
       const data = {...values,
         geolocation: 
         {
-          lattitude: values.geolocation.lat,
+          latitude: values.geolocation.lat,
           longitude: values.geolocation.lng
         },
         common_tags: interests_to_int(values.common_tags)

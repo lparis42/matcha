@@ -120,7 +120,7 @@ async function handleClientEdit(socket, data, cb) {
             account_public_data.biography = biography || account_public_data.biography;
             account_public_data.common_tags = common_tags || account_public_data.common_tags;
             account_public_data.geolocation = geolocation || account_public_data.geolocation;
-            account_public_data.location = geolocation ? await getAddressByGeolocation(geolocation.lattitude, geolocation.longitude) : account_public_data.location;
+            account_public_data.location = geolocation ? await getAddressByGeolocation(geolocation.latitude, geolocation.longitude) : account_public_data.location;
 
             await this.db.execute(
                 this.db.update('users_public', account_public_data, `id = '${session_account}'`)

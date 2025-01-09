@@ -4,16 +4,16 @@ const structure = require('./structure');
 const sharp = require('sharp');
 
 const GEO_DATA = [
-    [48.856614, 2.3522219],
-    [48.8602941, 2.3345947],
-    [48.8529682, 2.373047],
-    [48.873782, 2.2890119],
-    [48.853924, 2.349014],
-    [48.865633, 2.312373],
-    [48.841849, 2.376198],
-    [48.853403, 2.285174],
-    [48.880062, 2.330628],
-    [48.871943, 2.321786]
+    { latitude: 48.856614, longitude: 2.3522219 },
+    { latitude: 48.8602941, longitude: 2.3345947 },
+    { latitude: 48.8529682, longitude: 2.373047 },
+    { latitude: 48.873782, longitude: 2.2890119 },
+    { latitude: 48.853924, longitude: 2.349014 },
+    { latitude: 48.865633, longitude: 2.312373 },
+    { latitude: 48.841849, longitude: 2.376198 },
+    { latitude: 48.853403, longitude: 2.285174 },
+    { latitude: 48.880062, longitude: 2.330628 },
+    { latitude: 48.871943, longitude: 2.321786 }
 ]
 
 class ClientSimulator {
@@ -150,6 +150,7 @@ class ClientSimulator {
             biography: this.data.biography,
             common_tags: this.data.common_tags,
             pictures: [base64Image, null, null, null, null],
+            geolocation: this.data.geolocation,
         };
         return this.emit('client:edit', data);
     }
@@ -159,7 +160,7 @@ class ClientSimulator {
     }
 
     async simulateGeolocation() {
-        return this.emit('client:geolocation', { latitude: this.data.geolocation[0], longitude: this.data.geolocation[1] });
+        return this.emit('client:geolocation', this.data.geolocation);
     }
 
     async simulateLikers() {

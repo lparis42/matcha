@@ -20,6 +20,7 @@ interface ItemProfileProps {
         age: number;
         common_tags: string[];
         distance: number;
+        last_connection: Date;
     },
     initialExpanded
 }
@@ -34,7 +35,7 @@ export default function ItemProfile({items, initialExpanded = false}: ItemProfil
     return (
         <>
             {isExpanded ? (
-                <ViewCard id={items.id} handleExpend={toggleCard}/>
+                <ViewCard id={items.id} item={items} handleExpend={toggleCard}/>
             ) : (
                 <PreviewCard items={items} handleExpend={toggleCard} />
             )}

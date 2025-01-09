@@ -64,7 +64,7 @@ async function handleClientBrowsing(socket, data, cb) {
         }
         let matches = await this.db.execute(
             this.db.select('users_public',
-                ['id', 'first_name', 'date_of_birth', 'common_tags', 'pictures', 'fame_rating', 'geolocation', 'location', 'online', 'pictures'],
+                ['id', 'first_name', 'date_of_birth', 'common_tags', 'pictures', 'fame_rating', 'geolocation', 'location', 'online', 'pictures', 'last_connection'],
                 (blocked_accounts.length > 0 ? `id NOT IN (${blocked_accounts.join(',')}) AND ` : '') +
                 `id != ${session_account}` + (gender_browsing ? ` AND gender IN (${gender_browsing})` : ``) +
                 (liked_accounts.length > 0 ? ` AND id NOT IN (${liked_accounts.map(account => account.id).join(',')})` : ``)
@@ -83,8 +83,9 @@ async function handleClientBrowsing(socket, data, cb) {
         const sorted_matches = matches_with_calculated_data.sort((a, b) => {
             
             const sorting = (a, b) => {
-
-                if (sort === 'common_tags') {
+                const hasCommonTags = Array.isArray(account_data.common_tags) && account_data.common_tags.length > 0;
+            
+                if (sort === 'common_tags' && hasCommonTags) {
                     const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
                     const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
                     if (a_common_tags.length !== b_common_tags.length) {
@@ -105,10 +106,12 @@ async function handleClientBrowsing(socket, data, cb) {
                     if (a_fame_difference !== b_fame_difference) {
                         return a_fame_difference - b_fame_difference;
                     }
-                    const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
-                    const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
-                    if (a_common_tags.length !== b_common_tags.length) {
-                        return b_common_tags.length - a_common_tags.length;
+                    if (hasCommonTags) {
+                        const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
+                        const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
+                        if (a_common_tags.length !== b_common_tags.length) {
+                            return b_common_tags.length - a_common_tags.length;
+                        }
                     }
                     if (a.age_difference !== b.age_difference) {
                         return a.age_difference - b.age_difference;
@@ -118,10 +121,12 @@ async function handleClientBrowsing(socket, data, cb) {
                     if (a.distance !== b.distance) {
                         return a.distance - b.distance;
                     }
-                    const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
-                    const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
-                    if (a_common_tags.length !== b_common_tags.length) {
-                        return b_common_tags.length - a_common_tags.length;
+                    if (hasCommonTags) {
+                        const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
+                        const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
+                        if (a_common_tags.length !== b_common_tags.length) {
+                            return b_common_tags.length - a_common_tags.length;
+                        }
                     }
                     const a_fame_difference = Math.abs(a.fame_rating - account_data.fame_rating);
                     const b_fame_difference = Math.abs(b.fame_rating - account_data.fame_rating);
@@ -133,10 +138,12 @@ async function handleClientBrowsing(socket, data, cb) {
                     if (a.age_difference !== b.age_difference) {
                         return a.age_difference - b.age_difference;
                     }
-                    const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
-                    const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
-                    if (a_common_tags.length !== b_common_tags.length) {
-                        return b_common_tags.length - a_common_tags.length;
+                    if (hasCommonTags) {
+                        const a_common_tags = Array.isArray(a.common_tags) ? a.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
+                        const b_common_tags = Array.isArray(b.common_tags) ? b.common_tags.filter(tag => account_data.common_tags.includes(tag)) : [];
+                        if (a_common_tags.length !== b_common_tags.length) {
+                            return b_common_tags.length - a_common_tags.length;
+                        }
                     }
                     const a_fame_difference = Math.abs(a.fame_rating - account_data.fame_rating);
                     const b_fame_difference = Math.abs(b.fame_rating - account_data.fame_rating);
@@ -177,6 +184,7 @@ async function handleClientBrowsing(socket, data, cb) {
             online: match.online,
             fame_rating: match.fame_rating,
             distance: match.distance,
+            last_connection: match.last_connection,
         }));
 
         cb(null, data_to_return);

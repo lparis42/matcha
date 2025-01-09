@@ -8,6 +8,7 @@ import { GaugeIcon, HeartIcon, MapPinIcon, UserIcon, XIcon } from 'lucide-react'
 import { Button } from './ui/button';
 import { toast } from './ui/use-toast';
 import { ListContext } from './browse-list';
+import { calculateLastConnection } from '@/lib/utils';
 
 interface ProfileCardProps {
     items: {
@@ -25,6 +26,7 @@ interface ProfileCardProps {
         geolocation: number[],
         location: string,
         online: boolean,
+        distance: number,
         last_connection: Date,
         liked: boolean
     },
@@ -90,11 +92,14 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
             <CardContent className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{items?.first_name}<br></br> {items?.last_name}</h3>
                 {items?.online ? "Online" : (
-                    items?.last_connection ? `Last seen ${items?.last_connection}`: ''
+                    items?.last_connection ? `${calculateLastConnection(items?.last_connection)}`: ''
                 )}
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                   <MapPinIcon className="mr-2 h-4 w-4" />
                   {items?.location}
+                </div>
+                <div className="flex items-center text-sm text-gray-500 mb-2">
+                {Math.floor(items?.distance)} km
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                   <UserIcon className="mr-2 h-4 w-4" />

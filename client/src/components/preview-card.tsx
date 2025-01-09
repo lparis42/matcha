@@ -7,6 +7,7 @@ import { constants } from '@/constants';
 import { EyeIcon, GaugeIcon, MapPinIcon, UserIcon } from 'lucide-react';
 import { Button } from './ui/button';
 import ViewCard from './view-card';
+import { calculateLastConnection } from '@/lib/utils';
 
 interface ProfileCardProps {
         id: number;
@@ -26,6 +27,7 @@ interface ProfileCardProps {
         age: number;
         common_tags: string[];
         distance: number;
+        last_connection: Date;
   }
 
 const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpend: (index: number) => void;}) => {
@@ -74,7 +76,7 @@ const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpe
                     <h3 className="font-semibold text-lg mb-2 break-words">{items?.first_name}</h3>
                     {items?.online ?
                         <h2 className="text-sm mb-2 text-green-600">Online</h2>
-                        : <h2 className="text-sm mb-2 text-red-600">Offline</h2>}
+                        : <h2 className="text-sm mb-2">{calculateLastConnection(items?.last_connection)}</h2>}
                     <div className="flex items-center text-sm text-gray-500 mb-2">
                     <MapPinIcon className="mr-2 h-4 w-4" />
                     {items?.location}

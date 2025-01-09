@@ -32,6 +32,7 @@ interface User {
     common_tags: number[];
     geolocation: {lat: number, lng: number};
     messages: Message[];
+    distance: number;
 }
 
 export type Register = {

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import ProfileCard from "./profile-card";
 import { useToast } from "./ui/use-toast";
 
-export default function ViewCard ({ id, handleExpend }: { id: Number, handleExpend: (index: number) => void }) {
+export default function ViewCard ({ id, item, handleExpend }: { id: Number, item, handleExpend: (index: number) => void }) {
     const { eventView } = useSocket();
     const [items, setItems] = useState(null);
     const {toast} = useToast();
@@ -14,7 +14,7 @@ export default function ViewCard ({ id, handleExpend }: { id: Number, handleExpe
             if (err) {
                 toast({title: err.message});
             } else {
-                setItems(profile);
+                setItems({...profile, distance: item.distance});
             }
         }
         fetchProfile();
