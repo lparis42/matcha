@@ -262,9 +262,9 @@ export const SocketProvider = ({ children }) => {
     return data;
   }, [socket]);
 
-  const eventLocationPathnamePW = useCallback(async (activation_key) => {
+  const eventLocationPathnamePW = useCallback(async (activation_key, new_password) => {
     const data: [err: Error, message: string] = await new Promise((resolve) => {
-      socket.emit('client:password_reset_confirmation', { activation_key: activation_key }, (err, message) => {
+      socket.emit('client:password_reset_confirmation', { activation_key: activation_key, new_password: new_password }, (err, message) => {
         if (err) {
           toast({ title: err.message });
           resolve([err, null]);

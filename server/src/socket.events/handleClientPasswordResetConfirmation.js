@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const validator = require('validator');
 
 async function handleClientPasswordResetConfirmation(socket, data, cb) {
     
@@ -8,9 +9,13 @@ async function handleClientPasswordResetConfirmation(socket, data, cb) {
         if (session_account) {
             throw { client: 'Cannot reset password while logged in', status: 403 };
         }
-        const { activation_key } = data;
+        const { activation_key, new_password } = data;
+        console.log(activation_key)
         if (!activation_key || typeof activation_key !== 'string' || activation_key.length !== 20) {
             throw { client: 'Invalid password reset key', status: 400 };
+        }
+        if (!new_password || typeof new_password !== 'string' || !validator.isLength(new_password, { min: 8, max: 20 }) || !validator.isAlphanumeric(new_password)) {
+            throw { client: 'Invalid password', status: 400 };
         }
         const email = (await this.db.execute(
             this.db.select('users_private', ['email'], `password_reset_key = '${activation_key}'`)
@@ -18,16 +23,6 @@ async function handleClientPasswordResetConfirmation(socket, data, cb) {
         if (!email) {
             throw { client: 'Invalid password reset key', status: 400 };
         }
-        
-        // Send the new password by email
-        const new_password = this.generateSecurePassword(20);
-        await this.email.post({
-            from: 'email@server.com',
-            to: email,
-            subject: 'New password',
-            html: `Here is your new password: ${new_password}`
-        });
-        console.log(new_password)
 
         // Update the password in the database
         const hash_password = await bcrypt.hash(new_password, 10);
