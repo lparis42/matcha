@@ -21,7 +21,7 @@ import { useSocket } from "@/api/Socket";
 import imageCompression from 'browser-image-compression';
 import MapView from "@/components/map";
 import { toast } from "@/components/ui/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAccount } from "@/hook/useAccount";
 
 const convertToBase64 = (file: File) => {
@@ -88,7 +88,7 @@ const prefix_pictures = (pictures) => {
 export function Component() {
     const { account: user } = useAccount();
     
-    const {eventEdit, eventGeolocation, eventAccount} = useSocket();
+    const {eventEdit, eventAccount} = useSocket();
     const form = useForm<z.infer<typeof profile>>({
       resolver: zodResolver(profile),
       defaultValues: {
@@ -117,15 +117,17 @@ export function Component() {
         toast({title: "You need to upload at least one picture"})
       }
 
-      async function geolocation() {
-        const [err, data] = await eventGeolocation()
-        if (err) {
-          return
-        }
-        setValue('geolocation', {lat: data.latitude, lng: data.longitude})
-      }
-      geolocation()
+      //geolocation()
     }, [])
+    
+    //async function geolocation() {
+    //  const [err, data] = await eventGeolocation()
+    //  if (err) {
+    //    return
+    //  }
+    //  setValue('geolocation', {lat: data.latitude, lng: data.longitude})
+    //  console.log({lat: data.latitude, lng: data.longitude})
+    //}
    
     function onSubmit(values: z.infer<typeof profile>) {
       const data = {...values,

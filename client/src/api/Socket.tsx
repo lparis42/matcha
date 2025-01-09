@@ -230,11 +230,11 @@ export const SocketProvider = ({ children }) => {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
-            socket.emit('client:geolocation', { latitude, longitude }, () => {});
+            //socket.emit('client:geolocation', { latitude, longitude }, () => {});
             resolve([null, { latitude, longitude }]);
           },
           (error) => {
-            socket.emit('client:geolocation', { latitude: null, longitude: null });
+            //socket.emit('client:geolocation', { latitude: null, longitude: null });
             toast({ title: `Geolocation error: ${GeolocationPositionErrorNames[error.code]}` });
             resolve([error, null]);
           }

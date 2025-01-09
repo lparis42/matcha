@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap, LayersControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { useSocket } from '@/api/Socket';
 
 // Fix for default marker icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -13,6 +14,7 @@ L.Icon.Default.mergeOptions({
 
 const LocationMarker = ({ setSelectedPosition, default_value }) => {
   const [position, setPosition] = useState(null);
+  const map = useMap();
 
   useEffect(() => {
     setPosition(default_value);
@@ -20,6 +22,7 @@ const LocationMarker = ({ setSelectedPosition, default_value }) => {
 
   useMapEvents({
     click(e) {
+      map.setView(e.latlng);
       setPosition(e.latlng);
       setSelectedPosition(e.latlng);
     },
@@ -32,6 +35,9 @@ const LocationMarker = ({ setSelectedPosition, default_value }) => {
 
 const MapView = ({setter, default_value}) => {
   const [selectedPosition, setSelectedPosition] = useState({ lat: default_value[0], lng: default_value[1] });
+  const [map, setMap] = useState<L.Map | null>(null);
+
+  const {eventGeolocation} = useSocket();
 
   useEffect(() => {
     setSelectedPosition({ lat: default_value[0], lng: default_value[1] });
@@ -41,30 +47,25 @@ const MapView = ({setter, default_value}) => {
     setter("geolocation", selectedPosition);
   }, [selectedPosition]);
 
-  const MapUpdater = ({ center }) => {
-    const map = useMap();
-    useEffect(() => {
-      map.setView(center);
-    }, [center, map]);
-    return null;
-  };
+  async function getGeolocation() {
+    const [err, data] = await eventGeolocation()
+    if (err) {
+      return
+    }
+    map.setView({lat: data.latitude, lng: data.longitude})
+    setSelectedPosition({lat: data.latitude, lng: data.longitude})
+  }
 
   return (
     <div>
-  {/* // @ts-ignore */}
-      <MapContainer center={default_value} zoom={13} style={{ height: '500px', width: '100%' }}>
-        <MapUpdater center={default_value} />
+      {map ? <button type='button' onClick={() => getGeolocation()}>Use my location</button> : null}
+      <MapContainer center={default_value} zoom={13} style={{ height: '500px', width: '100%' }} ref={setMap}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution={"&copy; <a href='https://www.openstreetmap.org/copyright'>"}
         />
         <LocationMarker setSelectedPosition={setSelectedPosition} default_value={default_value}/>
       </MapContainer>
-      {selectedPosition && (
-        <div>
-          <p>Selected Position: {`Latitude: ${selectedPosition.lat}, Longitude: ${selectedPosition.lng}`}</p>
-        </div>
-      )}
     </div>
   );
 };
