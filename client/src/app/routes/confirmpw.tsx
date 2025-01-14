@@ -10,7 +10,11 @@ import { useForm } from "react-hook-form"
 import { useNavigate, useLocation } from "react-router-dom"
 import { z } from "zod"
 
-export const newpw = z.object({new_password: z.string().min(8).max(20)})
+export const newpw = z.object({
+    new_password: z.string().min(8).max(20)
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,20}$/,
+      "Password must contain at least one digit, one uppercase letter, and one lowercase letter"),
+})
 
 export function Component() {
     const navigate = useNavigate()

@@ -110,7 +110,7 @@ class Server {
   configureApplication() {
     this.app = express();
     this.app.use(cors({ // Use the CORS middleware for the application
-      origin: [`https://localhost:${process.env.HTTPS_PORT}`],
+      origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:5173`],
       methods: ['GET'],
       credentials: true, // Allow credentials
       secure: true, // Allow secure connections
@@ -155,7 +155,7 @@ class Server {
     this.io = socketIo(this.server, { // Create a Socket.IO server
       maxHttpBufferSize: 2 * 1024 * 1024, // Set the maximum HTTP buffer size to 2MB
       cors: {
-        origin: [`https://localhost:${process.env.HTTPS_PORT}`],
+        origin: [`https://localhost:${process.env.HTTPS_PORT}`, `https://localhost:5173`],
         methods: ['GET'],
         credentials: true,
         secure: true,

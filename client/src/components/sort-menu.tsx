@@ -28,6 +28,7 @@ export default function SortMenu({ onSortOptionChange }: SortMenuProps) {
             <DropdownMenuRadioItem value="age">Age</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="proximity">Proximity</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="tags">Most Tags</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="fame">Fame</DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>

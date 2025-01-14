@@ -8,6 +8,7 @@ import { useAccount } from '@/hook/useAccount'
 interface FiltersState {
   ageRange: [number, number];
   kmRange: [number];
+  fame: [number];
   interests: string[];
 }
 
@@ -24,6 +25,7 @@ export function Component() {
   const [filters, setFilters] = useState<FiltersState>({
       ageRange: [18, 80],
       kmRange: [5],
+      fame: [0],
       interests: []
   });
 

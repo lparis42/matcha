@@ -9,13 +9,15 @@ export const register = z.object({
         message: "Last Name must be at least 2 characters.",
       }).max(35).regex(/^[A-Za-z]+$/, { message: "First Name must contain only letters." }),
     email: z.string().min(6).max(50).email(),
-    password: z.string().min(8).max(20),
+    password: z.string().min(8).max(20)
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,20}$/,
+      "Password must contain at least one digit, one uppercase letter, and one lowercase letter"),
     username: z.string().min(4).max(20),
 })
 
 export const login = z.object({
     email: z.string().min(6).max(50).email(),
-    password: z.string().max(60)
+    password: z.string().max(20)
 })
 
 export const profile = z.object({

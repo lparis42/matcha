@@ -8,6 +8,7 @@ import { interests_to_int } from "@/app/routes/__auth/profile";
 interface FiltersState {
     ageRange: [number, number];
     kmRange: [number];
+    fame: [number];
     interests: string[];
   }
 
@@ -105,6 +106,8 @@ function sortProfiles(profiles: any[], sortOption: string): any[] {
         return profiles.sort((a, b) => a.distance - b.distance);
       case "common_tags":
         return profiles.sort((a, b) => b.tags.length - a.tags.length);
+      case "fame":
+        return profiles.sort((a, b) => a.fame - b.fame);
       default:
         return profiles;
     }
@@ -114,9 +117,10 @@ function filterProfiles(profiles: any[], filters: FiltersState): any[] {
   return profiles.filter(profile => {
     const ageMatch = profile.age >= filters.ageRange[0] && profile.age <= filters.ageRange[1];
     const kmMatch = profile.distance <= filters.kmRange[0];
+    const fame = profile.fame_rating >= filters.fame[0];
     const filterinterestint = interests_to_int(filters.interests)
     const interestsMatch = filterinterestint.every(interest => profile.common_tags.includes(interest));
-    return ageMatch && interestsMatch && kmMatch
+    return ageMatch && interestsMatch && kmMatch && fame
   });
 }
 
