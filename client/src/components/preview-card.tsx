@@ -60,7 +60,7 @@ const PreviewCard = ({items, handleExpend}: {items: ProfileCardProps, handleExpe
                     {
                         items?.picture ? (
                             <CarouselItem className='overflow-hidden w-full aspect-square'>
-                                <img src={`https://localhost:2000/images/${items.picture}`} alt="" className='aspect-square object-contain mx-auto'/>
+                                <img src={`https://${window.location.hostname}:2000/images/${items.picture}`} alt="" className='aspect-square object-contain mx-auto'/>
                             </CarouselItem>
                         ) : (
                             <CarouselItem className='overflow-hidden w-full aspect-square'>

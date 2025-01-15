@@ -111,12 +111,12 @@ export const SocketProvider = ({ children }) => {
 
   const globalConnection = () => {
     try {
-      fetch('https://localhost:2000', {
+      fetch(`https://${window.location.hostname}:2000/`, {
         method: 'GET',
         credentials: 'include',
       }).then(() => {
         try {
-        setSocket(io('https://localhost:2000', {
+        setSocket(io(`https://${window.location.hostname}:2000/`, {
           secure: true,
           reconnection: true,
           rejectUnauthorized: true,

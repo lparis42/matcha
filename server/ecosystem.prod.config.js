@@ -14,7 +14,8 @@ module.exports = {
         'logs',
         '*.log',
         '*.json',
-        '../images'
+        '../images',
+        'seed.js',
       ],
       watch_options: {
         followSymlinks: false,

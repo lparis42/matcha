@@ -9,8 +9,12 @@ import { SocketProvider } from './api/Socket';
 import { Toaster } from "@/components/ui/toaster"
 import { ErrorBoundary } from './components/error-boundaries';
 
-//console.error = () => {};
-//console.warn = () => {};
+//if (process.env.NODE_ENV === 'production') {
+//  console.log = () => {};
+//  console.error = () => {};
+//  console.warn = () => {};
+//  console.info = () => {};
+//}
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <ErrorBoundary>

@@ -383,7 +383,7 @@ export function Component() {
                   <div className="absolute -right-3 -top-3 w-5 h-5" onClick={() => onDeletePicture(index)}>
                   <XCircle className="w-5 h-5 text-red-500" fill="#fff"/>
                   </div>
-                  <img src={file.startsWith('data') ? file : 'https://localhost:2000/images/' + file} alt="Preview" className="rounded w-40 h-40 object-cover"/>
+                  <img src={file.startsWith('data') ? file : `https://${window.location.hostname}:2000/images/` + file} alt="Preview" className="rounded w-40 h-40 object-cover"/>
                 </div>
               )
             }

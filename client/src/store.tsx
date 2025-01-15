@@ -48,7 +48,7 @@ function transformData (item, state: User[]) {
   const user = state.filter((user) => user.name === username)[0]
   const result = {
       id: user.messages.length,
-      avatar: `https://localhost:2000/images/${user.pictures[0]}`,
+      avatar: `https://${window.location.hostname}:2000/images/${user.pictures[0]}`,
       name: username,
       message: message
   };

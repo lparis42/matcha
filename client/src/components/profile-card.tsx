@@ -84,7 +84,7 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
                         return null;
                     return (
                     <CarouselItem key={index} className='overflow-hidden w-full aspect-square'>
-                        <img src={`https://localhost:2000/images/${picture}`} alt="" className='aspect-square object-contain mx-auto'/>
+                        <img src={`https://${window.location.hostname}:2000/images/${picture}`} alt="" className='aspect-square object-contain mx-auto'/>
                     </CarouselItem>)
                 })}
                 </CarouselContent>

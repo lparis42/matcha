@@ -107,7 +107,7 @@ function sortProfiles(profiles: any[], sortOption: string): any[] {
       case "common_tags":
         return profiles.sort((a, b) => b.tags.length - a.tags.length);
       case "fame":
-        return profiles.sort((a, b) => a.fame - b.fame);
+        return profiles.sort((a, b) => b.fame_rating - a.fame_rating);
       default:
         return profiles;
     }

@@ -56,7 +56,7 @@ export function Component ({
           const [username, message] = item.split(':');
           transformed.push({
               id: index,
-              avatar: username === user.username ? `https://localhost:2000/images/${user.pictures[0]}` : `https://localhost:2000/images/${profile.pictures[0]}`,
+              avatar: username === user.username ? `https://${window.location.hostname}:2000/images/${user.pictures[0]}` : `https://localhost:2000/images/${profile.pictures[0]}`,
               name: username,
               message: message
           });
@@ -70,7 +70,7 @@ export function Component ({
       if (!err)
         addMessage(target_account, {
           id: selectedUser.messages.length,
-          avatar: user.pictures[0] ? `https://localhost:2000/images/${user.pictures[0]}` : '',
+          avatar: user.pictures[0] ? `https://${window.location.hostname}:2000/images/${user.pictures[0]}` : '',
           message: message,
           name: user.username
         })
@@ -88,7 +88,7 @@ export function Component ({
               if (profile) {
                 users.push({
                   id: user.account,
-                  avatar: `https://localhost:2000/images/${profile.pictures[0]}`,
+                  avatar: `https://${window.location.hostname}:2000/images/${profile.pictures[0]}`,
                   messages: transformData(user.messages, profile),
                   name: profile.username,
                   ...profile
