@@ -148,9 +148,10 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
                   <GaugeIcon className="mr-2 h-4 w-4" />
                   {items?.fame_rating}
                 </div>
+                {islikedyou ??
                 <div className="flex items-center text-sm text-red-400 mb-2">
-                    {items?.first_name} liked you !
-                </div>
+                     {items?.first_name} liked you !
+                </div>}
                 <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
                     {items?.common_tags?.map((interest, index) => {
                         return (
