@@ -32,9 +32,7 @@ export function Component() {
             <h2 className="text-xl font-bold">Viewers</h2>
             <ul>
                 {viewers.map((viewer, index) => (
-                    
-                       <Link to={'/browse?id=' + viewer.id}> <li key={index}>- Account <span className='font-bold'>{viewer.username}</span> view your profile</li></Link>
-                    
+                    <Link to={'/browse?id=' + viewer.id}> <li key={index}>- Account <span className='font-bold'>{viewer.username}</span> view your profile</li></Link>
                 ))}
             </ul>
             <h2 className="text-xl font-bold mt-6">Likers</h2>

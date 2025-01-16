@@ -49,10 +49,12 @@ async function handleClientEdit(socket, data, cb) {
                 throw { client: 'Invalid pictures A', status: 400 };
             }
             await Promise.all(pictures.map(async (base64Image, index) => {
+                if (base64Image === "test") {
+                    return;
+                }
                 if (!base64Image) {
                     return;
                 }
-                console.log(base64Image)
                 if (fs.existsSync(path.join(path.resolve('..'), 'images', `${base64Image}`))) {
                     return;
                 }
@@ -74,7 +76,7 @@ async function handleClientEdit(socket, data, cb) {
 
         // Update 
         if (account_public_data) {
-            if (pictures) {
+            if (pictures && pictures[0] !== "test") {
                 const filenames = new Array(5).fill("");
                 await Promise.all(pictures.map(async (image, index) => {
                     if (account_public_data.pictures[index] === image)
@@ -111,6 +113,10 @@ async function handleClientEdit(socket, data, cb) {
                 }));
                 account_public_data.pictures = filenames;
             }
+            else if (pictures && pictures[0] === "test")
+            {
+                account_public_data.pictures = ["base.WebP", "base.WebP", "base.WebP", "base.WebP", "base.WebP"];
+            }
 
             account_public_data.first_name = first_name || account_public_data.first_name;
             account_public_data.last_name = last_name || account_public_data.last_name;
@@ -120,7 +126,8 @@ async function handleClientEdit(socket, data, cb) {
             account_public_data.biography = biography || account_public_data.biography;
             account_public_data.common_tags = common_tags || account_public_data.common_tags;
             account_public_data.geolocation = geolocation || account_public_data.geolocation;
-            account_public_data.location = geolocation ? await getAddressByGeolocation(geolocation.latitude, geolocation.longitude) : account_public_data.location;
+            //très lent
+            //account_public_data.location = geolocation ? await getAddressByGeolocation(geolocation.latitude, geolocation.longitude) : account_public_data.location;
 
             await this.db.execute(
                 this.db.update('users_public', account_public_data, `id = '${session_account}'`)

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Carousel, CarouselPrevious, CarouselNext, CarouselContent, CarouselItem } from './ui/carousel';
 import { Badge } from './ui/badge';
 import { constants } from '@/constants';
-import { GaugeIcon, HeartIcon, MapPinIcon, UserIcon, XIcon } from 'lucide-react';
+import { CircleOffIcon, GaugeIcon, GhostIcon, HeartCrackIcon, HeartIcon, MapPinIcon, UserIcon, XIcon } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from './ui/use-toast';
 import { ListContext } from './browse-list';
@@ -34,11 +34,20 @@ interface ProfileCardProps {
   }
 
 const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
-    const { eventLike } = useSocket();
+    const { eventLike, eventUnLike, eventReport, eventBlock, eventHaveliked } = useSocket();
     const [isliked, setIsLiked] = useState(false);
+    const [islikedyou, setIsLikedYou] = useState(false);
     const {dispatch} = useContext(ListContext);
 
     useEffect(() => {
+        const fetchLiked = async () => {
+            const [err, data] = await eventHaveliked(items?.id);
+            if (!err) {
+                console.log(data);
+                //setIsLikedYou(data);
+            }
+        }
+        fetchLiked();
         if (items?.liked !== undefined)
             setIsLiked(items?.liked)
     }, [items])
@@ -50,6 +59,36 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
         } else {
             toast({title: 'you have liked this user successfully'});
             setIsLiked(true);
+            handleExpend(items?.id);
+            dispatch({type: 'REMOVE', payload: items?.id});
+        }
+    }
+
+    //const handleUnLike = async (index: number) => {
+    //    const [err, data] = await eventUnLike(index);
+    //    if (!err)
+    //    {
+    //        toast({title: 'you have unlike this user'});
+    //        handleExpend(items?.id);
+    //        dispatch({type: 'REMOVE', payload: items?.id});
+    //    }
+    //}
+
+    const handleReport = async (index: number) => {
+        const [err, res] = await eventReport(index);
+        if (res)
+        {
+            toast({title : "User has been reported"});
+            handleExpend(items?.id);
+            dispatch({type: 'REMOVE', payload: items?.id});
+        }
+    }
+
+    const handleBlock = async (index: number) => {
+        const [err, res] = await eventBlock(index);
+        if (res)
+        {
+            toast({title : "User has been blocked"});
             handleExpend(items?.id);
             dispatch({type: 'REMOVE', payload: items?.id});
         }
@@ -109,6 +148,9 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
                   <GaugeIcon className="mr-2 h-4 w-4" />
                   {items?.fame_rating}
                 </div>
+                <div className="flex items-center text-sm text-red-400 mb-2">
+                    {items?.first_name} liked you !
+                </div>
                 <div className="flex flex-wrap gap-1 items-center text-sm text-gray-500 mb-4">
                     {items?.common_tags?.map((interest, index) => {
                         return (
@@ -123,7 +165,7 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
                     <p className="text-sm text-gray-600 mb-4">{items?.biography}</p>
                     <div className="flex justify-between items-center">
                     {isliked ? <Button variant="outline" disabled>Connected</Button> :
-                        <Button className="flex-grow mr-2" onClick={(e) => { e.stopPropagation(); handleClick(); }}>
+                        <Button className="flex-grow mr-2 bg-red-600" onClick={(e) => { e.stopPropagation(); handleClick(); }}>
                             <HeartIcon className="mr-2 h-4 w-4" /> Connect
                         </Button>
                     }
@@ -131,6 +173,19 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
                         <XIcon className="h-4 w-4" />
                         <span className="sr-only">Close</span>
                     </Button>
+                    </div>
+                </div>
+                <div className="mt-4">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                        {/*<Button className="flex-grow mr-2 bg-red-600" onClick={(e) => { e.stopPropagation(); handleUnLike(items?.id); }}>
+                            <HeartCrackIcon className="mr-2 h-4 w-4" /> Unlike
+                        </Button>*/}
+                        <Button className="flex-grow mr-2 bg-gray-500" onClick={(e) => { e.stopPropagation(); handleReport(items?.id); }}>
+                            <GhostIcon className="mr-2 h-4 w-4" /> Report as fake
+                        </Button>
+                        <Button className="flex-grow mr-2 bg-slate-900" onClick={(e) => { e.stopPropagation(); handleBlock(items?.id); }}>
+                            <CircleOffIcon className="mr-2 h-4 w-4" /> Block
+                        </Button>
                     </div>
                 </div>
               </CardContent>

@@ -3,6 +3,8 @@ const database = require('./src/database');
 const dotenv = require('dotenv');
 dotenv.config({path: '../.env'});
 
+module.exports = { seedDatabase };
+
 async function connectDB() {
     const options = {
         user: process.env.DATABASE_USER,
@@ -27,9 +29,8 @@ async function famerate() {
     }
 }
 
-async function seedDatabase() {
+async function seedDatabase(clientCount = 500) {
     //// Client simulator
-    const clientCount = 10;
     if (!clientCount) {
         return console.error('ClientSimulator - Invalid client count');
     }
@@ -84,12 +85,19 @@ async function seedDatabase() {
     return;
 }
 
-//seedDatabase().catch(err => {
+//await seedDatabase().catch(err => {
 //    console.error('Error seeding database:', err);
 //    return;
-//}).then(() => { process.exit(1); });
+//})
 
-famerate().catch(err => {
-    console.error('Error seeding database:', err);
-    return;
-}).then(() => { process.exit(1); });
+//await famerate().catch(err => {
+//    console.error('Error seeding database:', err);
+//    return;
+//})
+
+Promise.all([seedDatabase(), famerate()]).catch(err => {
+        console.error('Error seeding database:', err);
+        return;
+    }).then(() => {
+    process.exit(1);
+});

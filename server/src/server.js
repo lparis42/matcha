@@ -200,7 +200,7 @@ class Server {
               // Events from the server
               'block', 'browsing', 'chat', 'chat_histories', 'edit', 'geolocation', 'like', 'likers',
               'login', 'logout', 'matchs', 'password_reset', 'password_reset_confirmation', 'registration',
-              'registration_confirmation', 'report', 'research', 'unblock', 'unlike', 'unregistration', 'view', 'viewers',
+              'registration_confirmation', 'report', 'research', 'unblock', 'unlike', 'unregistration', 'view', 'viewers', 'haveliked'
             ];
             if (!packet[0].startsWith('client:') || !emit_list.includes(packet[0].slice(7))) { // Check if the packet is valid
               throw 'Invalid emit: ' + packet[0];

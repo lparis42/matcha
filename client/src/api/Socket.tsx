@@ -81,6 +81,7 @@ interface SocketValue {
   eventLocationPathnamePW: Function;
   eventGeolocation: Function;
   eventAccount: Function;
+  eventHaveliked: Function;
 }
 
 const GeolocationPositionErrorNames = {
@@ -456,6 +457,21 @@ export const SocketProvider = ({ children }) => {
     return data;
   }, [socket]);
 
+  const eventHaveliked = useCallback(async (target_account: number) => {
+    const data: [err: SocketError, message: string] = await new Promise((resolve) => {
+      socket.emit('client:haveliked', { target_account: target_account }, (err: SocketError, message: string) => {
+        if (err) {
+          checkerror(err);
+          sendtoast({ title: err.message });
+          resolve([err, null]);
+        } else {
+          resolve([null, message]);
+        }
+      });
+    });
+    return data;
+  }, [socket]);
+
   const eventMatch = useCallback((callback: (err: SocketError | null, message?: string) => void) => {
     socket.emit('client:matchs', (err: SocketError, message: string) => {
       if (err) {
@@ -568,6 +584,7 @@ export const SocketProvider = ({ children }) => {
     eventLocationPathnamePW,
     eventGeolocation,
     eventAccount,
+    eventHaveliked,
   }
 
   if (socket === null) {

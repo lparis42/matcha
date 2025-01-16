@@ -5,6 +5,8 @@ dotenv.config({path: '../.env'});
 if (process.env.NODE_ENV !== 'development') { // Disable console.log in production mode (NODE_ENV=production)
     console.log = function () { };
     console.error = function () { };
+    console.info = function () { };
+    console.warn = function () { };
 }
 const server = new Server();
 
@@ -14,6 +16,9 @@ const server = new Server();
 ////////////////////////////////////////
 setTimeout(async () => {
 
+    // Seed the database
+    //await seedDatabase();
+    return;
     // Client simulator
     const clientCount = 10;
     if (!clientCount) {

@@ -33,7 +33,8 @@ class Event {
             'handleClientUnlike',
             'handleClientUnregistration',
             'handleClientView',
-            'handleClientViewers'
+            'handleClientViewers',
+            'handleClientHaveliked'
         ];
 
         eventHandlers.forEach(handler => {
@@ -133,7 +134,8 @@ class Event {
                 { name: 'client:unlike', handler: 'handleClientUnlike', arguments: ['data', 'cb'] },
                 { name: 'client:unregistration', handler: 'handleClientUnregistration', arguments: ['cb'] },
                 { name: 'client:view', handler: 'handleClientView', arguments: ['data', 'cb'] },
-                { name: 'client:viewers', handler: 'handleClientViewers', arguments: ['cb'] }
+                { name: 'client:viewers', handler: 'handleClientViewers', arguments: ['cb'] },
+                { name: 'client:haveliked', handler: 'handleClientHaveliked', arguments: ['data', 'cb'] }
             ];
             events.forEach(event => {
                 if (event.arguments.length === 2) {
