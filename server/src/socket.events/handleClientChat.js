@@ -39,6 +39,8 @@ async function handleClientChat(socket, data, cb) {
             throw { client: 'Match not connected', status: 403 };
         }
 
+        console.log('Chat message:', message, 'from', account_data.username, 'to', target_account);
+
         // Update the chat with the new message
         await this.db.execute(
             this.db.update('users_match', { messages: `${account_data.username}:${message}` }, `id = '${match.id}'`, 'ARRAY_APPEND')
@@ -54,6 +56,7 @@ async function handleClientChat(socket, data, cb) {
             ))[0].sid;
             // Emit the notification to each socket of the target account
             this.io.to(target_session_id).emit('server:notification', { type: "chat", account_id: session_account, message: `${account_data.username}:${message}` });
+            console.log(`Chat message sent to account ${target_session_id}`);
         } else {
             // Save the notification for the target account
             await this.db.execute(

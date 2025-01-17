@@ -18,7 +18,6 @@ setTimeout(async () => {
 
     // Seed the database
     //await seedDatabase();
-    return;
     // Client simulator
     const clientCount = 10;
     if (!clientCount) {
