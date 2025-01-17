@@ -1,3 +1,10 @@
+if (process.env.NODE_ENV === 'production') {
+  console.log('Production mode');
+  console.log = () => {};
+  console.error = () => {};
+  console.warn = () => {};
+  console.info = () => {};
+}
 // index.tsx or index.ts
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -8,13 +15,6 @@ import { router } from './router'; // Update path if necessary
 import { SocketProvider } from './api/Socket';
 import { Toaster } from "@/components/ui/toaster"
 import { ErrorBoundary } from './components/error-boundaries';
-
-//if (process.env.NODE_ENV === 'production') {
-//  console.log = () => {};
-//  console.error = () => {};
-//  console.warn = () => {};
-//  console.info = () => {};
-//}
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <ErrorBoundary>
