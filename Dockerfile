@@ -6,10 +6,10 @@ RUN corepack enable
 COPY . .
 
 # Install dependencies
-RUN pnpm i -r -v
+RUN pnpm install -r
 
 # Build the React app
-RUN npm run build
+RUN pnpm run build
 
 # Expose the port the app runs on
 EXPOSE 3000
