@@ -37,6 +37,7 @@ class ClientSimulator {
             biography: this.randomData('biography'),
             common_tags: this.randomData('common_tags'),
             geolocation: this.randomData('geolocation'),
+            location: "17eme arrondissement, Paris",
             pictures: ['image.png', null, null, null, null],
             account: 0,
         };
@@ -151,6 +152,7 @@ class ClientSimulator {
             common_tags: this.data.common_tags,
             pictures: [base64Image, null, null, null, null],
             geolocation: this.data.geolocation,
+            location: this.data.location,
         };
         return this.emit('client:edit', data);
     }

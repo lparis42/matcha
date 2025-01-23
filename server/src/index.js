@@ -19,7 +19,7 @@ setTimeout(async () => {
     // Seed the database
     //await seedDatabase();
     // Client simulator
-    const clientCount = 10;
+    const clientCount = 500;
     if (!clientCount) {
         return console.error('ClientSimulator - Invalid client count');
     }
