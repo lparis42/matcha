@@ -7,7 +7,7 @@ export const constants = {
     'History', 'Philosophy', 'Religion', 'Law'
   ],
   genders: [
-    'Male', 'Female', 'Other'
+    'Male', 'Female'
   ],
   sexual_orientations: [
     'Heterosexual', 'Bisexual', 'Homosexual', 'Other'

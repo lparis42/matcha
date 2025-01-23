@@ -43,7 +43,6 @@ const ProfileCard = ({items, handleExpend}: ProfileCardProps) => {
         const fetchLiked = async () => {
             const [err, data] = await eventHaveliked(items?.id);
             if (!err) {
-                console.log(data);
                 //setIsLikedYou(data);
             }
         }

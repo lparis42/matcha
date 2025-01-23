@@ -87,12 +87,11 @@ const prefix_pictures = (pictures) => {
 
 export function Component() {
     const { account: user } = useAccount();
-    
     const {eventEdit, eventAccount} = useSocket();
     const form = useForm<z.infer<typeof profile>>({
       resolver: zodResolver(profile),
       defaultValues: {
-        gender: user.gender || constants.genders[0],
+        gender: user.gender ? user.gender : constants.genders[0],
         sexual_orientation: user.sexual_orientation || constants.sexual_orientations[0],
         first_name: user.first_name,
         last_name: user.last_name,
@@ -223,7 +222,7 @@ export function Component() {
             name="sexual_orientation"
             render={({ field }) => (
               <FormItem>
-              <Select onValueChange={field.onChange} defaultValue={constants.sexual_orientations[0]}>
+              <Select onValueChange={field.onChange} defaultValue={user.sexual_orientation || constants.sexual_orientations[0]}>
                 <FormControl>
                   <SelectTrigger className="text-sm">
                     <SelectValue />
@@ -249,7 +248,7 @@ export function Component() {
             name="gender"
             render={({ field }) => (
               <FormItem>
-              <Select onValueChange={field.onChange} defaultValue={constants.genders[0]}>
+              <Select onValueChange={field.onChange} defaultValue={user.gender || constants.genders[0]}>
                 <FormControl>
                   <SelectTrigger className="text-sm">
                     <SelectValue />
